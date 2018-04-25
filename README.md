@@ -8,7 +8,7 @@ every week, to give away to other people in that community. After they're given,
 can spend these coins on various rewards. (A day off, a conference ticket, etc.) Received coins
 lose half of their value every four months, though, so, like reputation itself, YKarma savings
 decay rapidly over time. That makes this reputation economy *very* different from a monetary one,
-in that it's impossible to hoard capital, and also prevents the "money supply" from hyperinflation.
+in that it's impossible to hoard capital, and also protects the "money supply" from hyperinflation.
 
 ### What's the point?
 
@@ -29,7 +29,7 @@ indie video games, nonprofits, churches, etc. -- to receive new kinds of rewards
 non-zero-sum from an individual perspective, because every participant gets coins which must be
 given away to be useful.
 
-### But how can a single measure of reputation be valid across these different fields and communities?
+### But how can a single measure of reputation be meaningful across these different fields and communities?
 
 It probably can't (though, again, this is all very experimental!) so when coins are given,
 they can be "tagged" with relevant communities, ranging from fairly specific ("Ethereum",
@@ -67,17 +67,17 @@ and if it goes anywhere at all it will presumably require a lot of tweaking, whi
 least initially, can't really be managed in an efficient manner via consensus or voting.
 Furthermore, participants must be verified as actual people, or the whole economy will
 be fatally vulnerable to sockpuppets/bots. So there'll be ongoing tension between
-initial control of the experiment and the ultimate end goal of permissionlessness. It's
-on a blockchain, though, because that is the ultimate end goal.
+initial control of the experimental parameters and the ultimate end goal of
+permissionlessness. It's on a blockchain, though, because that is the ultimate end goal.
 
-### But how can this possibly work on the Ethereum blockchain, with its high gas costs and low transaction limits?
+### But how can this possibly work on the Ethereum blockchain, with its high gas costs and low transaction bandwidth?
 
 It can't. So this won't run on the public Ethereum mainnet, until / unless that scales
 (eg via Plasma) massively beyond its current limits. Instead it will run on a "consortium"
 / "proof of authority" Ethereum blockchain, just like the Rinkeby testnet. For now the
 consortium is, er, me, but the hope/idea is to add more nodes in the future.
 
-### OK, but even granting the desire for an ultimately permissionless and hence blockchain solution, is Ethereum really the right blockchain?
+### OK, but even granting the desire for an ultimately permissionless and hence blockchain solution, is Ethereum really the right platform?
 
 Probably not. Probably a custom blockchain would be much better. Maybe in some distant
 future YKarma will be migrated to the YKarma blockchain. But in the here and now,
@@ -90,13 +90,13 @@ we'll use it. It's a kludge, don't get me wrong, but a highly expedient one.
 For now, the code is set up so there's a main smart contract, YKarma, which handles most
 of the economy, and a separate administrative smart contract, the YKOracle, which can manage
 communities, tags, and vendors. The idea is that multiple YKOracles will exist in the future,
-ideally elected by some form of community voting, again so that while there will be
-gatekeeping there won't be a single point of control.
+ideally elected by some form of community voting, so that while there will be gatekeeping
+there won't be a single point of control.
 
 Users must have an email address, a telephone number, or ideally both. Coins are sent to URLs
 rather than Ethereum addresses, meaning you can send coins to people who are not yet part of
-the system and/or any community. However communities can restrict the URLs their coins are
-sent to (e.g. ensure that coins only track reputation within a company.)
+the system and/or any of its communities. However communities can restrict the URLs their members'
+coins are sent to (e.g. ensure that coins only track reputation within a company.)
 
 Users who never want to deal with the blockchain won't have to, but users who want to become
 "free agents," and/or to combine their accounts from multiple communities, may do so at the
