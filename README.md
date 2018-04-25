@@ -17,31 +17,31 @@ in that it's impossible to hoard capital, and also prevents the "money supply" f
 
 ### Giving people scores or ratings is a horrible idea! How can you say it would benefit people?
 
-Giving people scores or ratings, like China's new "social credit" system, is indeed a terrible
-dystopic notion. Fortunately this is quite different. People don't have a persistent YKarma
-*score*, they just have coins to spend in the notional reputation economy. If someone doesn't
-have many, that doesn't mean they're unpopular, it might just mean they spent theirs recently.
+Giving people scores or ratings, like China's new "social credit" system or that Black Mirror
+episode, is indeed a terrible dystopic notion. Fortunately this is quite different. People
+don't have a persistent YKarma *score*, they just have coins to spend in the notional reputation
+economy. If someone doesn't have many, that doesn't indicate unpopularity; it could well just
+mean they spent theirs on a reward recently.
 
-The general hope is more for people who excel in fields and communities which don't see much
+The general hope/notion is for people who excel in fields and communities which don't see much
 in the way of monetary compensation -- poetry, art, music, open-source software development,
-indie video games, nonprofits, churches, etc. -- to receive a new kind of reward, which is
-non-zero-sum because every participant gets coins to give away (and which cannot be used until
-they have been given away.) And, of course, for this reward to be actually useful.
+indie video games, nonprofits, churches, etc. -- to receive new kinds of rewards, which are
+non-zero-sum from an individual perspective, because every participant gets coins which must be
+given away to be useful.
 
 ### But how can a single measure of reputation be valid across these different fields and communities?
 
 It probably can't (though, again, this is all very experimental!) so when coins are given,
 they can be "tagged" with relevant communities, ranging from fairly specific ("Ethereum",
-"open source") to less specific ("blockchain", "Consensys") to generic ("tech"). Then, when
-vendors make rewards available, they can require coins with a certain tag(s) -- for instance,
-"tech" coins to acquire tickets to a generic tech conference, "Ethereum" coins for a more
-specific Ethereum conference.
+"open source", "blockchain", "Consensys") to very generic ("tech"). Then, when vendors make
+rewards available, they can require coins with a certain tag(s) -- for instance, "tech" coins
+to acquire tickets to a generic tech conference, "Ethereum" coins for a more specific conference.
 
 ### Why would anyone exchange valuable things like conference tickets for YKarma?
 
-The most obvious use is within a company, wherein employee rewards like a day off, or a
-social event at the company's expense,  would be a) good for morale, b) identify those
-people most highly thought of by their fellow employees. In that case the company would
+The most obvious use is within a company, wherein little employee rewards like a day off,
+or a social event at the company's expense, would a) be good for morale, b) identify those
+people most highly thought of by their fellow workers. In that case the company would
 be the "vendor" for their employees.
 
 It's also easy to envision, though, why external vendors would want to offer rewards
