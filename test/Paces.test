@@ -1,0 +1,35 @@
+const YKarma = artifacts.require("YKarma");
+
+contract('Paces', function(accounts) {
+  const deployer = accounts[0];
+
+  it('should be put through its paces', async function() {
+    assert.equal(4*4, 16, "Test running");
+    
+    // oracle adds an organization
+    
+    // oracle adds an admin
+    
+    // admin adds a user
+    
+    // admin adds another user
+    
+    // users' giving accounts are replenished
+    
+    // user A sends to user B
+    
+    // user A sends to user C, not yet on system
+    
+    // oracle adds user C, tokens transferred
+    
+    // admin adds a vendor
+    
+    // oracle adds another vendor
+    
+    // vendor adds an item
+    
+    // user buys item from vendor
+    
+    // time travel, recalculate, test demurrage
+  }
+}
