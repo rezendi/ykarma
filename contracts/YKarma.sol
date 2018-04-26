@@ -15,6 +15,7 @@ contract YKStructs {
   struct Account {
     uint256 id;
     uint256 communityId;
+    address userAddress;
     string email;
     string phone;
     string metadata;
@@ -22,11 +23,22 @@ contract YKStructs {
 
   struct Community {
     uint256 id;
+    bool isClosed;
     string domain;
     address admin;
     string metadata;
     string tags;
-    address[] accountAddresses;
+    uint256[] accountIds;
+  }
+  
+  struct Vendor {
+    uint256 id;
+  }
+  
+  struct Reward {
+    uint256 id;
+    uint256 status;
+    string metadata;
   }
 }
 
@@ -84,33 +96,43 @@ contract YKTranches is Ownable, YKStructs {
 }
 
 contract YKAccounts is Ownable, YKStructs {
-  mapping(address => Account) accounts;
-  mapping(string => address) accountsByUrl;
-  mapping(string => Account) newAccounts;
+  mapping(uint256 => Account) accounts;
+  mapping(string => uint256) accountsByUrl;
+  mapping(address => uint256) accountsByAddress;
   mapping(uint256 => uint256) personas;
   uint256 maxAccountId;
   
   function accountForAddress(address _address) public onlyOwner view returns (Account) {
-    return accounts[_address];
+    uint256 accountId = accountsByAddress[_address];
+    return accounts[accountId];
   }
 
   function accountForUrl(string _url) public onlyOwner returns (Account) {
-    address accountAddress = accountsByUrl[_url];
-    if (accountAddress > 0) {
+    uint256 accountId = accountsByUrl[_url];
+    if (accountId > 0) {
       // is this an account in the system?
-      return accounts[accountAddress];
+      return accounts[accountId];
     } else {
-      // is this a new account who's already received coins?
-      Account memory existingRecipient = newAccounts[_url];
-      if (existingRecipient.id > 0) {
-        return existingRecipient;
-      }
-      // no, this account is brand new
-      Account memory newAccount = Account({id: maxAccountId + 1, metadata:_url, communityId:0, email:"", phone:""});
-      newAccounts[_url] = newAccount;
+      // this is a new account
+      // TODO check url, if it's email or phone ascribe accordingly
+      Account memory newAccount = Account({id: maxAccountId + 1, metadata:_url, userAddress:0, communityId:0, email:"", phone:""});
+      accounts[newAccount.id] = newAccount;
+      accountsByUrl[_url] = newAccount.id;
       maxAccountId += 1;
       return newAccount;
     }
+  }
+  
+  function addAccount(Account account) {
+    account.id = maxAccountId + 1;
+    accounts[account.id] = account;
+    if (bytes(account.email).length > 0) { // TODO check well-formed email URL
+      accountsByUrl[account.email] = account.id;
+    }
+    if (bytes(account.phone).length > 0) { // TODO check well-formed phone URL
+      accountsByUrl[account.phone] = account.id;
+    }
+    maxAccountId += 1;
   }
 }
 
@@ -121,19 +143,23 @@ contract YKCommunities is Ownable, YKStructs {
   function communityForId(uint256 _id) public onlyOwner view returns (Community) {
     return communities[_id];
   }
+  
+  function addCommunity(Community community) public onlyOwner {
+    community.id = maxCommunityId + 1;
+    communities[community.id] = community;
+    maxCommunityId += 1;
+  }
+  
+  function setTags(uint256 _communityId, string _tags) public onlyOwner {
+    communities[_communityId].tags = _tags;
+  }
 }
 
 contract Oracular {
   address[] oracles;
 
   modifier onlyOracle() {
-    bool found = false;
-    for (uint i; i < oracles.length; i++) {
-      if (msg.sender == oracles[i]) {
-        found = true;
-      }
-    }
-    require(found);
+    require (senderIsOracle());
     _;
   }
 
@@ -142,6 +168,15 @@ contract Oracular {
   }
 
   event OracleAdded(address indexed oracleAddress);
+
+  function senderIsOracle() public view returns (bool){
+    for (uint i; i < oracles.length; i++) {
+      if (msg.sender == oracles[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   function addOracle(address newOracle) public onlyOracle {
     require(newOracle != address(0));
@@ -164,7 +199,7 @@ contract YKarma is Oracular, YKStructs {
     communityData = _communities;
   }
 
-  function giveToUrl(uint256 _amount, string _url) public {
+  function give(uint256 _amount, string _url) public {
     Account memory giver = accountData.accountForAddress(msg.sender);
     uint256 available = trancheData.availableToGive(giver.id);
     require (available >= _amount);
@@ -172,5 +207,40 @@ contract YKarma is Oracular, YKStructs {
     Account memory receiver = accountData.accountForUrl(_url);
     trancheData.transfer(_amount, giver.id, receiver.id, community.tags);
   }
+
+  function addCommunity(address _admin, string _domain, string _metadata) onlyOracle public {
+    Community memory community = Community({
+      id: 0,
+      admin: _admin,
+      domain: _domain,
+      metadata: _metadata,
+      tags: "",
+      isClosed: true,
+      accountIds: new uint256[](0)
+    });
+    communityData.addCommunity(community);
+  }
+  
+  function setTags(uint256 _communityId, string _tags) public {
+    Community memory community = communityData.communityForId(_communityId);
+    require (community.admin == msg.sender || senderIsOracle());
+    communityData.setTags(_communityId, _tags);
+  }
+  
+  function addAccount(uint256 _communityId, string _email, string _phone, string _metadata) {
+    Community memory community = communityData.communityForId(_communityId);
+    require (community.admin == msg.sender || senderIsOracle());
+    Account memory account = Account({id: 0, metadata:_metadata, userAddress:0, communityId:_communityId, email:_email, phone:_phone});
+    accountData.addAccount(account);
+  }
+  
+  // TODO:
+  // adding a vendor
+  // vendor adding a reward
+  // purchasing
+  // replenishment
+  // demurrage
+  // web interface
+  // deploy to rinkeby
   
 }
