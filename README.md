@@ -28,11 +28,9 @@ in the way of monetary compensation -- poetry, art, music, open-source software 
 indie video games, nonprofits, churches, etc. -- to receive new kinds of rewards. Since everyone
 receives coins which must be given away, transactions are no longer zero-sum; people can be
 recognized and rewarded without it costing the giving individuals anything, as long as rewards
-are available for people who accumulate enoug coins.
+are available for people who accumulate enough coins.
 
 ### Why would anyone exchange valuable things like conference tickets for a reputation currency like this?
-
-Maybe they won't! Which would be fine: this is primarily a technical / social experiment.
 
 That said -- the most obvious use is within a company, wherein little employee rewards like
 a day off, or a social event at company expense, would a) be good for morale, b) identify
