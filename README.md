@@ -49,7 +49,7 @@ who have established themselves as high-reputation within a particular community
 immediate value for conferences etc. would be simply having them present. The longer-term
 value would be establishing a relationship with people whose decisions will have outsized
 significance in time to come. It would make sense to e.g. offer them "perishable inventory,"
-such as empty hotel rooms or airplane seats, as so within a reputation economy wouldn't
+such as empty hotel rooms or airplane seats, as doing so within a reputation economy wouldn't
 devalue that inventory's perceived monetary worth.
 
 There may also be a concept of *brand* reputation, but that's still notional / experimental.
