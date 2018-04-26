@@ -32,10 +32,10 @@ are available for people who accumulate enough coins.
 
 ### Why would anyone exchange valuable things like conference tickets for a reputation currency like this?
 
-That said -- the most obvious use is within a company, wherein little employee rewards like
-a day off, or a social event at company expense, would a) be good for morale, b) identify
-those people most highly thought of by their fellow workers. In that case the company would
-be the "vendor" of rewards for their employees.
+The most obvious use is within a company, wherein little employee rewards like a day off,
+or a social event at company expense, would a) be good for morale, b) identify those people
+most highly thought of by their fellow workers. In that case the company would be the
+"vendor" of rewards for their employees.
 
 But it's also easy to envision why external vendors would want to offer rewards to people
 who have established themselves as high-reputation within a particular community. The
@@ -98,7 +98,7 @@ there won't be a single point of control.
 Users must have an email address, a telephone number, or ideally both. Coins are sent to URLs
 rather than Ethereum addresses, meaning you can send coins to people who are not yet part of
 the system and/or any of its communities. However communities can restrict the URLs their members'
-coins are sent to (e.g. ensure that coins only track reputation within a company.)
+coins are sent to, so they can e.g. ensure that coins only track reputation within a company.
 
 Users who never want to deal with the blockchain won't have to, but users who want to become
 "free agents," and/or to combine their accounts from multiple communities, may do so at the

@@ -33,11 +33,17 @@ contract YKStructs {
   
   struct Vendor {
     uint256 id;
+    uint256 communityId;
+    address vendorAddress;
+    string name;
+    string metadata;
   }
   
   struct Reward {
     uint256 id;
-    uint256 status;
+    uint256 vendorId;
+    uint256 cost;
+    string name;
     string metadata;
   }
 }
@@ -155,6 +161,35 @@ contract YKCommunities is Ownable, YKStructs {
   }
 }
 
+contract YKVendors is Ownable, YKStructs {
+  mapping(uint256 => Vendor) vendors;
+  mapping(address => uint256) vendorsByAddress;
+  uint256 maxVendorId;
+  
+  mapping(uint256 => Reward) rewards;
+  mapping(uint256 => Reward) redeemedRewards;
+  uint256 maxRewardId;
+
+  function vendorForId(uint256 _id) public onlyOwner view returns (Vendor) {
+    return vendors[_id];
+  }
+  
+  function addVendor(Vendor vendor) public onlyOwner {
+    vendor.id = maxVendorId + 1;
+    vendors[vendor.id] = vendor;
+    if (vendor.vendorAddress > 0) {
+      vendorsByAddress[vendor.vendorAddress] = vendor.id;
+    }
+    maxVendorId += 1;
+  }
+  
+  function addReward(Reward reward) public onlyOwner {
+    reward.id = maxRewardId + 1;
+    rewards[reward.id] = reward;
+    maxRewardId += 1;
+  }
+}
+
 contract Oracular {
   address[] oracles;
 
@@ -191,12 +226,14 @@ contract YKarma is Oracular, YKStructs {
   YKTranches trancheData;
   YKAccounts accountData;
   YKCommunities communityData;
+  YKVendors vendorData;
 
   // after YKarma is created, ownership of these contracts must be transferred to it, obviously
-  constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities) public Oracular() {
+  constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKVendors _vendors) public Oracular() {
     trancheData = _tranches;
     accountData = _accounts;
     communityData = _communities;
+    vendorData = _vendors;
   }
 
   function give(uint256 _amount, string _url) public {
@@ -227,17 +264,27 @@ contract YKarma is Oracular, YKStructs {
     communityData.setTags(_communityId, _tags);
   }
   
-  function addAccount(uint256 _communityId, string _email, string _phone, string _metadata) {
+  function addAccount(uint256 _communityId, string _email, string _phone, string _metadata) public {
     Community memory community = communityData.communityForId(_communityId);
     require (community.admin == msg.sender || senderIsOracle());
-    Account memory account = Account({id: 0, metadata:_metadata, userAddress:0, communityId:_communityId, email:_email, phone:_phone});
+    Account memory account = Account({id:0, metadata:_metadata, userAddress:0, communityId:_communityId, email:_email, phone:_phone});
     accountData.addAccount(account);
   }
   
+  function addVendor(uint256 _communityId, string _name, string _metadata, address _address) {
+    Vendor memory vendor = Vendor({id:0, communityId:_communityId, name:_name, metadata:_metadata, vendorAddress:_address});
+    vendorData.addVendor(vendor);
+  }
+
+  function addReward(uint256 _vendorId, uint256 _cost, string _name, string _metadata) {
+    Vendor memory vendor = vendorData.vendorForId(_vendorId);
+    require (vendor.vendorAddress == msg.sender || senderIsOracle());
+    Reward memory reward = Reward({id:0, vendorId:_vendorId, cost:_cost, name:_name, metadata:_metadata});
+    vendorData.addReward(reward);
+  }
+
   // TODO:
-  // adding a vendor
-  // vendor adding a reward
-  // purchasing
+  // redeeming
   // replenishment
   // demurrage
   // web interface
