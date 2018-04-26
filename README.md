@@ -4,11 +4,11 @@ YKarma
 YKarma is an experimental project to model reputation as a spendable Ethereum token.
 
 The basic concept: every person in a community or organization is allotted 100 "YKarma coins"
-every week, to give away to other people in that community. After they're given, the recipients
+every week, which must be given away to other people before they can be used. The recipients
 can spend these coins on various rewards. (A day off, a conference ticket, etc.) Received coins
-lose half of their value every four months, though, so, like reputation itself, YKarma savings
-decay rapidly over time. That makes this reputation economy *very* different from a monetary one,
-in that it's impossible to hoard capital, and also protects the "money supply" from hyperinflation.
+lose half of their value every four months, so, like reputation itself, YKarma savings decay
+rapidly over time. That makes this reputation economy *very* different from a monetary one, in
+that it's impossible to hoard capital, and also protects the "money supply" from hyperinflation.
 
 ### What's the point?
 
@@ -25,24 +25,19 @@ mean they spent theirs on a reward recently.
 
 The general hope/notion is for people who excel in fields and communities which don't see much
 in the way of monetary compensation -- poetry, art, music, open-source software development,
-indie video games, nonprofits, churches, etc. -- to receive new kinds of rewards, which are
-non-zero-sum from an individual perspective, because every participant gets coins which must be
-given away to be useful.
+indie video games, nonprofits, churches, etc. -- to receive new kinds of rewards. Since everyone
+receives coins which must be given away, transactions are no longer zero-sum; people can be
+recognized and rewarded without it costing the giving individuals anything, as long as rewards
+are available for people who accumulate enoug coins.
 
-### But how can a single measure of reputation be meaningful across these different fields and communities?
+### Why would anyone exchange valuable things like conference tickets for a reputation currency like this?
 
-It probably can't (though, again, this is all very experimental!) so when coins are given,
-they can be "tagged" with relevant communities, ranging from fairly specific ("Ethereum",
-"open source", "blockchain", "Consensys") to very generic ("tech"). Then, when vendors make
-rewards available, they can require coins with a certain tag(s) -- for instance, "tech" coins
-to acquire tickets to a generic tech conference, "Ethereum" coins for a more specific conference.
+Maybe they won't! Which would be fine: this is primarily a technical / social experiment.
 
-### Why would anyone exchange valuable things like conference tickets for YKarma?
-
-The most obvious use is within a company, wherein little employee rewards like a day off,
-or a social event at the company's expense, would a) be good for morale, b) identify those
-people most highly thought of by their fellow workers. In that case the company would
-be the "vendor" for their employees.
+That said -- the most obvious use is within a company, wherein little employee rewards like
+a day off, or a social event at company expense, would a) be good for morale, b) identify
+those people most highly thought of by their fellow workers. In that case the company would
+be the "vendor" of rewards for their employees.
 
 But it's also easy to envision why external vendors would want to offer rewards to people
 who have established themselves as high-reputation within a particular community. The
@@ -54,13 +49,22 @@ devalue that inventory's perceived monetary worth.
 
 There may also be a concept of *brand* reputation, but that's still notional / experimental.
 
+### But how can a single measure of reputation be meaningful across these different fields and communities?
+
+It probably can't (though, again, this is all very experimental!) so when coins are given,
+they can be "tagged" with relevant communities, ranging from fairly specific ("Ethereum",
+"open source", "blockchain", "Consensys") to very generic ("tech"). Then, when vendors make
+rewards available, they can require coins with a certain tag(s) -- for instance, "tech" coins
+to acquire tickets to a generic tech conference, "Ethereum" coins for a more specific conference.
+
 ### OK, I am cautiously amenable to the concept. But why is it on a blockchain?
 
 An actual reputation economy / currency must be usable by anyone, without having to ask
 permission. That's what a blockchain offers. A certain amount of gatekeeping will be
 required -- the on-ramps to the reputation economy must be watched, basically. More on
 that below. But once a user or vendor is established as a participant, they have to be
-free to use or build atop the platform without requiring the approval of some central controller.
+free to use or build atop the platform without requiring the approval of some central
+controller, or they will never choose to do so.
 
 Now that we've gotten that stirring call to arms out of the way: this is an experiment
 and if it goes anywhere at all it will presumably require a lot of tweaking, which, at
