@@ -44,13 +44,13 @@ or a social event at the company's expense, would a) be good for morale, b) iden
 people most highly thought of by their fellow workers. In that case the company would
 be the "vendor" for their employees.
 
-It's also easy to envision, though, why external vendors would want to offer rewards
-to people who have established themselves as high-reputation within a particular community.
-The immediate value for conferences etc. would be simply having them present; the longer-term
-value would be establishing a relationship with people whose decisions will presumably have
-outsized significance in time to come. It might also make sense to offer them "perishable
-inventory," eg empty hotel rooms or airplane seats; doing so within a reputation economy
-wouldn't devalue that inventory's perceived monetary worth.
+But it's also easy to envision why external vendors would want to offer rewards to people
+who have established themselves as high-reputation within a particular community. The
+immediate value for conferences etc. would be simply having them present. The longer-term
+value would be establishing a relationship with people whose decisions will have outsized
+significance in time to come. It would make sense to e.g. offer them "perishable inventory,"
+such as empty hotel rooms or airplane seats, as so within a reputation economy wouldn't
+devalue that inventory's perceived monetary worth.
 
 There may also be a concept of *brand* reputation, but that's still notional / experimental.
 
