@@ -97,10 +97,10 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function spend(uint256 _amount, uint256 _sender, uint256 _vendor, string _tag) {
+  function spend(uint256 _amount, uint256 _spender, string _tag) public onlyOwner {
     uint256 accumulated;
-    recalculateSpendingTranches(_sender);
-    Tranches storage available = spending[_sender];
+    recalculateSpendingTranches(_spender);
+    Tranches storage available = spending[_spender];
     for (uint i = available.firstNonzero; i < available.amounts.length; i++) {
       if (!tagsIncludesTag(available.tags[i], _tag)) {
         continue;
@@ -116,7 +116,7 @@ contract YKTranches is Ownable, YKStructs {
     }
   }
   
-  function replenish(uint256 _accountId) external onlyOwner {
+  function replenish(uint256 _accountId) public onlyOwner {
     Tranches storage recipient = giving[_accountId];
     recipient.blocks.push(block.number);
     recipient.amounts.push(100);
@@ -132,7 +132,7 @@ contract YKTranches is Ownable, YKStructs {
     // make the demurrage happen if lastRecalculated is old enough
   }
   
-  function tagsIncludesTag(string _tags, string _tag) public view returns (bool) {
+  function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
     // TODO
     return true;
   }
@@ -195,7 +195,7 @@ contract YKAccounts is Ownable, YKStructs {
 
 contract YKCommunities is Ownable, YKStructs {
   mapping(uint256 => Community) communities;
-  uint256 maxCommunityId;
+  uint256 public maxCommunityId;
   
   function communityForId(uint256 _id) public onlyOwner view returns (Community) {
     return communities[_id];
@@ -260,27 +260,22 @@ contract YKarma is Oracular, YKStructs {
   YKCommunities communityData;
   YKVendors vendorData;
 
-  // after YKarma is created, ownership of these contracts must be transferred to it, obviously
-  constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKVendors _vendors) public Oracular() {
-    trancheData = _tranches;
-    accountData = _accounts;
-    communityData = _communities;
-    vendorData = _vendors;
+  constructor() public Oracular() {
   }
   
-  function updateTrancheContract(YKTranches _tranches) onlyOracle {
+  function updateTrancheContract(YKTranches _tranches) onlyOracle external {
     trancheData = _tranches;
   }
 
-  function updateAccountsContract(YKAccounts _accounts) onlyOracle {
+  function updateAccountsContract(YKAccounts _accounts) onlyOracle external {
     accountData = _accounts;
   }
 
-  function updateCommunitiesContract(YKCommunities _communities) onlyOracle {
+  function updateCommunitiesContract(YKCommunities _communities) onlyOracle external {
     communityData = _communities;
   }
 
-  function updateVendorsContract(YKVendors _vendors) onlyOracle {
+  function updateVendorsContract(YKVendors _vendors) onlyOracle external {
     vendorData = _vendors;
   }
 
@@ -294,15 +289,19 @@ contract YKarma is Oracular, YKStructs {
   }
 
   // TODO make rewards resellable?
-  function spend(uint256 _rewardId) {
+  function spend(uint256 _rewardId) public {
     Reward memory reward = vendorData.rewardForId(_rewardId);
     require(reward.ownerId == 0); // reward can't already have been redeemed, for now at least
     Account memory spender = accountData.accountForAddress(msg.sender);
     uint256 available = trancheData.availableToSpend(spender.id, reward.tag);
     require (available >= reward.cost);
-    trancheData.spend(spender.id, reward.vendorId, reward.cost, reward.tag);
+    trancheData.spend(spender.id, reward.cost, reward.tag);
     vendorData.redeem(spender.id, reward.id);
     accountData.redeem(spender.id, reward.id);
+  }
+
+  function replenish(uint256 _accountId) public onlyOracle {
+    trancheData.replenish(_accountId);
   }
 
   function addCommunity(address _admin, string _domain, string _metadata) onlyOracle public {

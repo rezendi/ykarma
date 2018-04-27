@@ -30,7 +30,7 @@ contract Oracular {
   }
   
   // ganked from https://github.com/pipermerriam/ethereum-string-utils and should probably be moved elsewhere
-  function uintToBytes(uint v) constant returns (bytes32 ret) {
+  function uintToBytes(uint v) pure public returns (bytes32 ret) {
     if (v == 0) {
         ret = '0';
     }
