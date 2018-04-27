@@ -1,6 +1,7 @@
 pragma solidity 0.4.23;
 pragma experimental ABIEncoderV2;
 
+import "./Oracular.sol";
 import "./YKOracle.sol";
 import "./zeppelin/ownership/Ownable.sol";
 
@@ -10,15 +11,16 @@ contract YKStructs {
     uint256[] blocks;
     string[] tags;
     uint256 lastRecalculated;
+    uint256 firstNonzero;
   }
 
   struct Account {
     uint256 id;
     uint256 communityId;
     address userAddress;
-    string email;
-    string phone;
     string metadata;
+    string[] urls;
+    uint256[] rewardIds;
   }
 
   struct Community {
@@ -35,15 +37,16 @@ contract YKStructs {
     uint256 id;
     uint256 communityId;
     address vendorAddress;
-    string name;
     string metadata;
+    uint256[] rewardIds;
   }
   
   struct Reward {
     uint256 id;
     uint256 vendorId;
+    uint256 ownerId;
     uint256 cost;
-    string name;
+    string tag;
     string metadata;
   }
 }
@@ -52,12 +55,21 @@ contract YKTranches is Ownable, YKStructs {
   mapping(uint256 => Tranches) giving;
   mapping(uint256 => Tranches) spending;
 
-  function transfer(uint256 _amount, uint256 _sender, uint256 _recipient, string _tags) public {
+  function availableToGive(uint256 _id) public returns (uint256) {
+    uint256 total = 0;
+    recalculateGivingTranches(_id);
+    for (uint256 i = giving[_id].firstNonzero ; i<giving[_id].amounts.length; i++) {
+      total += giving[_id].amounts[i];
+    }
+    return total;
+  }
+  
+  function give(uint256 _amount, uint256 _sender, uint256 _recipient, string _tags) public {
     require (_recipient > 0);
     uint256 accumulated;
     recalculateGivingTranches(_sender);
     Tranches storage available = giving[_sender];
-    for (uint i; i < available.amounts.length; i++) {
+    for (uint256 i = available.firstNonzero; i < available.amounts.length; i++) {
       if (accumulated + available.amounts[i] >= _amount) {
         available.amounts[i] = available.amounts[i] - accumulated - _amount;
         accumulated = _amount;
@@ -74,13 +86,34 @@ contract YKTranches is Ownable, YKStructs {
     recalculateSpendingTranches(_recipient);
   }
   
-  function availableToGive(uint256 _id) public returns (uint256) {
-    recalculateGivingTranches(_id);
+  function availableToSpend(uint256 _id, string _tag) public returns (uint256) {
     uint256 total = 0;
-    for (uint256 i; i<giving[_id].amounts.length; i++) {
-      total += giving[_id].amounts[i];
+    recalculateSpendingTranches(_id);
+    for (uint256 i = spending[_id].firstNonzero; i < spending[_id].amounts.length; i++) {
+      if (tagsIncludesTag(spending[_id].tags[i], _tag)) {
+        total = spending[_id].amounts[i];
+      }
     }
     return total;
+  }
+  
+  function spend(uint256 _amount, uint256 _sender, uint256 _vendor, string _tag) {
+    uint256 accumulated;
+    recalculateSpendingTranches(_sender);
+    Tranches storage available = spending[_sender];
+    for (uint i = available.firstNonzero; i < available.amounts.length; i++) {
+      if (!tagsIncludesTag(available.tags[i], _tag)) {
+        continue;
+      }
+      if (accumulated + available.amounts[i] >= _amount) {
+        available.amounts[i] = available.amounts[i] - accumulated - _amount;
+        accumulated = _amount;
+        break;
+      } else {
+        accumulated = accumulated + available.amounts[i];
+        available.amounts[i] = 0;
+      }
+    }
   }
   
   function replenish(uint256 _accountId) external onlyOwner {
@@ -98,7 +131,11 @@ contract YKTranches is Ownable, YKStructs {
     // Tranches storage available = spending[_address];
     // make the demurrage happen if lastRecalculated is old enough
   }
-
+  
+  function tagsIncludesTag(string _tags, string _tag) public view returns (bool) {
+    // TODO
+    return true;
+  }
 }
 
 contract YKAccounts is Ownable, YKStructs {
@@ -120,25 +157,39 @@ contract YKAccounts is Ownable, YKStructs {
       return accounts[accountId];
     } else {
       // this is a new account
-      // TODO check url, if it's email or phone ascribe accordingly
-      Account memory newAccount = Account({id: maxAccountId + 1, metadata:_url, userAddress:0, communityId:0, email:"", phone:""});
-      accounts[newAccount.id] = newAccount;
-      accountsByUrl[_url] = newAccount.id;
+      // TODO check valid and well-formed URL
+      Account memory newAccount = Account({
+        id: maxAccountId + 1,
+        metadata:'',
+        userAddress:0,
+        communityId:0,
+        urls:new string[](0),
+        rewardIds: new uint256[](0)
+      });
+      addUrlToAccount(newAccount.id, _url);
       maxAccountId += 1;
       return newAccount;
     }
   }
   
-  function addAccount(Account account) {
+  function addAccount(Account account) public onlyOwner returns (uint256) {
     account.id = maxAccountId + 1;
     accounts[account.id] = account;
-    if (bytes(account.email).length > 0) { // TODO check well-formed email URL
-      accountsByUrl[account.email] = account.id;
-    }
-    if (bytes(account.phone).length > 0) { // TODO check well-formed phone URL
-      accountsByUrl[account.phone] = account.id;
+    for (uint256 i; i< account.urls.length; i++) {
+      // TODO check well-formed / valid URL
+      accountsByUrl[account.urls[i]] = account.id;
     }
     maxAccountId += 1;
+    return maxAccountId;
+  }
+  
+  function addUrlToAccount(uint256 _accountId, string _url) public onlyOwner {
+    accounts[_accountId].urls.push(_url);
+    accountsByUrl[_url] = _accountId;
+  }
+
+  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
+    accounts[_spenderId].rewardIds.push(_rewardId);
   }
 }
 
@@ -156,6 +207,10 @@ contract YKCommunities is Ownable, YKStructs {
     maxCommunityId += 1;
   }
   
+  function addAccount(uint256 _communityId, uint256 _accountId) public onlyOwner {
+    communities[_communityId].accountIds.push(_accountId);
+  }
+  
   function setTags(uint256 _communityId, string _tags) public onlyOwner {
     communities[_communityId].tags = _tags;
   }
@@ -167,7 +222,6 @@ contract YKVendors is Ownable, YKStructs {
   uint256 maxVendorId;
   
   mapping(uint256 => Reward) rewards;
-  mapping(uint256 => Reward) redeemedRewards;
   uint256 maxRewardId;
 
   function vendorForId(uint256 _id) public onlyOwner view returns (Vendor) {
@@ -183,42 +237,20 @@ contract YKVendors is Ownable, YKStructs {
     maxVendorId += 1;
   }
   
+  function rewardForId(uint256 _id) public onlyOwner view returns (Reward) {
+    return rewards[_id];
+  }
+  
   function addReward(Reward reward) public onlyOwner {
     reward.id = maxRewardId + 1;
     rewards[reward.id] = reward;
     maxRewardId += 1;
+    vendors[reward.vendorId].rewardIds.push(reward.id);
   }
-}
-
-contract Oracular {
-  address[] oracles;
-
-  modifier onlyOracle() {
-    require (senderIsOracle());
-    _;
+  
+  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
+    rewards[_rewardId].ownerId = _spenderId;
   }
-
-  constructor() public {
-    oracles.push(msg.sender);
-  }
-
-  event OracleAdded(address indexed oracleAddress);
-
-  function senderIsOracle() public view returns (bool){
-    for (uint i; i < oracles.length; i++) {
-      if (msg.sender == oracles[i]) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function addOracle(address newOracle) public onlyOracle {
-    require(newOracle != address(0));
-    oracles.push(newOracle);
-    emit OracleAdded(newOracle);
-  }
-
 }
 
 contract YKarma is Oracular, YKStructs {
@@ -235,6 +267,22 @@ contract YKarma is Oracular, YKStructs {
     communityData = _communities;
     vendorData = _vendors;
   }
+  
+  function updateTrancheContract(YKTranches _tranches) onlyOracle {
+    trancheData = _tranches;
+  }
+
+  function updateAccountsContract(YKAccounts _accounts) onlyOracle {
+    accountData = _accounts;
+  }
+
+  function updateCommunitiesContract(YKCommunities _communities) onlyOracle {
+    communityData = _communities;
+  }
+
+  function updateVendorsContract(YKVendors _vendors) onlyOracle {
+    vendorData = _vendors;
+  }
 
   function give(uint256 _amount, string _url) public {
     Account memory giver = accountData.accountForAddress(msg.sender);
@@ -242,7 +290,19 @@ contract YKarma is Oracular, YKStructs {
     require (available >= _amount);
     Community memory community = communityData.communityForId(giver.communityId);
     Account memory receiver = accountData.accountForUrl(_url);
-    trancheData.transfer(_amount, giver.id, receiver.id, community.tags);
+    trancheData.give(_amount, giver.id, receiver.id, community.tags);
+  }
+
+  // TODO make rewards resellable?
+  function spend(uint256 _rewardId) {
+    Reward memory reward = vendorData.rewardForId(_rewardId);
+    require(reward.ownerId == 0); // reward can't already have been redeemed, for now at least
+    Account memory spender = accountData.accountForAddress(msg.sender);
+    uint256 available = trancheData.availableToSpend(spender.id, reward.tag);
+    require (available >= reward.cost);
+    trancheData.spend(spender.id, reward.vendorId, reward.cost, reward.tag);
+    vendorData.redeem(spender.id, reward.id);
+    accountData.redeem(spender.id, reward.id);
   }
 
   function addCommunity(address _admin, string _domain, string _metadata) onlyOracle public {
@@ -264,27 +324,43 @@ contract YKarma is Oracular, YKStructs {
     communityData.setTags(_communityId, _tags);
   }
   
-  function addAccount(uint256 _communityId, string _email, string _phone, string _metadata) public {
+  function addAccount(uint256 _communityId, string _url, string _metadata) public {
     Community memory community = communityData.communityForId(_communityId);
     require (community.admin == msg.sender || senderIsOracle());
-    Account memory account = Account({id:0, metadata:_metadata, userAddress:0, communityId:_communityId, email:_email, phone:_phone});
-    accountData.addAccount(account);
+    Account memory account = Account({
+      id:0,
+      metadata:_metadata,
+      userAddress:0,
+      communityId:_communityId,
+      urls:new string[](0),
+      rewardIds: new uint256[](0)
+    });
+    uint256 newAccountId = accountData.addAccount(account);
+    accountData.addUrlToAccount(newAccountId, _url);
+    if (_communityId > 0 ) {
+      communityData.addAccount(_communityId, newAccountId);
+    }
   }
   
-  function addVendor(uint256 _communityId, string _name, string _metadata, address _address) {
-    Vendor memory vendor = Vendor({id:0, communityId:_communityId, name:_name, metadata:_metadata, vendorAddress:_address});
+  function addVendor(uint256 _communityId, string _metadata, address _address) onlyOracle public {
+    Vendor memory vendor = Vendor({
+      id:0,
+      communityId:_communityId,
+      metadata:_metadata,
+      vendorAddress:_address,
+      rewardIds: new uint256[](0)
+    });
     vendorData.addVendor(vendor);
   }
 
-  function addReward(uint256 _vendorId, uint256 _cost, string _name, string _metadata) {
+  function addReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata) public {
     Vendor memory vendor = vendorData.vendorForId(_vendorId);
     require (vendor.vendorAddress == msg.sender || senderIsOracle());
-    Reward memory reward = Reward({id:0, vendorId:_vendorId, cost:_cost, name:_name, metadata:_metadata});
+    Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, cost:_cost, tag:_tag, metadata:_metadata});
     vendorData.addReward(reward);
   }
-
+  
   // TODO:
-  // redeeming
   // replenishment
   // demurrage
   // web interface
