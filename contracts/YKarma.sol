@@ -54,10 +54,13 @@ contract YKStructs {
 contract YKTranches is Ownable, YKStructs {
   mapping(uint256 => Tranches) giving;
   mapping(uint256 => Tranches) spending;
+  uint256 EXPIRY_WINDOW = 691200;
+  uint256 REFRESH_WINDOW = 40320;
+  uint256 GIVING_AMOUNT = 100;
 
   function availableToGive(uint256 _id) public returns (uint256) {
     uint256 total = 0;
-    recalculateGivingTranches(_id);
+    recalculateGivingTranches(_id, '');
     for (uint256 i = giving[_id].firstNonzero ; i<giving[_id].amounts.length; i++) {
       total += giving[_id].amounts[i];
     }
@@ -67,7 +70,7 @@ contract YKTranches is Ownable, YKStructs {
   function give(uint256 _amount, uint256 _sender, uint256 _recipient, string _tags) public {
     require (_recipient > 0);
     uint256 accumulated;
-    recalculateGivingTranches(_sender);
+    // recalculateGivingTranches(_sender, ''); always called in availableToGive
     Tranches storage available = giving[_sender];
     for (uint256 i = available.firstNonzero; i < available.amounts.length; i++) {
       if (accumulated + available.amounts[i] >= _amount) {
@@ -83,7 +86,6 @@ contract YKTranches is Ownable, YKStructs {
     toAppend.amounts.push(accumulated);
     toAppend.blocks.push(block.number);
     toAppend.tags.push(_tags);
-    recalculateSpendingTranches(_recipient);
   }
   
   function availableToSpend(uint256 _id, string _tag) public returns (uint256) {
@@ -99,7 +101,7 @@ contract YKTranches is Ownable, YKStructs {
   
   function spend(uint256 _amount, uint256 _spender, string _tag) public onlyOwner {
     uint256 accumulated;
-    recalculateSpendingTranches(_spender);
+    // recalculateSpendingTranches(_spender); always called by availableToSpend first
     Tranches storage available = spending[_spender];
     for (uint i = available.firstNonzero; i < available.amounts.length; i++) {
       if (!tagsIncludesTag(available.tags[i], _tag)) {
@@ -122,14 +124,47 @@ contract YKTranches is Ownable, YKStructs {
     recipient.amounts.push(100);
   }
   
-  function recalculateGivingTranches(uint256 _id) public onlyOwner {
-    // Tranches storage available = giving[_address];
-    // expire old ones if lastRecalculated is old enough
+  function recalculateGivingTranches(uint256 _id, string _tags) public onlyOwner {
+    Tranches storage available = giving[_id];
+    if (available.blocks.length == 0) {
+      return;
+    }
+    uint256 cutoffBlock = block.number - EXPIRY_WINDOW;
+    for (uint256 i = available.firstNonzero; i < available.blocks.length; i++ ) {
+      if (available.blocks[i] < cutoffBlock) {
+        available.amounts[i] = 0;
+        available.firstNonzero = i;
+      }
+    }
+    uint256 lastBlock = available.blocks[available.blocks.length - 1];
+    // only add new giving coins when we know their tags
+    if (bytes(_tags).length > 0 && block.number - lastBlock > REFRESH_WINDOW) {
+      available.blocks.push(lastBlock + REFRESH_WINDOW);
+      available.amounts.push(GIVING_AMOUNT);
+      available.tags.push(_tags);
+    }
+    available.lastRecalculated = block.number;
   }
 
   function recalculateSpendingTranches(uint256 _id) public onlyOwner {
-    // Tranches storage available = spending[_address];
-    // make the demurrage happen if lastRecalculated is old enough
+    Tranches storage available = spending[_id];
+    if (available.blocks.length == 0) {
+      return;
+    }
+    for (uint256 i = available.firstNonzero; i < available.blocks.length;  i++ ) {
+      uint256 age = available.blocks[i];
+      if (available.lastRecalculated - age < EXPIRY_WINDOW && block.number - age >= EXPIRY_WINDOW) {
+        if (available.amounts[i] == 1) {
+          available.amounts[i] = 0;
+        } else {
+          available.amounts[i] = available.amounts[i] / uint256(2);
+        }
+        if (available.amounts[i] == 0 && i == available.firstNonzero + 1) {
+          available.firstNonzero = i;
+        }
+      }
+    }
+    available.lastRecalculated = block.number;
   }
   
   function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
@@ -362,7 +397,7 @@ contract YKarma is Oracular, YKStructs {
   // TODO:
   // replenishment
   // demurrage
-  // web interface
+  // react interface
   // deploy to rinkeby
   
 }
