@@ -121,6 +121,10 @@ Another is to track the total number of coins a vendor has ever received, which 
 form of reputation. (This is arguably a "score," of sorts, but one with many many confounds
 compared to e.g. "social credit", and also scoring vendors seems a reasonable thing to do.)
 
+### Will there be an ICO?
+
+You're kidding, right?
+
 ### Why is it called "YKarma"?
 
 Mostly because the domain contained the word "karma" and was available.
