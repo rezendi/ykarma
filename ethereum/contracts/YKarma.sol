@@ -395,23 +395,6 @@ contract YKarma is Oracular, YKStructs {
   }
   
   // TODO:
-  // react interface:
-  // admin user
-  //   dashboard
-  //   add community
-  // community admin
-  //   dashboard
-  //   add account
-  //   add vendor
-  // vendor
-  //   dashboard
-  //   add reward
-  // user
-  //   dashboard
-  //   give coins
-  //   view rewards
-  //   spend coins
-
   // deploy to rinkeby
   
 }
