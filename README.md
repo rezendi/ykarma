@@ -26,16 +26,16 @@ mean they spent theirs on a reward recently.
 The general hope/notion is for people who excel in fields and communities which don't see much
 in the way of monetary compensation -- poetry, art, music, open-source software development,
 indie video games, nonprofits, churches, etc. -- to receive new rewards for their work. Since
-everyonereceives coins which must be given away, transactions are no longer zero-sum; people can
-be recognized and rewarded without it costing the giving individuals anything, as long as rewards
-are available for people who accumulate enough YKarma.
+everyone receives coins which must be given away, transactions are no longer zero-sum. People can
+be recognized and rewarded without it costing the giving individuals anything ... as long as
+rewards are available for people who accumulate enough YKarma.
 
-### Why would anyone exchange any valuable reward for a reputation currency like this?
+### OK, but why would anyone exchange any valuable reward for a reputation currency like this?
 
 The most obvious use is within a company, wherein employee rewards like a day off, a course,
-or a social event at company expense, would a) be good for morale, b) identify those people
-most highly thought of by their fellow workers. In that case the company would be the
-"vendor" of rewards for their employees.
+a conference, or a social event at company expense, would a) be good for morale, b) identify
+those people most highly thought of by their fellow workers. In that case the company would
+be the "vendor" of rewards for their employees.
 
 It's also easy to envision why external vendors would want to offer rewards to people
 who have established themselves as high-reputation within a particular community. The
@@ -45,7 +45,10 @@ It could make sense to e.g. offer them "perishable inventory," such as empty hot
 airplane seats, as doing so within a reputation economy wouldn't devalue that inventory's
 perceived monetary worth.
 
-There may also be a concept of *brand* reputation, but that's still notional / experimental.
+There may also be a concept of *brand* reputation, wherein brands make goods or services
+available in exchange for sizable amounts of YKarma, just as they comp celebrities today.
+The amount of YKarma spent on competing brands could then serve as a proof and/or
+quantitative measure of their relative values.
 
 ### But how can a single measure of reputation be meaningful across these different fields and communities?
 
@@ -69,8 +72,8 @@ and if it goes anywhere at all it will presumably require a lot of tweaking, whi
 least initially, can't really be managed in an efficient manner via consensus or voting.
 Furthermore, participants must be verified as actual people, or the whole economy will
 be fatally vulnerable to sockpuppets/bots. So there'll be ongoing tension between
-initial control of the experimental parameters and the ultimate end goal of
-permissionlessness. It's on a blockchain, though, because that is the ultimate end goal.
+initial control of the experimental parameters and the end goal of permissionlessness.
+It's on a blockchain, though, because that is the ultimate end goal.
 
 ### OK, but even granting the desire for an ultimately permissionless and hence blockchain solution, is Ethereum really the right platform?
 
@@ -78,14 +81,16 @@ Probably not. Probably a custom blockchain would be much better. Maybe in some d
 future YKarma will be migrated to the YKarma blockchain. But in the here and now,
 Ethereum is running, battle-tested code with a maturing software toolset for its
 smart-contract system, which is flexible and powerful enough for this experiment, so
-we'll use it. It's a kludge, don't get me wrong, but a highly expedient one.
+we'll use it. It's a kludge, don't get me wrong -- see also the next question -- but
+it's a highly expedient one.
 
 ### But how can this possibly work on the Ethereum blockchain, with its high gas costs and low transaction bandwidth?
 
 It can't. So this won't run on the public Ethereum mainnet, until / unless that scales
-(eg via Plasma) massively beyond its current limits. Instead it will run on a "consortium"
-/ "proof of authority" Ethereum blockchain, just like the Rinkeby testnet. For now the
-consortium is, er, me, but the hope/idea is to add more nodes in the future.
+(eg via Plasma and/or sharding) massively beyond its current limits. Instead it will
+run on a "consortium" / "proof of authority" Ethereum blockchain, just like the Rinkeby
+testnet. For now the consortium is, er, me, but the hope/idea is to add more nodes in
+the future.
 
 ### All right. So who administers communities, tags, users, and vendors?
 
@@ -96,10 +101,11 @@ ideally elected by some form of community voting, so that while there will be ga
 there won't be a single point of control.
 
 Users must have at least one URL which identifies them -- an email address, a telephone number,
-a social media handle, or ideally some combination. Coins are sent to URLs rather than Ethereum
-addresses, meaning you can send coins to people who are not yet part of the system and/or any
-of its communities. However, communities can restrict the URLs their members' coins are sent to,
-so they can e.g. ensure that coins only go to people with @company.com email addresses.
+a Keybase ID, a social media handle, or, ideally, some combination. Coins are sent to URLs
+rather than Ethereum addresses, meaning you can send coins to people who are not yet part of
+the system and/or any of its communities. However, communities can restrict the URLs their
+members' coins are sent to, so they can e.g. ensure that coins only go to people with
+@company.com email addresses.
 
 Users who never want to deal with the blockchain won't have to; but users who want to become
 "free agents," and/or to combine their accounts from multiple communities, may do so at the
