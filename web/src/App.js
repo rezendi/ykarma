@@ -15,12 +15,26 @@ class App extends Component {
   
   render() {
     return (
-      <div className="App">
-        <h1>Users</h1>
-        {this.state.users.map(user =>
-          <div key={user.id}>{user.username}</div>
-        )}
-      </div>
+      <Grid className="App">
+        <Row>
+          <Col md={12}>
+            <Panel>
+              <Panel.Heading>
+                Users
+              </Panel.Heading>
+              <Panel.Body>
+                <Row>
+                  {this.state.users.map(user =>
+                    <Col md={3} key={user.id}>
+                      User {user.username}
+                    </Col>
+                  )}
+                </Row>
+              </Panel.Body>
+            </Panel>
+          </Col>
+        </Row>
+      </Grid>
     );
   }
 }
