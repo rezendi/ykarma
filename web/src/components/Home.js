@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { Grid, Row, Col, Panel, FormControl, Button, Alert } from 'react-bootstrap';
-import _ from 'lodash-es';
 
-class App extends Component {
+class Home extends Component {
   state = {users: []}
   
   componentDidMount() {
@@ -15,7 +13,7 @@ class App extends Component {
   
   render() {
     return (
-      <Grid className="App">
+      <Grid>
         <Row>
           <Col md={12}>
             <Panel>
@@ -39,4 +37,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default Home;
