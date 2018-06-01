@@ -5,9 +5,13 @@ import Profile from './Profile';
 import Login from './Login';
 import Admin from './Admin';
 import Community from './Community';
+import CommunityForm from './CommunityForm';
 import Account from './Account';
+import AccountForm from './AccountForm';
 import Vendor from './Vendor';
+import VendorForm from './VendorForm';
 import Reward from './Reward';
+import RewardForm from './RewardForm';
 import Give from './Give';
 import Spend from './Spend';
 
@@ -15,22 +19,22 @@ const Main = () => (
   <main>
     <Switch>
       <Route exact path='/' component={Home}/>
-      <Route path='/profile' component={Profile}/>
-      <Route path='/login' component={Login}/>
-      <Route path='/admin' component={Admin}/>
-      <Route path='/admin/community/new' component={Community}/>
-      <Route path='/admin/community/:id' component={Community}/>
-      <Route path='/community' component={Community}/>
-      <Route path='/community/account/new' component={Account}/>
-      <Route path='/community/account/:id' component={Account}/>
-      <Route path='/community/vendor/new' component={Vendor}/>
-      <Route path='/community/vendor/:id' component={Vendor}/>
-      <Route path='/vendor' component={Vendor}/>
-      <Route path='/vendor/reward/new' component={Reward}/>
-      <Route path='/vendor/reward/:id' component={Reward}/>
-      <Route path='/user' component={Account}/>
-      <Route path='/user/give' component={Give}/>
-      <Route path='/user/reward/:id' component={Spend}/>
+      <Route exact path='/login' component={Login}/>
+      <Route exact path='/profile' component={Profile}/>
+      <Route exact path='/admin' component={Admin}/>
+      <Route exact path='/admin/community/new' component={CommunityForm}/>
+      <Route exact path='/admin/community/:id' component={Community}/>
+      <Route exact path='/community' component={Community}/>
+      <Route exact path='/community/account/new' component={AccountForm}/>
+      <Route exact path='/community/account/:id' component={Account}/>
+      <Route exact path='/community/vendor/new' component={VendorForm}/>
+      <Route exact path='/community/vendor/:id' component={Vendor}/>
+      <Route exact path='/vendor' component={Vendor}/>
+      <Route exact path='/vendor/reward/new' component={RewardForm}/>
+      <Route exact path='/vendor/reward/:id' component={Reward}/>
+      <Route exact path='/user' component={Account}/>
+      <Route exact path='/user/give' component={Give}/>
+      <Route exact path='/user/reward/:id' component={Spend}/>
     </Switch>
   </main>
 )
