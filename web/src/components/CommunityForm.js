@@ -7,18 +7,20 @@ class CommunityForm extends React.Component {
     super(props, context);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.state = {
-      id: 0,
-      adminAddress: '',
-      isClosed: false,
-      domain: '',
-      metadata: {},
-      tags: [],
-      accounts: [],
+      community: {
+        id: 0,
+        adminAddress: '',
+        isClosed: false,
+        domain: '',
+        metadata: {},
+        tags: [],
+        accounts: [],
+      }
     };
   }
 
   handleNameChange(e) {
-    this.setState({ metadata: {'name':e.target.name} });
+    this.setState({ community: { ...this.state.community, metadata: {'name':e.target.value}} });
   }
 
   submitForm = async (event) => {
@@ -33,12 +35,12 @@ class CommunityForm extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                New Community
+                {this.state.community.metadata.name ? this.state.community.metadata.name : "New Community"}
               </Panel.Heading>
               <Panel.Body>
                 <form onSubmit={this.submitForm}>
                   <Row>
-                    <FormControl type="text" value={this.state.name} placeholder="Enter community name" onChange={this.handleNameChange} />
+                    <FormControl type="text" value={this.state.community.name} placeholder="Enter community name" onChange={this.handleNameChange} />
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
