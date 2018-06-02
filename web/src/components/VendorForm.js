@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { Grid, Row, Col, Panel, FormControl, Button, Alert } from 'react-bootstrap';
+import React from 'react';
+import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
 
 class VendorForm extends React.Component {
   constructor(props, context) {

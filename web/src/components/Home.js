@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
-import './App.css';
-import { Grid, Row, Col, Panel, FormControl, Button, Alert } from 'react-bootstrap';
+import React from 'react';
+import { Grid, Row, Col, Panel } from 'react-bootstrap';
 
-class Home extends Component {
+class Home extends React.Component {
   state = {users: []}
   
   componentDidMount() {

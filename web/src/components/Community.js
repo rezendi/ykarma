@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import CommunityForm from './CommunityForm';
 
