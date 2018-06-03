@@ -29,7 +29,7 @@ class Community extends React.Component {
   render() {
     if (this.state.isEditing) {
       return (
-        <CommunityForm community = {this.state.community}/>
+        <CommunityForm communityFromParent = {this.state.community}/>
       );
     }
     return (

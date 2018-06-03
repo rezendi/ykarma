@@ -29,4 +29,16 @@ router.post('/create', function(req, res, next) {
   res.json(community);
 });
 
+/* PUT edit community. */
+router.put('/update', function(req, res, next) {
+  var community = req.body.community;
+  for (var i=0; i<communities.length; i++) {
+    if (parseInt(communities[i].id) === parseInt(community.id)) {
+      communities[i] = community;
+      return res.json(communities[i]);
+    }
+  }
+  res.json({metadata:{ name: "n/a"}});
+});
+
 module.exports = router;

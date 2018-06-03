@@ -9,7 +9,7 @@ class CommunityForm extends React.Component {
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.state = {
       redirect: false,
-      community: {
+      community: props.communityFromParent || {
         id: 0,
         adminAddress: '',
         isClosed: false,
@@ -36,8 +36,8 @@ class CommunityForm extends React.Component {
   submitForm = async (event) => {
     event.preventDefault();
     console.log("Submitting form");
-    fetch('/communities/create', {
-      method: 'POST',
+    fetch(this.state.community.id===0 ? '/communities/create' : '/communities/update', {
+      method: this.state.community.id===0 ? 'POST' : 'PUT',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -70,10 +70,10 @@ class CommunityForm extends React.Component {
               <Panel.Body>
                 <form onSubmit={this.submitForm}>
                   <Row>
-                    <FormControl type="text" value={this.state.community.name} placeholder="Enter community name" onChange={this.handleNameChange} />
+                    <FormControl type="text" value={this.state.community.metadata.name} placeholder="Enter community name" onChange={this.handleNameChange} />
                   </Row>
                   <Row>
-                    <FormControl type="text" value={this.state.community.description} placeholder="Enter community description" onChange={this.handleDescriptionChange} />
+                    <FormControl type="text" value={this.state.community.metadata.description} placeholder="Enter community description" onChange={this.handleDescriptionChange} />
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
