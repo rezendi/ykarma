@@ -3,21 +3,18 @@ import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import CommunityForm from './CommunityForm';
 
 class Community extends React.Component {
+  state = {community: { metadata: {}}, isEditing: false}
+  
+  componentDidMount() {
+    const { match: { params } } = this.props;
+    fetch(`/communities/${params.id}`)
+      .then(res => res.json())
+      .then(community => this.setState({ community: community } ) && console.log(JSON.stringify(community)) );
+  }
+
   constructor(props, context) {
     super(props, context);
     this.toggleEditing = this.toggleEditing.bind(this);
-    this.state = {
-      isEditing: false,
-      community: {
-        id: 0,
-        adminAddress: '',
-        isClosed: false,
-        domain: '',
-        metadata: {},
-        tags: [],
-        accounts: [],
-      }
-    };
   }
 
   toggleEditing(e) {

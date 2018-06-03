@@ -22,19 +22,18 @@ const Main = () => (
       <Route exact path='/login' component={Login}/>
       <Route exact path='/profile' component={Profile}/>
       <Route exact path='/admin' component={Admin}/>
-      <Route exact path='/admin/community/new' component={CommunityForm}/>
-      <Route exact path='/admin/community/:id' component={Community}/>
-      <Route exact path='/community' component={Community}/>
-      <Route exact path='/community/account/new' component={AccountForm}/>
-      <Route exact path='/community/account/:id' component={Account}/>
-      <Route exact path='/community/vendor/new' component={VendorForm}/>
-      <Route exact path='/community/vendor/:id' component={Vendor}/>
+      <Route exact path='/community/new' component={CommunityForm}/>
+      <Route exact path='/community/:id' component={Community}/>
+      <Route exact path='/account/new' component={AccountForm}/>
+      <Route exact path='/account/:id' component={Account}/>
+      <Route exact path='/vendor/new' component={VendorForm}/>
+      <Route exact path='/vendor/:id' component={Vendor}/>
       <Route exact path='/vendor' component={Vendor}/>
-      <Route exact path='/vendor/reward/new' component={RewardForm}/>
-      <Route exact path='/vendor/reward/:id' component={Reward}/>
+      <Route exact path='/reward/new' component={RewardForm}/>
+      <Route exact path='/reward/:id' component={Reward}/>
       <Route exact path='/user' component={Account}/>
       <Route exact path='/user/give' component={Give}/>
-      <Route exact path='/user/reward/:id' component={Spend}/>
+      <Route exact path='/user/rewards' component={Spend}/>
     </Switch>
   </main>
 )

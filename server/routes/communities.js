@@ -2,10 +2,30 @@ var express = require('express');
 var bodyParser = require("body-parser");
 var router = express.Router();
 
-/* POST community listing. */
-router.post('/', function(req, res, next) {
+var communities = [];
+
+/* GET community list. */
+router.get('/', function(req, res, next) {
+  res.json(communities);
+});
+
+/* GET community details. */
+router.get('/:id', function(req, res, next) {
+  for (var i=0; i<communities.length; i++) {
+    if (parseInt(communities[i].id) === parseInt(req.params.id)) {
+      return res.json(communities[i]);
+    }
+  }
+  res.json({metadata:{ name: "n/a"}});
+});
+
+/* POST new community. */
+router.post('/create', function(req, res, next) {
   var community = req.body.community;
-  community.id = 1;
+  if (community.id == 0) {
+    community.id = communities.length + 1;
+    communities.push(community);
+  }
   res.json(community);
 });
 

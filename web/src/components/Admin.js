@@ -1,8 +1,18 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 
-const Admin = (props) => {
-  return (
+class Admin extends React.Component {
+  state = {communities: []}
+  
+  componentDidMount() {
+    fetch('/communities')
+      .then(res => res.json())
+      .then(communities => this.setState({ communities }));
+  }
+  
+  render() {
+    return (
       <Grid>
         <Row>
           <Col md={12}>
@@ -11,12 +21,20 @@ const Admin = (props) => {
                 Admin
               </Panel.Heading>
               <Panel.Body>
+                <Row>
+                  {this.state.communities.map(community =>
+                    <Col md={3} key={community.id}>
+                      <Link to={`/community/${community.id}`}>{community.metadata.name}</Link>
+                    </Col>
+                  )}
+                </Row>
               </Panel.Body>
             </Panel>
           </Col>
         </Row>
       </Grid>
-  )
+    )
+  }
 }
 
-export default Admin
+export default Admin;

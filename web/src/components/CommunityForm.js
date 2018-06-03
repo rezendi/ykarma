@@ -1,4 +1,5 @@
 import React from 'react';
+import { Redirect } from 'react-router-dom';
 import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
 
 class CommunityForm extends React.Component {
@@ -7,6 +8,7 @@ class CommunityForm extends React.Component {
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.state = {
+      redirect: false,
       community: {
         id: 0,
         adminAddress: '',
@@ -34,7 +36,7 @@ class CommunityForm extends React.Component {
   submitForm = async (event) => {
     event.preventDefault();
     console.log("Submitting form");
-    fetch('/communities/', {
+    fetch('/communities/create', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -44,11 +46,19 @@ class CommunityForm extends React.Component {
         community: this.state.community
       })
     })
-    .then(res => res.json())
-    .then(community => this.setState({ community }));
+    .then(res => {
+      if (res.ok) {
+        this.setState({ redirect:true });
+      } else {
+        alert("Server error!");
+      }
+    });
   }
 
   render() {
+    if (this.state.redirect) {
+      return <Redirect to='/admin'/>;
+    }
     return (
       <Grid>
         <Row>
