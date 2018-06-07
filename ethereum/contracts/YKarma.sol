@@ -18,22 +18,26 @@ contract YKarma is Oracular, YKStructs {
   YKCommunities communityData;
   YKVendors vendorData;
 
-  constructor() public Oracular() {
+  constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKVendors _vendors) public Oracular() {
+    trancheData = _tranches;
+    accountData = _accounts;
+    communityData = _communities;
+    vendorData = _vendors;
   }
   
-  function updateTrancheContract(YKTranches _tranches) onlyOracle external {
+  function updateTrancheContract(YKTranches _tranches) onlyOracle public {
     trancheData = _tranches;
   }
 
-  function updateAccountsContract(YKAccounts _accounts) onlyOracle external {
+  function updateAccountsContract(YKAccounts _accounts) onlyOracle public {
     accountData = _accounts;
   }
 
-  function updateCommunitiesContract(YKCommunities _communities) onlyOracle external {
+  function updateCommunitiesContract(YKCommunities _communities) onlyOracle public {
     communityData = _communities;
   }
 
-  function updateVendorsContract(YKVendors _vendors) onlyOracle external {
+  function updateVendorsContract(YKVendors _vendors) onlyOracle public {
     vendorData = _vendors;
   }
 
