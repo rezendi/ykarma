@@ -62,28 +62,28 @@ contract YKarma is Oracular, YKStructs {
     trancheData.replenish(_accountId);
   }
 
-  function addCommunity(address _admin, string _domain, string _metadata) onlyOracle public {
+  function addCommunity(address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) onlyOracle public returns (uint256) {
     Community memory community = Community({
       id: 0,
-      admin: _admin,
+      isClosed: _isClosed,
+      adminAddress: _adminAddress,
       domain: _domain,
       metadata: _metadata,
-      tags: "",
-      isClosed: true,
+      tags: _tags,
       accountIds: new uint256[](0)
     });
-    communityData.addCommunity(community);
+    return communityData.addCommunity(community);
   }
   
   function setTags(uint256 _communityId, string _tags) public {
     Community memory community = communityData.communityForId(_communityId);
-    require (community.admin == msg.sender || senderIsOracle());
+    require (community.adminAddress == msg.sender || senderIsOracle());
     communityData.setTags(_communityId, _tags);
   }
   
   function addAccount(uint256 _communityId, string _url, string _metadata) public {
     Community memory community = communityData.communityForId(_communityId);
-    require (community.admin == msg.sender || senderIsOracle());
+    require (community.adminAddress == msg.sender || senderIsOracle());
     Account memory account = Account({
       id:0,
       metadata:_metadata,

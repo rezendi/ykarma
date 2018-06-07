@@ -12,10 +12,11 @@ contract YKCommunities is Ownable, YKStructs {
     return communities[_id];
   }
   
-  function addCommunity(Community community) public onlyOwner {
+  function addCommunity(Community community) public onlyOwner returns (uint256) {
     community.id = maxCommunityId + 1;
     communities[community.id] = community;
     maxCommunityId += 1;
+    return community.id;
   }
   
   function addAccount(uint256 _communityId, uint256 _accountId) public onlyOwner {
