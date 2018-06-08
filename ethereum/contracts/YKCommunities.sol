@@ -6,7 +6,11 @@ import "./YKStructs.sol";
 
 contract YKCommunities is Ownable, YKStructs {
   mapping(uint256 => Community) communities;
-  uint256 public maxCommunityId;
+  uint256 maxCommunityId;
+  
+  function getCommunityCount() public view returns (uint256) {
+    return maxCommunityId;
+  }
   
   function communityForId(uint256 _id) public onlyOwner view returns (Community) {
     return communities[_id];
