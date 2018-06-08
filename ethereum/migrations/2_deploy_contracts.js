@@ -15,7 +15,20 @@ module.exports = (deployer, network, accounts) => {
           deployer.deploy(YKAccounts, {from : accounts[0]}).then(() => {
             deployer.deploy(YKCommunities, {from : accounts[0]}).then(() => {
               deployer.deploy(YKVendors, {from : accounts[0]}).then(() => {
-                deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKVendors.address, {from : accounts[0]});
+                deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKVendors.address, {from : accounts[0]}).then(() => {
+                  YKTranches.deployed().then((instance) => {
+                    instance.transferOwnership(YKarma.address, {from: accounts[0]});
+                  });
+                  YKAccounts.deployed().then((instance) => {
+                    instance.transferOwnership(YKarma.address, {from : accounts[0]});
+                  });
+                  YKCommunities.deployed().then((instance) => {
+                    instance.transferOwnership(YKarma.address, {from : accounts[0]});
+                  });
+                  YKVendors.deployed().then((instance) => {
+                    instance.transferOwnership(YKarma.address, {from : accounts[0]});
+                  });
+                });
               });
             });
           });

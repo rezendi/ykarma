@@ -14,19 +14,16 @@ contract('Paces', function(accounts) {
     let accountData = await YKAccounts.new();
     let communityData = await YKCommunities.new();
     let vendorData = await YKVendors.new();
-    let ykarma = await YKarma.new();
+    let ykarma = await YKarma.new(trancheData.address, accountData.address, communityData.address, vendorData.address);
     assert.notEqual(ykarma.address, 0, "Contract created");
-    await ykarma.updateTrancheContract(trancheData.address);
     await trancheData.transferOwnership(ykarma.address);
-    await ykarma.updateAccountsContract(accountData.address);
     await accountData.transferOwnership(ykarma.address);
-    await ykarma.updateCommunitiesContract(communityData.address);
     await communityData.transferOwnership(ykarma.address);
-    await ykarma.updateVendorsContract(vendorData.address);
     await vendorData.transferOwnership(ykarma.address);
 
     // add a little data
-    await ykarma.addCommunity(accounts[1], 'rezendi.com', '{"name":"rezendi"');
+    await ykarma.addCommunity(accounts[1], false, 'rezendi.com', '{"name":"rezendi"}', 'cool');
+    assert.notEqual(ykarma.getCommunityCount(), 1, "Community created");
     await ykarma.addVendor(1, '{"name":"Rezendivendor"', accounts[2]);
     await ykarma.addAccount(1, 'mailto:jon@rezendi.com', '{"name":"Jon"');
     await ykarma.replenish(1);
