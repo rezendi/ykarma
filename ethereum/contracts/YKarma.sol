@@ -70,8 +70,9 @@ contract YKarma is Oracular, YKStructs {
     return communityData.maxCommunityId();
   }
   
-  function communityForId(uint256 _id) public view returns (Community) {
-    return communityData.communityForId(_id);
+  function communityForId(uint256 _id) public view returns (uint256, address, bool, string, string, uint256) {
+    Community memory c = communityData.communityForId(_id);
+    return (c.id, c.adminAddress, c.isClosed, c.domain, c.metadata, c.accountIds.length);
   }
   
   function addCommunity(address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) onlyOracle public returns (uint256) {

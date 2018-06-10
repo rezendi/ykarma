@@ -23,7 +23,10 @@ contract('Paces', function(accounts) {
 
     // add a little data
     await ykarma.addCommunity(accounts[1], false, 'rezendi.com', '{"name":"rezendi"}', 'cool');
-    assert.notEqual(ykarma.getCommunityCount(), 1, "Community created");
+    let count = await ykarma.getCommunityCount();
+    assert.equal(count, 1, "Community created");
+    let vals = await ykarma.communityForId(1);
+    assert.equal(accounts[1], vals[1]);
     await ykarma.addVendor(1, '{"name":"Rezendivendor"', accounts[2]);
     await ykarma.addAccount(1, 'mailto:jon@rezendi.com', '{"name":"Jon"');
     await ykarma.replenish(1);
