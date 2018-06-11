@@ -75,7 +75,7 @@ contract YKarma is Oracular, YKStructs {
     return (c.id, c.adminAddress, c.isClosed, c.domain, c.metadata, c.accountIds.length);
   }
   
-  function addCommunity(address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) onlyOracle public returns (uint256) {
+  function addCommunity(address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) onlyOracle public {
     Community memory community = Community({
       id: 0,
       isClosed: _isClosed,
@@ -85,20 +85,41 @@ contract YKarma is Oracular, YKStructs {
       tags: _tags,
       accountIds: new uint256[](0)
     });
-    return communityData.addCommunity(community);
+    communityData.addCommunity(community);
   }
   
-  function setTags(uint256 _communityId, string _tags) public {
+  function editCommunity(uint256 _id, address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) public {
+    Community memory community = communityData.communityForId(_id);
+    require (community.adminAddress == msg.sender || senderIsOracle());
+    Community memory newCommunity = Community({
+      id: 0,
+      isClosed: _isClosed,
+      adminAddress: _adminAddress,
+      domain: _domain,
+      metadata: _metadata,
+      tags: _tags,
+      accountIds: new uint256[](0)
+    });
+    communityData.editCommunity(_id, newCommunity);
+  }
+  
+  function removeAccount(uint256 _communityId, uint256 _accountId) public {
     Community memory community = communityData.communityForId(_communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
-    communityData.setTags(_communityId, _tags);
+    communityData.removeAccount(_communityId, _accountId);
+  }
+  
+  function deleteCommunity(uint256 _id) public {
+    Community memory community = communityData.communityForId(_id);
+    require (community.adminAddress == msg.sender || senderIsOracle());
+    communityData.deleteCommunity(_id);
   }
   
   function addAccount(uint256 _communityId, string _url, string _metadata) public {
     Community memory community = communityData.communityForId(_communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
     Account memory account = Account({
-      id:0,
+      id: 0,
       metadata:_metadata,
       userAddress:0,
       communityId:_communityId,
@@ -114,7 +135,7 @@ contract YKarma is Oracular, YKStructs {
   
   function addVendor(uint256 _communityId, string _metadata, address _address) onlyOracle public {
     Vendor memory vendor = Vendor({
-      id:0,
+      id: 0,
       communityId:_communityId,
       metadata:_metadata,
       vendorAddress:_address,
@@ -129,8 +150,4 @@ contract YKarma is Oracular, YKStructs {
     Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, cost:_cost, tag:_tag, metadata:_metadata});
     vendorData.addReward(reward);
   }
-  
-  // TODO:
-  // deploy to rinkeby
-  
 }
