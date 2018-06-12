@@ -104,18 +104,16 @@ router.put('/:id', function(req, res, next) {
 
 /* DELETE remove community. */
 router.delete('/:id', function(req, res, next) {
-  var community = req.body.community;
-  console.log("community", JSON.stringify(community));
-  if (community.id === 0) {
+  if (req.params.id === 0) {
     res.redirect('/admin'); // community not saved
   }
-  var method = contract.methods.deleteCommunity(community.id);
+  var method = contract.methods.deleteCommunity(req.params.id);
   method.send({from:fromAccount, gas: GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
     } else {
       console.log('result', result);
-      res.json(community);
+      res.json({"success":"true"});
     }
   })
   .catch(function(error) {
