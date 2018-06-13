@@ -15,7 +15,7 @@ class CommunityForm extends React.Component {
         isClosed: false,
         domain: '',
         metadata: { name: '', description:''},
-        tags: [],
+        tags: '',
         accounts: [],
       }
     };
