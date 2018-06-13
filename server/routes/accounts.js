@@ -8,8 +8,10 @@ const abi = [];
 const contract = new web3.eth.Contract(abi, "");
 const GAS = "5000000";
 var communityAdminAddress = null;
-web3.eth.getAccounts().then((accounts) => {
-  communityAdminAddress = accounts[0];
+
+// TODO: if it's a community admin, use their address if available
+web3.eth.getAccounts().then((ethAccounts) => {
+  communityAdminAddress = ethAccounts[0];
   console.log("from", communityAdminAddress);
 });
 
@@ -38,6 +40,17 @@ router.get('/:communityId', function(req, res, next) {
   });
 });
 
+/* GET community details */
+router.get('/:id', function(req, res, next) {
+  for (var i=0; i<accounts.length; i++) {
+    if (parseInt(accounts[i].id) === parseInt(req.params.id)) {
+      return res.json(accounts[i]);
+    }
+  }
+  res.json({metadata:{ name: "n/a"}});
+});
+
+
 /* POST new account */
 router.post('/create', function(req, res, next) {
   var account = req.body.account;
@@ -46,6 +59,10 @@ router.post('/create', function(req, res, next) {
     res.redirect('/admin'); // account already exists
   }
   var method = contract.methods.addAccount(
+    account.communityId,
+    account.userAddress,
+    account.metadata,
+    account.urls
   );
   method.send({from:communityAdminAddress, gas: GAS}, (error, result) => {
     if (error) {
@@ -68,6 +85,11 @@ router.put('/:id', function(req, res, next) {
     res.redirect('/admin'); // account not saved
   }
   var method = contract.methods.editAccount(
+    account.id,
+    account.communityId,
+    account.userAddress,
+    account.metadata,
+    account.urls
   );
   method.send({from:communityAdminAddress, gas: GAS}, (error, result) => {
     if (error) {
@@ -110,6 +132,11 @@ function getAccountFor(i, total, callback) {
       console.log('getAccountFor result', result);
       if (i == total-1) {
         var account = {
+          id:           result[0],
+          communityId:  result[1],
+          userAddress:  result[2],
+          metadata:     result[3],
+          urls:         result[4],
         };
         accounts.push(account);
         console.log('accounts', accounts);

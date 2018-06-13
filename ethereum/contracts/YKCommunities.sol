@@ -23,12 +23,12 @@ contract YKCommunities is Ownable, YKStructs {
     communities[_communityId].accountIds.push(_accountId);
   }
   
-  function editCommunity(uint256 _communityId, Community _newValues) public onlyOwner {
-    communities[_communityId].adminAddress  = _newValues.adminAddress;
-    communities[_communityId].isClosed      = _newValues.isClosed;
-    communities[_communityId].domain        = _newValues.domain;
-    communities[_communityId].metadata      = _newValues.metadata;
-    communities[_communityId].tags          = _newValues.tags;
+  function editCommunity(uint256 _id, Community _newValues) public onlyOwner {
+    communities[_id].adminAddress  = _newValues.adminAddress;
+    communities[_id].isClosed      = _newValues.isClosed;
+    communities[_id].domain        = _newValues.domain;
+    communities[_id].metadata      = _newValues.metadata;
+    communities[_id].tags          = _newValues.tags;
   }
 
   function removeAccount(uint256 _communityId, uint256 _accountId) public onlyOwner {

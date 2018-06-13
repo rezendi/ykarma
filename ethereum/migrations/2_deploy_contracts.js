@@ -8,25 +8,26 @@ const YKVendors = artifacts.require('YKVendors.sol');
 const YKarma = artifacts.require('YKarma.sol');
 
 module.exports = (deployer, network, accounts) => {
-  deployer.deploy(strings, {from : accounts[0]}).then(() => {
-    deployer.deploy(YKStructs, {from : accounts[0]}).then(() => {
-      deployer.deploy(YKTranches, {from : accounts[0]}).then(() => {
+  const owner = accounts[0];
+  deployer.deploy(strings, {from : owner}).then(() => {
+    deployer.deploy(YKStructs, {from : owner}).then(() => {
+      deployer.deploy(YKTranches, {from : owner).then(() => {
         deployer.link(strings, YKTranches).then(() => {
-          deployer.deploy(YKAccounts, {from : accounts[0]}).then(() => {
-            deployer.deploy(YKCommunities, {from : accounts[0]}).then(() => {
-              deployer.deploy(YKVendors, {from : accounts[0]}).then(() => {
-                deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKVendors.address, {from : accounts[0]}).then(() => {
+          deployer.deploy(YKAccounts, {from : owner}).then(() => {
+            deployer.deploy(YKCommunities, {from : owner}).then(() => {
+              deployer.deploy(YKVendors, {from : owner}).then(() => {
+                deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKVendors.address, {from : owner}).then(() => {
                   YKTranches.deployed().then((instance) => {
-                    instance.transferOwnership(YKarma.address, {from: accounts[0]});
+                    instance.transferOwnership(YKarma.address, {from: owner});
                   });
                   YKAccounts.deployed().then((instance) => {
-                    instance.transferOwnership(YKarma.address, {from : accounts[0]});
+                    instance.transferOwnership(YKarma.address, {from : owner});
                   });
                   YKCommunities.deployed().then((instance) => {
-                    instance.transferOwnership(YKarma.address, {from : accounts[0]});
+                    instance.transferOwnership(YKarma.address, {from : owner});
                   });
                   YKVendors.deployed().then((instance) => {
-                    instance.transferOwnership(YKarma.address, {from : accounts[0]});
+                    instance.transferOwnership(YKarma.address, {from : owner});
                   });
                 });
               });

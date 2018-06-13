@@ -5,24 +5,49 @@ class AccountForm extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.handleNameChange = this.handleNameChange.bind(this);
+    this.handleURLsChange = this.handleURLsChange.bind(this);
     this.state = {
       id: 0,
       communityId: 0,
       userAddress: '',
       metadata: {},
-      urls: [],
-      rewards: [],
+      urls: '',
+      rewardIds: [],
     };
   }
 
   handleNameChange(e) {
-    this.setState({ metadata: {'name':e.target.name} });
+    var metadata = Object.assign(this.state.account.metadata, {});
+    metadata.name = e.target.value;
+    this.setState({ account: { ...this.state.account, metadata: metadata} });
+  }
+
+  handleURLsChange(e) {
+    this.setState({ account: { ...this.state.account, urls: e.target.value} });
   }
 
   submitForm = async (event) => {
     event.preventDefault();
     console.log("Submitting form");
+    fetch(this.state.account.id===0 ? '/accounts/create' : '/accounts/update', {
+      method: this.state.account.id===0 ? 'POST' : 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account: this.state.account
+      })
+    })
+    .then(res => {
+      if (res.ok) {
+        this.setState({ redirect:true });
+      } else {
+        alert("Server error!");
+      }
+    });
   }
+
 
   render() {
     return (
@@ -37,6 +62,9 @@ class AccountForm extends React.Component {
                 <form onSubmit={this.submitForm}>
                   <Row>
                     <FormControl type="text" value={this.state.name} placeholder="Enter account name" onChange={this.handleNameChange} />
+                  </Row>
+                  <Row>
+                    <FormControl type="text" value={this.state.community.metadata.urls} placeholder="Enter URLs" onChange={this.handleURLsChange} />
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>

@@ -14,7 +14,7 @@ contract YKStructs {
     uint256 communityId;
     address userAddress;
     string metadata;
-    string[] urls;
+    string urls;
     uint256[] rewardIds;
   }
 
