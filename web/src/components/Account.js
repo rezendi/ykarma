@@ -1,5 +1,6 @@
 import React from 'react';
-import { Grid, Row, Col, Panel } from 'react-bootstrap';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import AccountForm from './AccountForm';
 
 class Account extends React.Component {
   state = {account: { metadata: {}}, isEditing: false}
