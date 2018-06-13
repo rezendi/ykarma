@@ -6,13 +6,17 @@ class AccountForm extends React.Component {
     super(props, context);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleURLsChange = this.handleURLsChange.bind(this);
+    const { match: { params } } = this.props;
     this.state = {
-      id: 0,
-      communityId: 0,
-      userAddress: '',
-      metadata: {},
-      urls: '',
-      rewardIds: [],
+      redirect: false,
+      account: props.accountFromParent || {
+        id: 0,
+        communityId: params.communityId,
+        userAddress: '',
+        metadata: {},
+        urls: '',
+        rewardIds: [],
+      }
     };
   }
 
@@ -61,10 +65,10 @@ class AccountForm extends React.Component {
               <Panel.Body>
                 <form onSubmit={this.submitForm}>
                   <Row>
-                    <FormControl type="text" value={this.state.name} placeholder="Enter account name" onChange={this.handleNameChange} />
+                    <FormControl type="text" value={this.state.account.metadata.name} placeholder="Enter account name" onChange={this.handleNameChange} />
                   </Row>
                   <Row>
-                    <FormControl type="text" value={this.state.community.metadata.urls} placeholder="Enter URLs" onChange={this.handleURLsChange} />
+                    <FormControl type="text" value={this.state.account.metadata.urls} placeholder="Enter URLs" onChange={this.handleURLsChange} />
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>

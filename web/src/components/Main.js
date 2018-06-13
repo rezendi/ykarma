@@ -24,7 +24,7 @@ const Main = () => (
       <Route exact path='/admin' component={Admin}/>
       <Route exact path='/community/new' component={CommunityForm}/>
       <Route exact path='/community/:id' component={Community}/>
-      <Route exact path='/account/new' component={AccountForm}/>
+      <Route exact path='/account/for/:communityId/new' component={AccountForm}/>
       <Route exact path='/account/:id' component={Account}/>
       <Route exact path='/vendor/new' component={VendorForm}/>
       <Route exact path='/vendor/:id' component={Vendor}/>

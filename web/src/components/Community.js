@@ -1,15 +1,19 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import CommunityForm from './CommunityForm';
 
 class Community extends React.Component {
-  state = {community: { metadata: {}}, isEditing: false}
+  state = {community: { metadata: {}}, accounts: [], isEditing: false}
   
   componentDidMount() {
     const { match: { params } } = this.props;
     fetch(`/communities/${params.id}`)
       .then(res => res.json())
-      .then(community => this.setState({ community: community } ) && console.log(JSON.stringify(community)) );
+      .then(community => this.setState({ community: community } ) && console.log("community", JSON.stringify(community)) );
+    fetch(`/accounts/for/${params.id}`)
+      .then(res => res.json())
+      .then(accounts => this.setState({ accounts: accounts } ) && console.log("accounts", JSON.stringify(accounts)) );
   }
 
   constructor(props, context) {
@@ -19,11 +23,6 @@ class Community extends React.Component {
 
   toggleEditing(e) {
     this.setState({ isEditing: !this.state.isEditing});
-  }
-
-  submitForm = async (event) => {
-    event.preventDefault();
-    console.log("Submitting form");
   }
 
   render() {
@@ -41,14 +40,17 @@ class Community extends React.Component {
                 {this.state.community.metadata.name} <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>
               </Panel.Heading>
               <Panel.Body>
-                <form onSubmit={this.submitForm}>
+                <Row>
+                  {this.state.community.metadata.description}
+                </Row>
+                {this.state.accounts.map((account, index) => {
                   <Row>
-                    {this.state.community.metadata.description}
+                    <Link to={`/account/${account.id}`}>{account.metadata.name}</Link>
                   </Row>
-                  <Row>
-                    <Button type="submit">Submit</Button>
-                  </Row>
-                </form>
+                })}
+              <Row>
+                <Link to={`/account/for/${this.state.community.id}/new`}>New Account</Link>
+              </Row>
               </Panel.Body>
             </Panel>
           </Col>
