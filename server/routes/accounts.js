@@ -4,8 +4,8 @@ var router = express.Router();
 
 var Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545/"));
-const abi = [{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"constant":true,"inputs":[{"name":"_id","type":"uint256"}],"name":"accountForId","outputs":[{"components":[{"name":"id","type":"uint256"},{"name":"communityId","type":"uint256"},{"name":"userAddress","type":"address"},{"name":"metadata","type":"string"},{"name":"urls","type":"string"},{"name":"rewardIds","type":"uint256[]"}],"name":"","type":"tuple"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"accountForAddress","outputs":[{"components":[{"name":"id","type":"uint256"},{"name":"communityId","type":"uint256"},{"name":"userAddress","type":"address"},{"name":"metadata","type":"string"},{"name":"urls","type":"string"},{"name":"rewardIds","type":"uint256[]"}],"name":"","type":"tuple"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_url","type":"string"}],"name":"accountForUrl","outputs":[{"components":[{"name":"id","type":"uint256"},{"name":"communityId","type":"uint256"},{"name":"userAddress","type":"address"},{"name":"metadata","type":"string"},{"name":"urls","type":"string"},{"name":"rewardIds","type":"uint256[]"}],"name":"","type":"tuple"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"id","type":"uint256"},{"name":"communityId","type":"uint256"},{"name":"userAddress","type":"address"},{"name":"metadata","type":"string"},{"name":"urls","type":"string"},{"name":"rewardIds","type":"uint256[]"}],"name":"account","type":"tuple"},{"name":"_url","type":"string"}],"name":"addAccount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_accountId","type":"uint256"},{"name":"_url","type":"string"}],"name":"addUrlToAccount","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"},{"components":[{"name":"id","type":"uint256"},{"name":"communityId","type":"uint256"},{"name":"userAddress","type":"address"},{"name":"metadata","type":"string"},{"name":"urls","type":"string"},{"name":"rewardIds","type":"uint256[]"}],"name":"_newValues","type":"tuple"}],"name":"editAccount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"},{"name":"_newUrl","type":"string"}],"name":"removeUrlFromAccount","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_id","type":"uint256"}],"name":"deleteAccount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_url","type":"string"}],"name":"urlIsValid","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[{"name":"_spenderId","type":"uint256"},{"name":"_rewardId","type":"uint256"}],"name":"redeem","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}];
-const contract = new web3.eth.Contract(abi, "0x161b308e2bdab53299dde260e6c08a5526c77d27");
+const abi = [{"constant":true,"inputs":[],"name":"senderIsOracle","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"v","type":"uint256"}],"name":"uintToBytes","outputs":[{"name":"ret","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[{"name":"newOracle","type":"address"}],"name":"addOracle","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_tranches","type":"address"},{"name":"_accounts","type":"address"},{"name":"_communities","type":"address"},{"name":"_vendors","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"oracleAddress","type":"address"}],"name":"OracleAdded","type":"event"},{"constant":false,"inputs":[{"name":"_tranches","type":"address"}],"name":"updateTrancheContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_accounts","type":"address"}],"name":"updateAccountsContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_communities","type":"address"}],"name":"updateCommunitiesContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_vendors","type":"address"}],"name":"updateVendorsContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_amount","type":"uint256"},{"name":"_url","type":"string"}],"name":"give","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_rewardId","type":"uint256"}],"name":"spend","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_accountId","type":"uint256"}],"name":"replenish","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getCommunityCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_id","type":"uint256"}],"name":"communityForId","outputs":[{"name":"","type":"uint256"},{"name":"","type":"address"},{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_adminAddress","type":"address"},{"name":"_isClosed","type":"bool"},{"name":"_domain","type":"string"},{"name":"_metadata","type":"string"},{"name":"_tags","type":"string"}],"name":"addCommunity","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_communityId","type":"uint256"},{"name":"_tags","type":"string"}],"name":"setTags","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_communityId","type":"uint256"},{"name":"_url","type":"string"},{"name":"_metadata","type":"string"}],"name":"addAccount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_communityId","type":"uint256"},{"name":"_metadata","type":"string"},{"name":"_address","type":"address"}],"name":"addVendor","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_vendorId","type":"uint256"},{"name":"_cost","type":"uint256"},{"name":"_tag","type":"string"},{"name":"_metadata","type":"string"}],"name":"addReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}];
+const contract = new web3.eth.Contract(abi, "0x82a497497c0db89047122121d0eedd9b42d5996b");
 const GAS = "5000000";
 var communityAdminAddress = null;
 
@@ -13,8 +13,6 @@ var communityAdminAddress = null;
 web3.eth.getAccounts().then((ethAccounts) => {
   communityAdminAddress = ethAccounts[0];
   console.log("account from", communityAdminAddress);
-  console.log("contract address", contract._address);
-  console.log("contract methods", contract.methods);
 });
 
 var accounts = [];
@@ -22,7 +20,6 @@ var accounts = [];
 /* GET account list */
 router.get('/for/:communityId', function(req, res, next) {
   accounts = [];
-  console.log("accounts", contract.methods);
   const communityId = parseInt(req.params.communityId);
   var method = contract.methods.getAccountCount(communityId);
   method.call(function(error, result) {
@@ -61,10 +58,14 @@ router.post('/create', function(req, res, next) {
   if (account.id !== 0) {
     res.redirect('/admin'); // account already exists
   }
-  console.log("here 0", contract);
-  var method = contract.methods.getAccountCount(1);
-  console.log("here 1", method);
-  return;
+  console.log("here 0");
+  var method = contract.methods.addAccount(
+    account.communityId,
+    account.userAddress || '',
+    JSON.stringify(account.metadata),
+    account.urls || '',
+  );
+  console.log("here 1");
   method.send({from:communityAdminAddress, gas: GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
