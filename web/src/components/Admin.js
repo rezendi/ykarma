@@ -28,6 +28,9 @@ class Admin extends React.Component {
                     </Col>
                   )}
                 </Row>
+                <Row>
+                  <Link to='/community/new'>New Community</Link>
+                </Row>
               </Panel.Body>
             </Panel>
           </Col>

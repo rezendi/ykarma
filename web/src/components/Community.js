@@ -10,10 +10,10 @@ class Community extends React.Component {
     const { match: { params } } = this.props;
     fetch(`/communities/${params.id}`)
       .then(res => res.json())
-      .then(community => this.setState({ community: community } ) && console.log("community", JSON.stringify(community)) );
+      .then(community => this.setState({ community: community, accounts: this.state.accounts } ) )
     fetch(`/accounts/for/${params.id}`)
       .then(res => res.json())
-      .then(accounts => this.setState({ accounts: accounts } ) && console.log("accounts", JSON.stringify(accounts)) );
+      .then(accounts => this.setState({ accounts: accounts, community: this.state.community } ) );
   }
 
   constructor(props, context) {
@@ -41,13 +41,13 @@ class Community extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  {this.state.community.metadata.description}
+                  {this.state.community.metadata.description} ({this.state.accounts.length} accounts)
                 </Row>
-                {this.state.accounts.map((account, index) => {
-                  <Row>
+                {this.state.accounts.map(account =>
+                  <Row key={account.id}>
                     <Link to={`/account/${account.id}`}>{account.metadata.name}</Link>
                   </Row>
-                })}
+                )}
               <Row>
                 <Link to={`/account/for/${this.state.community.id}/new`}>New Account</Link>
               </Row>

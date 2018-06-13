@@ -11,8 +11,8 @@ module.exports = (deployer, network, accounts) => {
   deployer.deploy(strings, {from : owner}).then(() => {
     deployer.deploy(YKStructs, {from : owner}).then(() => {
       deployer.deploy(YKTranches, {from : owner}).then(() => {
-        deployer.link(strings, YKTranches).then(() => {
-          deployer.deploy(YKAccounts, {from : owner}).then(() => {
+        deployer.deploy(YKAccounts, {from : owner}).then(() => {
+          deployer.link(strings, YKTranches, YKAccounts).then(() => {
             deployer.deploy(YKCommunities, {from : owner}).then(() => {
               deployer.deploy(YKVendors, {from : owner}).then(() => {
                 deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKVendors.address, {from : owner}).then(() => {

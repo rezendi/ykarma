@@ -9,7 +9,6 @@ const Header = () => (
         <li><Link to='/login'>Login</Link></li>
         <li><Link to='/profile'>Profile</Link></li>
         <li><Link to='/admin'>Admin</Link></li>
-        <li><Link to='/community/new'>New Community</Link></li>
         <li><Link to='/community'>Community Admin</Link></li>
         <li><Link to='/account/new'>New Account</Link></li>
         <li><Link to='/vendor/new'>New Vendor</Link></li>

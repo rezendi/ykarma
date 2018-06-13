@@ -35,20 +35,24 @@ contract YKAccounts is Ownable, YKStructs {
   // TODO address mapping, handling
   function addAccount(Account account, string _url) public onlyOwner returns (uint256) {
     account.id = maxAccountId + 1;
-    require(addUrlToAccount(account.id, _url)); // will fail if url invalid, without affecting storage 
+    require(urlIsValid(_url));
     accounts[account.id] = account;
+    addUrlToAccount(account.id, _url); // will fail if url invalid, without affecting storage
     maxAccountId += 1;
     return maxAccountId;
   }
   
   function addUrlToAccount(uint256 _accountId, string _url) public onlyOwner returns (bool) {
     require(urlIsValid(_url));
-    strings.slice[] memory slices = new strings.slice[](2);
-    slices[0] = accounts[_accountId].urls.toSlice();
-    slices[1] = _url.toSlice();
-    strings.slice memory delimiter = ",".toSlice();
-    accounts[_accountId].urls = delimiter.join(slices);
+    string memory urls = accounts[_accountId].urls;
+    if (bytes(urls).length > 0) {
+      string memory commaUrl = ",".toSlice().concat(_url.toSlice());
+      accounts[_accountId].urls = urls.toSlice().concat(commaUrl.toSlice());
+    } else {
+      accounts[_accountId].urls = _url;
+    }
     accountsByUrl[_url] = _accountId;
+    return true;
   }
   
   function editAccount(uint256 _id, Account _newValues) public onlyOwner {

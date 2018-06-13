@@ -131,7 +131,7 @@ contract YKarma is Oracular, YKStructs {
     return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length);
   }
   
-  function addAccount(uint256 _communityId, address _address, string _metadata, string _url) public {
+  function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public {
     Community memory community = communityData.communityForId(_communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
     Account memory account = Account({
