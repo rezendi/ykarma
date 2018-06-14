@@ -2,13 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 
+import { connect } from 'react-redux'
+import { loadCommunities } from '../store/data/actions'
+
 class Admin extends React.Component {
-  state = {communities: []}
-  
+
   componentDidMount() {
-    fetch('/communities')
-      .then(res => res.json())
-      .then(communities => this.setState({ communities }));
+    this.props.loadCommunities();
   }
   
   render() {
@@ -22,7 +22,7 @@ class Admin extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  {this.state.communities.map(community =>
+                  {this.props.communities.map(community =>
                     <Col md={3} key={community.id}>
                       <Link to={`/community/${community.id}`}>{community.metadata.name}</Link>
                     </Col>
@@ -40,4 +40,17 @@ class Admin extends React.Component {
   }
 }
 
-export default Admin;
+function mapStateToProps(state, ownProps) {
+  console.log("State",JSON.stringify(state));
+  return {
+    communities: state.communities
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    loadCommunities: () => dispatch(loadCommunities()),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Admin);
