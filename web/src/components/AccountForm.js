@@ -1,4 +1,5 @@
 import React from 'react';
+import { Redirect } from 'react-router-dom';
 import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
 
 class AccountForm extends React.Component {
@@ -6,12 +7,11 @@ class AccountForm extends React.Component {
     super(props, context);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleURLsChange = this.handleURLsChange.bind(this);
-    const { match: { params } } = this.props;
     this.state = {
       redirect: false,
       account: props.accountFromParent || {
         id: 0,
-        communityId: params.communityId,
+        communityId: 0,
         userAddress: '',
         metadata: {},
         urls: '',
@@ -68,7 +68,7 @@ class AccountForm extends React.Component {
                     <FormControl type="text" value={this.state.account.metadata.name} placeholder="Enter account name" onChange={this.handleNameChange} />
                   </Row>
                   <Row>
-                    <FormControl type="text" value={this.state.account.metadata.urls} placeholder="Enter URLs" onChange={this.handleURLsChange} />
+                    <FormControl type="text" value={this.state.account.urls} placeholder="Enter URLs" onChange={this.handleURLsChange} />
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
