@@ -5,8 +5,6 @@ import { connect } from 'react-redux'
 import { loadAccount, toggleEditing } from '../store/data/actions'
 
 class Account extends React.Component {
-  state = {account: { metadata: {}}, isEditing: false}
-  
   componentDidMount() {
     this.props.loadAccount(this.props.match.params.id);
   }
