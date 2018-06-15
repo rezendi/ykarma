@@ -1,4 +1,5 @@
 export default {
+  editing: false,
   user: {},
   communities: [],
   community: {},

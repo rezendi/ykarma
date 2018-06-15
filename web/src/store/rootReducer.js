@@ -1,6 +1,9 @@
 import { combineReducers } from 'redux';
-import communities from './data/reducer';
+import { communitiesReducer, communityReducer, accountsReducer, editingReducer } from './data/reducer';
 
 export const rootReducer = combineReducers({
-  communities
+  communities: communitiesReducer,
+  community: communityReducer,
+  accounts: accountsReducer,
+  editing: editingReducer
 });

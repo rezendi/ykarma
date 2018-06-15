@@ -41,7 +41,6 @@ class Admin extends React.Component {
 }
 
 function mapStateToProps(state, ownProps) {
-  console.log("State",JSON.stringify(state));
   return {
     communities: state.communities
   }
