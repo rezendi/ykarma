@@ -47,7 +47,7 @@ class CommunityForm extends React.Component {
                 {this.props.initialValues ? this.props.initialValues.name : "New Community"}
               </Panel.Heading>
               <Panel.Body>
-                <form onSubmit={this.submitForm}>
+                <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                   <Row>
                     <label htmlFor="name">Community Name</label>
                     <Field name="name" component="input" type="text"/>
@@ -77,7 +77,7 @@ CommunityForm = reduxForm({
 CommunityForm = connect(
   state => ({
     initialValues: {
-      id: state.community.id,
+      id: state.community.id || 0,
       name: state.community.metadata.name,
       description: state.community.metadata.description,
     }

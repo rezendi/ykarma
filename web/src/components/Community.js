@@ -21,7 +21,7 @@ class Community extends React.Component {
     }
     if (this.props.editing) {
       return (
-        <CommunityForm community = {this.props.community}/>
+        <CommunityForm community = {this.props.community} />
       );
     }
     return (

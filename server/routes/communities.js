@@ -25,10 +25,12 @@ router.get('/', function(req, res, next) {
     } else {
       console.log('getCommunityCount result', result);
       for (var i = 0; i < result; i++) {
-        getCommunityFor(i, result, () => {
+        getCommunityFor(i, result, (community) => {
+          communities.push(community);
           console.log('callback', communities);
-          res.json(communities);
-          next();
+          if (communities.length >= result) {
+            res.json(communities);
+          }
         });
       }
     }
@@ -131,19 +133,15 @@ function getCommunityFor(i, total, callback) {
       console.log('getCommunityFor error', error);
     } else {
       console.log('getCommunityFor result', result);
-      if (i == total-1) {
-        var community = {
-          id:           result[0],
-          adminAddress: result[1],
-          isClosed:     result[2],
-          domain:       result[3],
-          metadata:     JSON.parse(result[4]),
-          tags:         result[5]
-        };
-        communities.push(community);
-        console.log('communities', communities);
-        callback();
-      }
+      var community = {
+        id:           result[0],
+        adminAddress: result[1],
+        isClosed:     result[2],
+        domain:       result[3],
+        metadata:     JSON.parse(result[4]),
+        tags:         result[5]
+      };
+      callback(community);
     }
   })
   .catch(function(error) {
