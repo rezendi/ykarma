@@ -1,5 +1,7 @@
 import * as types from './types';
 import Api from '../Api';
+import { firebase } from '../../firebase';
+
 
 export function loadCommunities() {
   return function(dispatch) {
@@ -67,3 +69,14 @@ export function editingToggled() {
   return { type: types.EDITING_TOGGLED, };
 }
 
+export function fetchUser() {
+  return function(dispatch) {
+    firebase.auth.onAuthStateChanged(user => {
+      return dispatch(userFetched(user));
+    });
+  }
+}
+
+export function userFetched(user) {
+  return { type: (user === null ? types.NO_USER : types.USER), user };
+}

@@ -1,6 +1,5 @@
 export default {
-  editing: false,
-  user: {},
+  user: null,
   communities: [],
   community: { metadata: {}},
   accounts: [],
@@ -9,4 +8,5 @@ export default {
   reward: {},
   vendors: [],
   vendor: {},
+  editing: false,
 }

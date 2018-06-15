@@ -45,3 +45,14 @@ export function editingReducer(state = initialState.editing, action) {
       return state
   }
 }
+
+export function userReducer(state = initialState.editing, action) {
+  switch (action.type) {
+    case types.USER:
+      return action.user;
+    case types.NO_USER:
+      return null;
+    default:
+      return state
+  }
+}

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "firebase": "^5.0.4",
     "lodash-es": "^4.17.8",
     "npm": "^6.1.0",
     "react": "^16.3.2",
