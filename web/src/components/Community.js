@@ -13,7 +13,7 @@ class Community extends React.Component {
   }
 
   render() {
-    if (this.props.community === undefined || this.props.community.metadata === undefined || this.props.accounts === undefined) {
+    if (this.props.community === undefined || this.props.accounts === undefined) {
       return (
         <div>Loading...</div>
       );
@@ -21,7 +21,7 @@ class Community extends React.Component {
     }
     if (this.props.editing) {
       return (
-        <CommunityForm communityFromParent = {this.props.community}/>
+        <CommunityForm community = {this.props.community}/>
       );
     }
     return (

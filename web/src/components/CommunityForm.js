@@ -1,49 +1,28 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
-import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import { connect } from 'react-redux'
+import { Field, reduxForm } from 'redux-form';
+import { communityReducer } from '../store/data/reducer'
 
 class CommunityForm extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.handleNameChange = this.handleNameChange.bind(this);
-    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
-    this.state = {
-      redirect: false,
-      community: props.communityFromParent || {
-        id: 0,
-        adminAddress: '',
-        isClosed: false,
-        domain: '',
-        metadata: { name: '', description:''},
-        tags: '',
-        accounts: [],
-      }
-    };
-  }
 
-  handleNameChange(e) {
-    var metadata = Object.assign(this.state.community.metadata, {});
-    metadata.name = e.target.value;
-    this.setState({ community: { ...this.state.community, metadata: metadata} });
-  }
-
-  handleDescriptionChange(e) {
-    var metadata = Object.assign(this.state.community.metadata, {});
-    metadata.description = e.target.value;
-    this.setState({ community: { ...this.state.community, metadata: metadata} });
-  }
-
-  submitForm = async (event) => {
-    event.preventDefault();
-    console.log("Submitting form");
-    fetch(this.state.community.id===0 ? '/communities/create' : '/communities/update', {
-      method: this.state.community.id===0 ? 'POST' : 'PUT',
+  submitForm = async (values) => {
+    console.log("Submitting form",values);
+    fetch(values.id===0 ? '/communities/create' : '/communities/update', {
+      method: values.id===0 ? 'POST' : 'PUT',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        community: this.state.community
+        community: {
+          id: values.id,
+          metadata: {
+            name: values.name,
+            description: values.description
+          }
+        }
       })
     })
     .then(res => {
@@ -56,7 +35,7 @@ class CommunityForm extends React.Component {
   }
 
   render() {
-    if (this.state.redirect) {
+    if (this.props.redirect) {
       return <Redirect to='/admin'/>;
     }
     return (
@@ -65,15 +44,17 @@ class CommunityForm extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.state.community.metadata.name ? this.state.community.metadata.name : "New Community"}
+                {this.props.initialValues ? this.props.initialValues.name : "New Community"}
               </Panel.Heading>
               <Panel.Body>
                 <form onSubmit={this.submitForm}>
                   <Row>
-                    <FormControl type="text" value={this.state.community.metadata.name} placeholder="Enter community name" onChange={this.handleNameChange} />
+                    <label htmlFor="name">Community Name</label>
+                    <Field name="name" component="input" type="text"/>
                   </Row>
                   <Row>
-                    <FormControl type="text" value={this.state.community.metadata.description} placeholder="Enter community description" onChange={this.handleDescriptionChange} />
+                    <label htmlFor="description">Community Description</label>
+                    <Field name="description" component="input" type="text"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
@@ -87,5 +68,21 @@ class CommunityForm extends React.Component {
     );
   }
 }
+
+// Decorate the form component
+CommunityForm = reduxForm({
+  form: 'community',
+})(CommunityForm);
+
+CommunityForm = connect(
+  state => ({
+    initialValues: {
+      id: state.community.id,
+      name: state.community.metadata.name,
+      description: state.community.metadata.description,
+    }
+  }),
+  {community: communityReducer}
+)(CommunityForm)
 
 export default CommunityForm;

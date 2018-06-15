@@ -13,7 +13,7 @@ export function communitiesReducer(state = initialState.communities, action) {
 export function communityReducer(state = initialState.community, action) {
   switch (action.type) {
     case types.LOAD_COMMUNITY_SUCCESS:
-      return action.community || {};
+      return action.community || { metadata: {}};
     default:
       return state
   }
