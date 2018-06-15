@@ -17,13 +17,13 @@ class Community extends React.Component {
       return (
         <div>Loading...</div>
       );
-      
     }
     if (this.props.editing) {
       return (
         <CommunityForm community = {this.props.community} />
       );
     }
+ 
     return (
       <Grid>
         <Row>

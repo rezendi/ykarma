@@ -43,6 +43,20 @@ export function loadAccountsSuccess(accounts) {
   return { type: types.LOAD_ACCOUNTS_SUCCESS, accounts};
 }
 
+export function loadAccount(accountId) {
+  return function(dispatch) {
+    return Api.loadAccount(accountId).then(account => {
+      dispatch(loadAccountSuccess(account));
+    }).catch(error => {
+      throw(error);
+    });
+  };
+}
+
+export function loadAccountSuccess(account) {
+  return { type: types.LOAD_ACCOUNT_SUCCESS, account};
+}
+
 export function toggleEditing() {
   return function(dispatch) {
     return dispatch(editingToggled())

@@ -26,18 +26,13 @@ class CommunityForm extends React.Component {
       })
     })
     .then(res => {
-      if (res.ok) {
-        this.setState({ redirect:true });
-      } else {
+      if (!res.ok) {
         alert("Server error!");
       }
     });
   }
 
   render() {
-    if (this.props.redirect) {
-      return <Redirect to='/admin'/>;
-    }
     return (
       <Grid>
         <Row>
@@ -69,7 +64,6 @@ class CommunityForm extends React.Component {
   }
 }
 
-// Decorate the form component
 CommunityForm = reduxForm({
   form: 'community',
 })(CommunityForm);

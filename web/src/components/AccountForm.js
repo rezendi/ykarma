@@ -1,57 +1,37 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
+import { connect } from 'react-redux'
+import { Field, reduxForm } from 'redux-form';
+import { accountReducer } from '../store/data/reducer'
 
 class AccountForm extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.handleNameChange = this.handleNameChange.bind(this);
-    this.handleURLsChange = this.handleURLsChange.bind(this);
-    this.state = {
-      redirect: false,
-      account: props.accountFromParent || {
-        id: 0,
-        communityId: 0,
-        userAddress: '',
-        metadata: {},
-        urls: '',
-        rewardIds: [],
-      }
-    };
-  }
 
-  handleNameChange(e) {
-    var metadata = Object.assign(this.state.account.metadata, {});
-    metadata.name = e.target.value;
-    this.setState({ account: { ...this.state.account, metadata: metadata} });
-  }
-
-  handleURLsChange(e) {
-    this.setState({ account: { ...this.state.account, urls: e.target.value} });
-  }
-
-  submitForm = async (event) => {
-    event.preventDefault();
-    console.log("Submitting form");
-    fetch(this.state.account.id===0 ? '/accounts/create' : '/accounts/update', {
-      method: this.state.account.id===0 ? 'POST' : 'PUT',
+  submitForm = async (values) => {
+    console.log("Submitting form", values);
+    fetch(values.id===0 ? '/accounts/create' : '/accounts/update', {
+      method: values.id===0 ? 'POST' : 'PUT',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        account: this.state.account
+        account: {
+          id: values.id,
+          communityId: values.communityId,
+          urls: values.url,
+          metadata: {
+            name: values.name,
+          }
+        }
       })
     })
     .then(res => {
-      if (res.ok) {
-        this.setState({ redirect:true });
-      } else {
+      if (!res.ok) {
         alert("Server error!");
       }
     });
   }
-
 
   render() {
     return (
@@ -60,15 +40,17 @@ class AccountForm extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                New Account
+                {this.props.initialValues ? this.props.initialValues.name : "New Account"}
               </Panel.Heading>
               <Panel.Body>
-                <form onSubmit={this.submitForm}>
+                <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                   <Row>
-                    <FormControl type="text" value={this.state.account.metadata.name} placeholder="Enter account name" onChange={this.handleNameChange} />
+                    <label htmlFor="name">Name</label>
+                    <Field name="name" component="input" type="text"/>
                   </Row>
                   <Row>
-                    <FormControl type="text" value={this.state.account.urls} placeholder="Enter URLs" onChange={this.handleURLsChange} />
+                    <label htmlFor="url">URL</label>
+                    <Field name="url" component="input" type="text"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
@@ -82,5 +64,21 @@ class AccountForm extends React.Component {
     );
   }
 }
+
+AccountForm = reduxForm({
+  form: 'account',
+})(AccountForm);
+
+AccountForm = connect(
+  state => ({
+    initialValues: {
+      id: state.account.id || 0,
+      communityId: state.account.communityId || 0,
+      url: state.account.urls,
+      name: state.account.metadata.name,
+    }
+  }),
+  {account: accountReducer}
+)(AccountForm)
 
 export default AccountForm;

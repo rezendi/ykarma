@@ -28,6 +28,15 @@ export function accountsReducer(state = initialState.accounts, action) {
   }
 }
 
+export function accountReducer(state = initialState.account, action) {
+  switch (action.type) {
+    case types.LOAD_ACCOUNT_SUCCESS:
+      return action.account || [];
+    default:
+      return state
+  }
+}
+
 export function editingReducer(state = initialState.editing, action) {
   switch (action.type) {
     case types.EDITING_TOGGLED:

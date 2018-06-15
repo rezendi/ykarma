@@ -25,6 +25,15 @@ class Api {
       return error;
     });
   }
+
+  static loadAccounts(accountId) {
+    return fetch(`/accounts/${accountId}`)
+      .then(response => {
+        return response.json();
+      }).catch(error => {
+      return error;
+    });
+  }
 }
 
 export default Api;
