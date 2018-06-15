@@ -1,5 +1,4 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
@@ -28,6 +27,8 @@ class CommunityForm extends React.Component {
     .then(res => {
       if (!res.ok) {
         alert("Server error!");
+      } else {
+        values.id===0 ? this.props.history.push('/admin') : window.location.reload();
       }
     });
   }

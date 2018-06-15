@@ -1,6 +1,6 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
-import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
 import { accountReducer } from '../store/data/reducer'
@@ -18,7 +18,7 @@ class AccountForm extends React.Component {
       body: JSON.stringify({
         account: {
           id: values.id,
-          communityId: values.communityId,
+          communityId: this.props.match.params.communityId,
           urls: values.url,
           metadata: {
             name: values.name,
@@ -29,6 +29,8 @@ class AccountForm extends React.Component {
     .then(res => {
       if (!res.ok) {
         alert("Server error!");
+      } else {
+        values.id===0 ? this.props.history.push('/community/' + this.props.match.params.communityId) : window.location.reload();
       }
     });
   }
@@ -73,7 +75,6 @@ AccountForm = connect(
   state => ({
     initialValues: {
       id: state.account.id || 0,
-      communityId: state.account.communityId || 0,
       url: state.account.urls,
       name: state.account.metadata.name,
     }
@@ -81,4 +82,4 @@ AccountForm = connect(
   {account: accountReducer}
 )(AccountForm)
 
-export default AccountForm;
+export default withRouter(AccountForm);

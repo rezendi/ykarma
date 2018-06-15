@@ -15,7 +15,7 @@ class Account extends React.Component {
         <div>Loading...</div>
       );
     }
-     if (this.state.isEditing) {
+     if (this.props.editing) {
       return (
         <AccountForm account = {this.props.account}/>
       );
@@ -26,7 +26,7 @@ class Account extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.props.account.metadata.name} <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>
+                {this.props.account.metadata.name} <Button bsStyle="link" onClick={this.props.toggleEditing}>edit</Button>
               </Panel.Heading>
               <Panel.Body>
                 <form onSubmit={this.submitForm}>

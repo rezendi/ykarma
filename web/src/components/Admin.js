@@ -8,6 +8,7 @@ import { loadCommunities } from '../store/data/actions'
 class Admin extends React.Component {
 
   componentDidMount() {
+    console.log("context", this.context);
     this.props.loadCommunities();
   }
   

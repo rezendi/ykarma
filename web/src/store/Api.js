@@ -26,7 +26,7 @@ class Api {
     });
   }
 
-  static loadAccounts(accountId) {
+  static loadAccount(accountId) {
     return fetch(`/accounts/${accountId}`)
       .then(response => {
         return response.json();
