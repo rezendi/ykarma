@@ -49,9 +49,17 @@ export function editingReducer(state = initialState.editing, action) {
 export function userReducer(state = initialState.editing, action) {
   switch (action.type) {
     case types.USER:
-      return action.user;
+      return {
+        displayName: action.user.displayName,
+        email: action.user.email,
+        emailVerified: action.user.emailVerified,
+        phoneNumber: action.user.phoneNumber,
+        photoURL: action.user.photoURL,
+        uid: action.user.uid,
+        providerData: action.user.providerData,
+      }
     case types.NO_USER:
-      return null;
+      return {};
     default:
       return state
   }

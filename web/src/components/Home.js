@@ -1,17 +1,12 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
-import { auth } from '../firebase'
+import { fetchUser } from '../store/data/actions'
 
 class Home extends React.Component {
-  
-  // TODO Reduxify the user state
+
   componentDidMount() {
-      auth.getUser().then((user) => {
-      if (user) {
-        this.setState({user: user});
-      }
-    });
+    this.props.fetchUser();
   }
   
   render() {
@@ -25,7 +20,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy { this.state && this.state.user ? this.state.user.email : ""}
+                  Howdy { this.props.user.email }
                 </Row>
               </Panel.Body>
             </Panel>
@@ -36,4 +31,16 @@ class Home extends React.Component {
   }
 }
 
-export default Home;
+function mapStateToProps(state, ownProps) {
+  return {
+    user: state.user,
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    fetchUser: () => dispatch(fetchUser()),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

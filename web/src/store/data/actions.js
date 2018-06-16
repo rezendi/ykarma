@@ -1,6 +1,6 @@
 import * as types from './types';
 import Api from '../Api';
-import { firebase } from '../../firebase';
+import { auth, firebase } from '../../firebase';
 
 
 export function loadCommunities() {
@@ -61,7 +61,7 @@ export function loadAccountSuccess(account) {
 
 export function toggleEditing() {
   return function(dispatch) {
-    return dispatch(editingToggled())
+    return dispatch(editingToggled());
   };
 }
 
@@ -71,9 +71,13 @@ export function editingToggled() {
 
 export function fetchUser() {
   return function(dispatch) {
-    firebase.auth.onAuthStateChanged(user => {
-      return dispatch(userFetched(user));
-    });
+    if (auth.getUser()) {
+      return dispatch(userFetched(auth.getUser()));
+    } else {
+      firebase.auth.onAuthStateChanged(user => {
+        return dispatch(userFetched(user));
+      });
+    }
   }
 }
 

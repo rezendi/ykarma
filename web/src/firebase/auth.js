@@ -44,18 +44,15 @@ export const signInViaEmailLink = async (href) => {
 export const doSignOut = () =>
   auth.signOut();
 
-
 // Current user
-export const getUser = function (store) {
-  return new Promise(function (resolve, reject) {
-    auth.onAuthStateChanged(function (user) {
-      if (user) {
-        resolve(user);
-      } else {
-        resolve(null);
-      }
-    });
-  });
-};
+
+var currentUser;
+auth.onAuthStateChanged(function (user) {
+  currentUser = user;
+});
+
+export const getUser = () => {
+  return currentUser;
+}
 
 // TODO: linking credentials at the Firebase level per https://firebase.google.com/docs/auth/web/email-link-auth etc.
