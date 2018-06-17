@@ -174,8 +174,14 @@ another form of reputation. This is arguably a "score," of sorts, but one with m
 confounds compared to e.g. "social credit", and also scoring vendors seems a reasonabl
 thing to do.
 
-It's probably worth noting that the intent is for rewards to be auctioned as well as
-fixed-price, but for now they're fixed-price only, for obvious code complexity reasons.
+### What else is on the roadmap?
+
+Eventually rewards should be auctionable, as well as fixed-price; that's obviously much
+more complex to code, though, so it's not implemented right now.
+
+I also like the possibility of sending messages along with YKarma ("Thanks for the great
+essay!" etc.) but that leads to potential issues of spam, abuse, etc., so it might be
+best to tread cautiously there.
 
 ### Will there be an ICO?
 
