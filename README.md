@@ -4,13 +4,9 @@ YKarma
 YKarma is an experimental project to model reputation as a spendable Ethereum token.
 
 The basic concept: every person in a community or organization is allotted 100
-"YKarma coins" each week, which must be given away to other people before they
-can be used. The recipients can then spend these coins on various rewards. (A
-day off, a conference ticket, etc.) Received coins lose half their value every
-four months, so, like reputation itself, YKarma savings decay rapidly over time.
-That makes this reputation economy *very* different from a monetary one, in that
-it's impossible to hoard capital; it also protects the "money supply" from
-hyperinflation.
+"karma" to distribute each week, which must be given away to other people before they
+can be used. The recipients can then spend these "karma coins," which serve as a measure
+of their reputation, on various rewards (a day off, a conference ticket, etc.)
 
 ### What's the point?
 
@@ -61,6 +57,18 @@ given, they can be "tagged" with relevant communities, ranging from fairly speci
 when vendors make rewards available, they can require coins with a certain tag(s) -- for
 instance, "tech" coins to acquire tickets to a generic tech conference, "Ethereum" coins
 for a more specific conference.
+
+### Hang on. You're literally printing new money every week. Won't that lead to runaway inflation?
+
+Sort of, but this is a feature, not a bug.
+
+When you spend karma, the money vanishes (at least mostly -- see below) because
+reputation is not really transferrable, so money is also taken out of the reputation
+economy. And while it's true there'll likely be considerable inflation over time, and
+if/as more people join, this is *deliberate*; YKarma is inflationary by design. Like
+reputation itself, the real value of YKarma savings decay steadily, making it difficult
+to hoard capital. That's one of the things thing which makes a reputation economy very
+different from a monetary one.
 
 ### OK, I am cautiously amenable to the concept. But why is it on a blockchain?
 
@@ -168,6 +176,9 @@ Another option is to track the total number of coins a vendor has ever received,
 another form of reputation. This is arguably a "score," of sorts, but one with many many
 confounds compared to e.g. "social credit", and also scoring vendors seems a reasonabl
 thing to do.
+
+It's probably worth noting that the intent is for rewards to be auctioned as well as
+fixed-price, but for now they're fixed-price only, for obvious code complexity reasons.
 
 ### Will there be an ICO?
 

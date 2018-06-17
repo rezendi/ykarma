@@ -1,12 +1,15 @@
 pragma solidity 0.4.23;
 
 contract YKStructs {
-  struct Tranches {
+
+  struct Giving {
     uint256[] amounts;
     uint256[] blocks;
+}
+
+  struct Spending {
+    uint256[] amounts;
     string[] tags;
-    uint256 lastRecalculated;
-    uint256 firstNonzero;
   }
 
   struct Account {

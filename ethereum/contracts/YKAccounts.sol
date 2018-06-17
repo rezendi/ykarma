@@ -7,11 +7,10 @@ import "./YKStructs.sol";
 
 contract YKAccounts is Ownable, YKStructs {
   using strings for *;
+  uint256 maxAccountId;
   mapping(uint256 => Account) accounts;
   mapping(string => uint256) accountsByUrl;
   mapping(address => uint256) accountsByAddress;
-  mapping(uint256 => uint256) personas;
-  uint256 maxAccountId;
   
   function accountForId(uint256 _id) public onlyOwner view returns (Account) {
     return accounts[_id];
@@ -32,7 +31,6 @@ contract YKAccounts is Ownable, YKStructs {
     }
   }
   
-  // TODO address mapping, handling
   function addAccount(Account account, string _url) public onlyOwner returns (uint256) {
     account.id = maxAccountId + 1;
     require(urlIsValid(_url));
@@ -69,7 +67,7 @@ contract YKAccounts is Ownable, YKStructs {
 
   function deleteAccount(uint256 _id) public onlyOwner {
     delete accounts[_id];
-    // TODO delete other mappings
+    // TODO FIXME delete other mappings
   }
 
   // TODO
