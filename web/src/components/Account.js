@@ -15,7 +15,12 @@ class Account extends React.Component {
         <div>Loading...</div>
       );
     }
-     if (this.props.editing) {
+   if (this.props.account.metadata === undefined) {
+      return (
+        <div>Server error...</div>
+      );
+    }
+    if (this.props.editing) {
       return (
         <AccountForm account = {this.props.account}/>
       );

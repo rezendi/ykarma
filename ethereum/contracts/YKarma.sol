@@ -42,24 +42,25 @@ contract YKarma is Oracular, YKStructs {
   }
 
   function give(uint256 _amount, string _url) public {
-    Account memory giver = accountData.accountForAddress(msg.sender);
-    uint256 available = trancheData.availableToGive(giver.id);
+    uint256 giverId = accountData.accountIdForAddress(msg.sender);
+    Account memory giver = accountData.accountForId(giverId);
+    uint256 available = trancheData.availableToGive(giverId);
     require (available >= _amount);
     Community memory community = communityData.communityForId(giver.communityId);
-    Account memory receiver = accountData.accountForUrl(_url);
-    trancheData.give(_amount, giver.id, receiver.id, community.tags);
+    uint256 receiverId = accountData.accountIdForUrl(_url);
+    trancheData.give(_amount, giverId, receiverId, community.tags);
   }
 
   // TODO make rewards resellable?
   function spend(uint256 _rewardId) public {
     Reward memory reward = vendorData.rewardForId(_rewardId);
     require(reward.ownerId == 0); // reward can't already have been redeemed, for now at least
-    Account memory spender = accountData.accountForAddress(msg.sender);
-    uint256 available = trancheData.availableToSpend(spender.id, reward.tag);
+    uint256 spenderId = accountData.accountIdForAddress(msg.sender);
+    uint256 available = trancheData.availableToSpend(spenderId, reward.tag);
     require (available >= reward.cost);
-    trancheData.spend(spender.id, reward.cost, reward.tag);
-    vendorData.redeem(spender.id, reward.id);
-    accountData.redeem(spender.id, reward.id);
+    trancheData.spend(spenderId, reward.cost, reward.tag);
+    vendorData.redeem(spenderId, reward.id);
+    accountData.redeem(spenderId, reward.id);
   }
 
   function replenish(uint256 _accountId) public onlyOracle {
@@ -73,9 +74,9 @@ contract YKarma is Oracular, YKStructs {
     return communityData.maxCommunityId();
   }
   
-  function communityForId(uint256 _id) public view returns (uint256, address, bool, string, string, uint256) {
+  function communityForId(uint256 _id) public view returns (uint256, address, bool, string, string, string, uint256) {
     Community memory c = communityData.communityForId(_id);
-    return (c.id, c.adminAddress, c.isClosed, c.domain, c.metadata, c.accountIds.length);
+    return (c.id, c.adminAddress, c.isClosed, c.domain, c.metadata, c.tags, c.accountIds.length);
   }
   
   function addCommunity(address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) onlyOracle public {
@@ -126,9 +127,19 @@ contract YKarma is Oracular, YKStructs {
     return c.accountIds.length;
   }
   
-  function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256) {
+  //TODO: make spendable a JSON string, ugh
+  function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
     Account memory a = accountData.accountForId(_id);
-    return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length);
+    Community memory community = communityData.communityForId(a.communityId);
+    require (community.adminAddress == msg.sender || senderIsOracle());
+    uint256 givable = trancheData.availableToGive(a.id);
+    uint256 spendable = trancheData.availableToSpend(a.id, '');
+    return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length, givable, spendable);
+  }
+  
+  function accountForUrl(string _url) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
+    uint256 id = accountData.accountIdForUrl(_url);
+    return accountForId(id);
   }
   
   function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public {

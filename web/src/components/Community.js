@@ -18,6 +18,11 @@ class Community extends React.Component {
         <div>Loading...</div>
       );
     }
+    if (this.props.community.metadata === undefined) {
+      return (
+        <div>Server error...</div>
+      );
+    }
     if (this.props.editing) {
       return (
         <CommunityForm community = {this.props.community} />

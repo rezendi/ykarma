@@ -16,19 +16,12 @@ contract YKAccounts is Ownable, YKStructs {
     return accounts[_id];
   }
 
-  function accountForAddress(address _address) public onlyOwner view returns (Account) {
-    uint256 accountId = accountsByAddress[_address];
-    return accounts[accountId];
+  function accountIdForAddress(address _address) public onlyOwner view returns (uint256) {
+    return accountsByAddress[_address];
   }
 
-  function accountForUrl(string _url) public onlyOwner view returns (Account) {
-    uint256 accountId = accountsByUrl[_url];
-    if (accountId > 0) {
-      // is this an account in the system?
-      return accounts[accountId];
-    } else {
-      return accounts[0];
-    }
+  function accountIdForUrl(string _url) public onlyOwner view returns (uint256) {
+    return accountsByUrl[_url];
   }
   
   function addAccount(Account account, string _url) public onlyOwner returns (uint256) {

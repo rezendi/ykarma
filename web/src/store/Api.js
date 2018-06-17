@@ -34,6 +34,17 @@ class Api {
       return error;
     });
   }
+
+  static loadAccountForUser(user) {
+    return fetch(`/accounts/url/${user.email}`)
+      .then(response => {
+        return response.json().then((json) => {
+          return  { ...user, yk: json };
+        });
+      }).catch(error => {
+      return error;
+    });
+  }
 }
 
 export default Api;

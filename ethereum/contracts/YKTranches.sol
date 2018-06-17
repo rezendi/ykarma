@@ -112,8 +112,12 @@ contract YKTranches is Ownable, YKStructs {
   }
 
   function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
-    strings.slice memory s1 = _tags.toSlice();
-    strings.slice memory s2 = s1.find(_tag.toSlice());
-    return !s2.empty();
+    strings.slice memory s1 = _tag.toSlice();
+    if (s1.empty()) {
+      return true;
+    }
+    strings.slice memory s2 = _tags.toSlice();
+    strings.slice memory s3 = s2.find(s1);
+    return !s3.empty();
   }
 }

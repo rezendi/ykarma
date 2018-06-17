@@ -72,12 +72,25 @@ export function editingToggled() {
 export function fetchUser() {
   return function(dispatch) {
     if (auth.getUser()) {
-      return dispatch(userFetched(auth.getUser()));
+      return dispatch(fetchYkUser(auth.getUser()));
     } else {
       firebase.auth.onAuthStateChanged(user => {
-        return dispatch(userFetched(user));
+        return dispatch(fetchYkUser(user));
       });
     }
+  }
+}
+
+export function fetchYkUser(user) {
+  if (user === null) {
+    return userFetched(user);
+  }
+  return function(dispatch) {
+    return Api.loadAccountForUser(user).then(user => {
+      dispatch(userFetched(user));
+    }).catch(error => {
+      throw(error);
+    });
   }
 }
 
