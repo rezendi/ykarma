@@ -63,12 +63,12 @@ for a more specific conference.
 Sort of, but this is a feature, not a bug.
 
 When you spend karma, the money vanishes (at least mostly -- see below) because
-reputation is not really transferrable, so money is also taken out of the reputation
-economy. And while it's true there'll likely be considerable inflation over time, and
-if/as more people join, this is *deliberate*; YKarma is inflationary by design. Like
-reputation itself, the real value of YKarma savings decay steadily, making it difficult
-to hoard capital. That's one of the things thing which makes a reputation economy very
-different from a monetary one.
+reputation is not really transferable, so money is also taken out of the economy. And
+while it's true there'll likely be considerable inflation over time, and if/as more
+people join, this is *deliberate*: YKarma is inflationary by design. Like reputation
+itself, the real value of YKarma savings decay steadily, making it difficult to hoard
+capital. That's one of the things thing which makes a reputation economy very different
+from a monetary one.
 
 ### OK, I am cautiously amenable to the concept. But why is it on a blockchain?
 
@@ -144,24 +144,21 @@ his existing balance. Otherwise he now has a YKarma account with 10 YK in it.
 10 YK isn't very much. But next week, when Bob's essay goes viral, lots of people
 in this community send him YK, and he winds up with a balance of 1000. Meanwhile,
 Charlie, a popular community co-founder, has decided to become a YKarma "vendor"
-and offer "Charlie Buys You Dinner" reward to people in this community, to keep
-up with influential people in it. Bob logs back into YKarma, goes to his Community
-Rewards page, and uses his YK to purchase the "Charlie Buys You Dinner" reward,
-partly for the free meal, partly because he's always admired Charlie's work.
+and offer a "Charlie Buys You Dinner" reward to people in this community, to keep
+up with influential people in it.
 
-The irrevocable ownership of that reward is transferred from Charlie's vendor
-account to Bob's user account, and it's up to them to then arrange the dinner.
-Bob could instead decide to hoard his coins in the hopes of saving up for a
-more valuable / expensive reward ... but he knows (and it's clearly displayed
-to him on the YKarma site) that those 1000 karma will decay to 500 karma four
-months from now, and 250 karma four months after that, etc.
+Bob logs back into YKarma, goes to his Community Rewards page, and uses his YK to
+purchase the "Charlie Buys You Dinner" reward, partly for the free meal, partly
+because he's always admired Charlie's work. The irrevocable ownership of that reward
+is transferred from Charlie's vendor account to Bob's user account, and it's up to
+them to then arrange the dinner.
 
 A note to decentralization devotees: this is all described as happening through
-the YKarma site because that is the easiest solution -- but behind the scenes,
+the YKarma site, because that is the easiest solution -- but behind the scenes,
 this is all blockchain-based. Anyone can create an address on the blockchain,
 receive "YKEther" from a tap, and directly create / interact with communities,
-accounts, and vendors. This is obviously only going to be appealing to very
-technically sophisticated users / communities, but the possibility exists.
+accounts, and vendors. This will obviously only be appealing to technically
+sophisticated users / communities, but the possibility exists.
 
 ### What happens to coins after they're spent?
 
