@@ -128,6 +128,7 @@ router.delete('/:id', function(req, res, next) {
 
 function getAccountFor(id, callback) {
   var method = eth.contract.methods.accountForId(id);
+  console.log("accountForId", id);
   method.call(function(error, result) {
     if (error) {
       console.log('getAccountFor error', error);

@@ -55,7 +55,7 @@ router.post('/create', function(req, res, next) {
   }
   var method = eth.contract.methods.addCommunity(
     community.adminAddress,
-    community.isClosed,
+    community.flags || '0x0',
     community.domain || '',
     JSON.stringify(community.metadata),
     community.tags || '',
@@ -133,7 +133,7 @@ function getCommunityFor(id, callback) {
         adminAddress: result[1],
         isClosed:     result[2],
         domain:       result[3],
-        metadata:     JSON.parse(result[4]),
+        metadata:     JSON.parse(result[4] || '{}'),
         tags:         result[5],
         accounts:     result[6]
       };

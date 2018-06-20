@@ -74,16 +74,16 @@ contract YKarma is Oracular, YKStructs {
     return communityData.maxCommunityId();
   }
   
-  function communityForId(uint256 _id) public view returns (uint256, address, bool, string, string, string, uint256) {
+  function communityForId(uint256 _id) public view returns (uint256, address, byte, string, string, string, uint256) {
     Community memory c = communityData.communityForId(_id);
-    return (c.id, c.adminAddress, c.isClosed, c.domain, c.metadata, c.tags, c.accountIds.length);
+    return (c.id, c.adminAddress, c.flags, c.domain, c.metadata, c.tags, c.accountIds.length);
   }
   
-  function addCommunity(address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) onlyOracle public {
+  function addCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) onlyOracle public {
     Community memory community = Community({
       id:           0,
-      isClosed:     _isClosed,
       adminAddress: _adminAddress,
+      flags:        _flags,
       domain:       _domain,
       metadata:     _metadata,
       tags:         _tags,
@@ -92,17 +92,17 @@ contract YKarma is Oracular, YKStructs {
     communityData.addCommunity(community);
   }
   
-  function editCommunity(uint256 _id, address _adminAddress, bool _isClosed, string _domain, string _metadata, string _tags) public {
+  function editCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public {
     Community memory community = communityData.communityForId(_id);
     require (community.adminAddress == msg.sender || senderIsOracle());
     Community memory newCommunity = Community({
-      id: 0,
-      isClosed: _isClosed,
+      id:           0,
       adminAddress: _adminAddress,
-      domain: _domain,
-      metadata: _metadata,
-      tags: _tags,
-      accountIds: new uint256[](0)
+      flags:        _flags,
+      domain:       _domain,
+      metadata:     _metadata,
+      tags:         _tags,
+      accountIds:   new uint256[](0)
     });
     communityData.editCommunity(_id, newCommunity);
   }
@@ -127,7 +127,7 @@ contract YKarma is Oracular, YKStructs {
     return c.accountIds.length;
   }
   
-  //TODO: make spendable a JSON string, ugh
+  //TODO: make spendable a JSON string with tags, ugh
   function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
     Account memory a = accountData.accountForId(_id);
     Community memory community = communityData.communityForId(a.communityId);

@@ -1,6 +1,7 @@
 pragma solidity 0.4.23;
 pragma experimental ABIEncoderV2;
 
+import "./math/SafeMath.sol";
 import "./arachnid/strings.sol";
 import "./zeppelin/ownership/Ownable.sol";
 import "./YKStructs.sol";
@@ -8,6 +9,8 @@ import "./YKStructs.sol";
 //TODO SafeMath
 contract YKTranches is Ownable, YKStructs {
   using strings for *;
+  using SafeMath for uint256;
+
   mapping(uint256 => Giving) giving;
   mapping(uint256 => Spending) spending;
   uint256 EXPIRY_WINDOW = 691200;
@@ -18,7 +21,7 @@ contract YKTranches is Ownable, YKStructs {
     uint256 total = 0;
     recalculateGivingTranches(_id);
     for (uint256 i=0 ; i<giving[_id].amounts.length; i++) {
-      total += giving[_id].amounts[i];
+      total = total.add(giving[_id].amounts[i]);
     }
     return total;
   }
@@ -28,12 +31,12 @@ contract YKTranches is Ownable, YKStructs {
     uint256 accumulated;
     Giving storage available = giving[_sender];
     for (uint256 i=0; i < available.amounts.length; i++) {
-      if (accumulated + available.amounts[i] >= _amount) {
-        available.amounts[i] = available.amounts[i] - accumulated - _amount;
+      if (accumulated.add(available.amounts[i]) >= _amount) {
+        available.amounts[i] = available.amounts[i].sub(accumulated.sub(_amount));
         accumulated = _amount;
         break;
       } else {
-        accumulated = accumulated + available.amounts[i];
+        accumulated = accumulated.add(available.amounts[i]);
         available.amounts[i] = 0;
       }
     }
@@ -47,7 +50,7 @@ contract YKTranches is Ownable, YKStructs {
     Spending storage available = spending[_id];
     for (uint256 i=0; i < available.amounts.length; i++) {
       if (tagsIncludesTag(available.tags[i], _tag)) {
-        total += available.amounts[i];
+        total = total.add(available.amounts[i]);
       }
     }
     return total;
@@ -60,40 +63,41 @@ contract YKTranches is Ownable, YKStructs {
       if (!tagsIncludesTag(available.tags[i], _tag)) {
         continue;
       }
-      if (accumulated + available.amounts[i] >= _amount) {
-        available.amounts[i] = available.amounts[i] - (_amount - accumulated);
+      if (accumulated.add(available.amounts[i]) >= _amount) {
+        available.amounts[i] = available.amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
         break;
       } else {
-        accumulated = accumulated + available.amounts[i];
+        accumulated = accumulated.add(available.amounts[i]);
         available.amounts[i] = 0;
       }
     }
   }
   
-  function replenish(uint256 _accountId) public onlyOwner {
-    Giving storage recipient = giving[_accountId];
+  function replenish(uint256 _id) public onlyOwner {
+    Giving storage recipient = giving[_id];
     recipient.blocks.push(block.number);
-    recipient.amounts.push(100);
+    recipient.amounts.push(GIVING_AMOUNT);
   }
   
   function recalculateGivingTranches(uint256 _id) public onlyOwner {
     Giving storage available = giving[_id];
-    if (available.amounts.length == 0) {
+    if (available.blocks.length == 0 || block.number < EXPIRY_WINDOW) {
       return;
     }
-    uint256 cutoffBlock = block.number - EXPIRY_WINDOW;
+    uint256 cutoffBlock = block.number.sub(EXPIRY_WINDOW);
     for (uint256 i=0; i < available.blocks.length; i++ ) {
       if (available.blocks[i] < cutoffBlock) {
         available.amounts[i] = 0;
       }
     }
+
     // catch up on any replenish calls we might have missed, basically
-    uint256 lastBlock = available.blocks[available.blocks.length - 1];
-    while (block.number - lastBlock > REFRESH_WINDOW) {
-      available.blocks.push(lastBlock + REFRESH_WINDOW);
+    uint256 lastBlock = available.blocks[available.blocks.length.sub(1)];
+    while (block.number.sub(lastBlock) > REFRESH_WINDOW) {
+      available.blocks.push(lastBlock.add(REFRESH_WINDOW));
       available.amounts.push(GIVING_AMOUNT);
-      lastBlock = lastBlock + REFRESH_WINDOW;
+      lastBlock = lastBlock.add(REFRESH_WINDOW);
     }
     uint256 tranchesToDelete = 0;
     for (uint256 j=0; j < available.amounts.length; j++) {
@@ -103,11 +107,11 @@ contract YKTranches is Ownable, YKStructs {
         break;
       }
     }
-    for (uint256 k=0; k < tranchesToDelete; k++){
-        available.amounts[k] = available.amounts[k+tranchesToDelete];
-        delete available.amounts[available.amounts.length-1];
-        available.blocks[k] = available.blocks[k+tranchesToDelete];
-        delete available.blocks[available.blocks.length-1];
+    for (uint256 k=0; k < tranchesToDelete; k++) {
+      available.amounts[k] = available.amounts[k+tranchesToDelete];
+      delete available.amounts[available.amounts.length-1];
+      available.blocks[k] = available.blocks[k+tranchesToDelete];
+      delete available.blocks[available.blocks.length-1];
     }
   }
 

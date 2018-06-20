@@ -7,7 +7,7 @@ import { communityReducer } from '../store/data/reducer'
 class CommunityForm extends React.Component {
 
   submitForm = async (values) => {
-    console.log("Submitting form",values);
+    console.log("Submitting form", values);
     fetch(values.id===0 ? '/communities/create' : '/communities/update', {
       method: values.id===0 ? 'POST' : 'PUT',
       headers: {

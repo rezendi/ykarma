@@ -32,7 +32,10 @@ contract('Paces', function(accounts) {
     vals = await ykarma.accountForId(1);
     assert.equal(vals[3], '{"name":"Jon"}', "Account metadata");
     assert.equal(vals[4], 'mailto:jon@rezendi.com', "Account metadata");
-    // await ykarma.replenish(1);
+    assert.equal(""+vals[6], '0', "Account pre-replenish");
+    await ykarma.replenish(1);
+    vals = await ykarma.accountForId(1);
+    assert.equal(""+vals[6], '100', "Account replenished");
     
     // check the data is there
   });

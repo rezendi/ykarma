@@ -24,7 +24,7 @@ contract YKStructs {
   struct Community {
     uint256 id;
     address adminAddress;
-    bool isClosed;
+    byte flags;
     string domain;
     string metadata;
     string tags;
