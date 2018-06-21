@@ -41,14 +41,29 @@ contract YKarma is Oracular, YKStructs {
     vendorData = _vendors;
   }
 
-  function give(uint256 _amount, string _url) public {
+  function giveTo(string _url, uint256 _amount) public {
     uint256 giverId = accountData.accountIdForAddress(msg.sender);
     Account memory giver = accountData.accountForId(giverId);
     uint256 available = trancheData.availableToGive(giverId);
     require (available >= _amount);
     Community memory community = communityData.communityForId(giver.communityId);
     uint256 receiverId = accountData.accountIdForUrl(_url);
-    trancheData.give(_amount, giverId, receiverId, community.tags);
+    if (receiverId == 0) {
+      receiverId = addNewAccount(community.id, 0, '', _url);
+    }
+    trancheData.give(giverId, receiverId, _amount, community.tags);
+  }
+
+  function give(uint256 _giverId, string _url, uint256 _amount) public onlyOracle {
+    Account memory giver = accountData.accountForId(_giverId);
+    uint256 available = trancheData.availableToGive(_giverId);
+    require (available >= _amount);
+    uint256 receiverId = accountData.accountIdForUrl(_url);
+    if (receiverId == 0) {
+      receiverId = addNewAccount(community.id, 0, '', _url);
+    }
+    Community memory community = communityData.communityForId(giver.communityId);
+    trancheData.give(_giverId, receiverId, _amount, community.tags);
   }
 
   // TODO make rewards resellable?
@@ -142,7 +157,7 @@ contract YKarma is Oracular, YKStructs {
     return accountForId(id);
   }
   
-  function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public {
+  function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public returns (uint256) {
     Community memory community = communityData.communityForId(_communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
     Account memory account = Account({
@@ -157,6 +172,7 @@ contract YKarma is Oracular, YKStructs {
     if (_communityId > 0 ) {
       communityData.addAccount(_communityId, newAccountId);
     }
+    return newAccountId;
   }
   
   function editAccount(uint256 _id, address _newAddress, string _metadata) public {

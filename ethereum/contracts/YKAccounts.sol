@@ -35,6 +35,7 @@ contract YKAccounts is Ownable, YKStructs {
   
   function addUrlToAccount(uint256 _accountId, string _url) public onlyOwner returns (bool) {
     require(urlIsValid(_url));
+    require(accountIdForUrl(_url)==0);
     string memory urls = accounts[_accountId].urls;
     if (bytes(urls).length > 0) {
       string memory commaUrl = ",".toSlice().concat(_url.toSlice());

@@ -26,13 +26,13 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function give(uint256 _amount, uint256 _sender, uint256 _recipient, string _tags) public {
+  function give(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags) public {
     require (_recipient > 0);
     uint256 accumulated;
     Giving storage available = giving[_sender];
     for (uint256 i=0; i < available.amounts.length; i++) {
       if (accumulated.add(available.amounts[i]) >= _amount) {
-        available.amounts[i] = available.amounts[i].sub(accumulated.sub(_amount));
+        available.amounts[i] = available.amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
         break;
       } else {
