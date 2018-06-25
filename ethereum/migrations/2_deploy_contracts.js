@@ -30,8 +30,9 @@ module.exports = (deployer, network, accounts) => {
                               YKarma.deployed().then((yk) => {
                                 yk.addCommunity(0, 0x00, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha').then(() => {
                                   yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com').then(() => {
-                                    yk.accountForId(1);
-                                    yk.replenish(1);
+                                    yk.accountForId(1).then(() => {
+                                      yk.replenish(1);
+                                    });
                                   });
                                 });
                               });

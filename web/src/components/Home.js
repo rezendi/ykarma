@@ -12,6 +12,25 @@ class Home extends React.Component {
   
   submitForm = async (values) => {
     console.log("Submitting form", values);
+    fetch('/accounts/give', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: this.props.user.ykid,
+        email: values.email,
+        amount: values.coins,
+      })
+    })
+    .then(res => {
+      if (!res.ok) {
+        alert("Server error!");
+      } else {
+        window.location.reload();
+      }
+    });
   }
 
   render() {

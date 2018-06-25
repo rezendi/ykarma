@@ -126,6 +126,34 @@ router.delete('/:id', function(req, res, next) {
   });
 });
 
+/* PUT edit account */
+router.post('/give', function(req, res, next) {
+  var sender = req.body.id;
+  var recipient = req.body.email;
+  if (!recipient.startsWith("mailto:")) {
+    recipient = "mailto:" + recipient;
+  }
+  console.log("About to give " + req.body.amount + " from id " + sender + " to", recipient);
+  var method = eth.contract.methods.give(
+    sender,
+    recipient,
+    req.body.amount,
+  );
+  console.log("About to send", req.body);
+  method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
+    if (error) {
+      console.log('error', error);
+    } else {
+      console.log('result', result);
+      res.json({"success":"true"});
+    }
+  })
+  .catch(function(error) {
+    console.log('call error ' + error);
+  });
+});
+
+
 function getAccountFor(id, callback) {
   var method = eth.contract.methods.accountForId(id);
   console.log("accountForId", id);
@@ -140,8 +168,9 @@ function getAccountFor(id, callback) {
         userAddress:  result[2],
         metadata:     JSON.parse(result[3]),
         urls:         result[4],
-        givable:       result[5],
-        spendable:     result[6],
+        rewards:      result[5],
+        givable:      result[6],
+        spendable:    result[7],
       };
       callback(account);
     }
@@ -166,8 +195,9 @@ function getAccountForUrl(url, callback) {
         userAddress:  result[2],
         metadata:     JSON.parse(result[3]),
         urls:         result[4],
-        givable:       result[5],
-        spendable:     result[6],
+        rewards:      result[5],
+        givable:      result[6],
+        spendable:    result[7],
       };
       callback(account);
     }
