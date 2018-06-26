@@ -22,7 +22,7 @@ router.get('/for/:communityId', function(req, res, next) {
     } else {
       console.log('getAccountCount result', result);
       for (var i = 0; i < result; i++) {
-        getAccountFor(i+1, (account) => {
+        getAccountWithinCommunity(communityId, i, (account) => {
           accounts.push(account);
           console.log('callback', accounts);
           if (accounts.length >= result) {
@@ -177,6 +177,33 @@ function getAccountFor(id, callback) {
   })
   .catch(function(error) {
     console.log('getAccountFor call error ' + id, error);
+  });
+}
+
+function getAccountWithinCommunity(communityId, idx, callback) {
+  var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
+  console.log("accountWithinCommunity id", communityId);
+  console.log("accountWithinCommunity idx", idx);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('accountWithinCommunity error', error);
+    } else {
+    console.log('accountWithinCommunity result', result);
+      var account = {
+        id:           result[0],
+        communityId:  result[1],
+        userAddress:  result[2],
+        metadata:     JSON.parse(result[3]),
+        urls:         result[4],
+        rewards:      result[5],
+        givable:      result[6],
+        spendable:    result[7],
+      };
+      callback(account);
+    }
+  })
+  .catch(function(error) {
+    console.log('accountWithinCommunity call error ' + id, error);
   });
 }
 

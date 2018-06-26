@@ -152,6 +152,12 @@ contract YKarma is Oracular, YKStructs {
     return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length, givable, spendable);
   }
   
+  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
+    Community memory community = communityData.communityForId(_communityId);
+    uint256 accountId = community.accountIds[_idx];
+    return accountForId(accountId);
+  }
+  
   function accountForUrl(string _url) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
     uint256 id = accountData.accountIdForUrl(_url);
     return accountForId(id);
