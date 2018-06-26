@@ -220,9 +220,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
 }
 
 function getAccountForUrl(url, callback) {
-  console.log("building method");
   var method = eth.contract.methods.accountForUrl(url);
-  console.log("built");
   method.call(function(error, result) {
     if (error) {
       console.log('getAccountForUrl error', error);

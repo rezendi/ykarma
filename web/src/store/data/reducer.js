@@ -57,6 +57,7 @@ export function userReducer(state = initialState.editing, action) {
         photoURL: action.user.photoURL,
         uid: action.user.uid,
         providerData: action.user.providerData,
+        isAdmin: action.user.email === "jon@rezendi.com",
         ykid: action.user.yk.id,
         givable: action.user.yk.givable,
         spendable: action.user.yk.spendable,
