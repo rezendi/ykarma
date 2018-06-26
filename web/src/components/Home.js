@@ -34,6 +34,11 @@ class Home extends React.Component {
   }
 
   render() {
+    if (!this.props.user.ykid) {
+      return (
+        <div>User not found...</div>
+      );
+    }
     return (
       <Grid>
         <Row>

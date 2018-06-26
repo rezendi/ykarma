@@ -18,6 +18,7 @@ router.get('/', function(req, res, next) {
   method.call(function(error, result) {
     if (error) {
       console.log('getCommunityCount error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('getCommunityCount result', result);
       for (var i = 0; i < result; i++) {
@@ -33,6 +34,7 @@ router.get('/', function(req, res, next) {
   })
   .catch(function(error) {
     console.log('getCommunityCount call error', error);
+    res.json({"success":false, "error": error});
   });
 });
 
@@ -50,8 +52,7 @@ router.post('/create', function(req, res, next) {
   var community = req.body.community;
   console.log("community", JSON.stringify(community));
   if (community.id !== 0) {
-    res.json({'error':'community already exists'});
-    return next();
+    res.json({'success':false, 'error':'community already exists'});
   }
   var method = eth.contract.methods.addCommunity(
     community.adminAddress,
@@ -63,6 +64,7 @@ router.post('/create', function(req, res, next) {
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
       res.json('{success:true}');
@@ -78,8 +80,7 @@ router.put('/update', function(req, res, next) {
   var community = req.body.community;
   console.log("community", JSON.stringify(community));
   if (community.id === 0) {
-    res.json({'error':'community not saved'});
-    return next();
+    res.json({'success':false, 'error':'community not saved'});
   }
   var method = eth.contract.methods.editCommunity(
     community.id,
@@ -92,6 +93,7 @@ router.put('/update', function(req, res, next) {
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({'success':false, 'error':error});
     } else {
       console.log('result', result);
       res.json(community);
@@ -99,21 +101,23 @@ router.put('/update', function(req, res, next) {
   })
   .catch(function(error) {
     console.log('call error ' + error);
+    res.json({'success':false, 'error':error});
   });
 });
 
 /* DELETE remove community. */
 router.delete('/:id', function(req, res, next) {
   if (req.params.id === 0) {
-    res.redirect('/admin'); // community not saved
+    return res.json({"success":false, "error": 'Community not saved'});
   }
   var method = eth.contract.methods.deleteCommunity(req.params.id);
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      res.json({"success":"true"});
+      res.json({"success":true});
     }
   })
   .catch(function(error) {

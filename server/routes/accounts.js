@@ -61,7 +61,10 @@ router.post('/create', function(req, res, next) {
   var account = req.body.account;
   console.log("account", JSON.stringify(account));
   if (account.id !== 0) {
-    res.redirect('/admin'); // account already exists
+    return res.json({"success":false, "error": 'Account exists'});
+  }
+  if (!verifyURLs(account.urls)) {
+    return res.json({"success":false, "error": 'Bad URL(s)'});
   }
   var method = eth.contract.methods.addNewAccount(
     account.communityId,
@@ -72,6 +75,7 @@ router.post('/create', function(req, res, next) {
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
       res.json('{success:true}');
@@ -79,6 +83,7 @@ router.post('/create', function(req, res, next) {
   })
   .catch(function(error) {
     console.log('call error ' + error);
+    res.json({"success":false, "error": error});
   });
 });
 
@@ -87,7 +92,7 @@ router.put('/update', function(req, res, next) {
   var account = req.body.account;
   console.log("account", JSON.stringify(account));
   if (account.id === 0) {
-    res.redirect('/admin'); // account not saved
+    return res.json({"success":false, "error": 'Account ID set'});
   }
   var method = eth.contract.methods.editAccount(
     account.id,
@@ -97,6 +102,7 @@ router.put('/update', function(req, res, next) {
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
       res.json(account);
@@ -104,21 +110,23 @@ router.put('/update', function(req, res, next) {
   })
   .catch(function(error) {
     console.log('call error ' + error);
+    res.json({"success":false, "error": error});
   });
 });
 
 /* DELETE remove account. */
 router.delete('/:id', function(req, res, next) {
   if (req.params.id === 0) {
-    res.redirect('/admin'); // account not saved
+    return res.json({"success":false, "error": 'Account not saved'});
   }
   var method = eth.contract.methods.deleteAccount(req.params.id);
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      res.json({"success":"true"});
+      res.json({"success":true});
     }
   })
   .catch(function(error) {
@@ -126,12 +134,15 @@ router.delete('/:id', function(req, res, next) {
   });
 });
 
-/* PUT edit account */
+/* PUT give coins */
 router.post('/give', function(req, res, next) {
   var sender = req.body.id;
   var recipient = req.body.email;
   if (!recipient.startsWith("mailto:")) {
     recipient = "mailto:" + recipient;
+  }
+  if (!verifyURLs(recipient)) {
+    return res.json({"success":false, "error": "Bad URL"});
   }
   console.log("About to give " + req.body.amount + " from id " + sender + " to", recipient);
   var method = eth.contract.methods.give(
@@ -143,9 +154,10 @@ router.post('/give', function(req, res, next) {
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      res.json({"success":"true"});
+      res.json({"success":true});
     }
   })
   .catch(function(error) {
@@ -232,6 +244,10 @@ function getAccountForUrl(url, callback) {
   .catch(function(error) {
     console.log('getAccountFor call error ' + id, error);
   });
+}
+
+function verifyURLs(urls) {
+  return true;
 }
 
 module.exports = router;
