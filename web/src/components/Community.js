@@ -46,9 +46,6 @@ class Community extends React.Component {
                     <Link to={`/account/${account.id}`}>{account.metadata.name}</Link>
                   </Row>
                 )}
-              <Row>
-                <Link to={`/account/for/${this.props.community.id}/new`}>New Account</Link>
-              </Row>
               </Panel.Body>
             </Panel>
           </Col>

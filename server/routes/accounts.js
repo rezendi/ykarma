@@ -4,6 +4,9 @@ var bodyParser = require("body-parser");
 var eth = require('./eth');
 var util = require('./util');
 
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 // TODO: if it's a community admin, use their address if available
 var communityAdminAddress = null;
 eth.web3.eth.getAccounts().then((ethAccounts) => {
@@ -62,38 +65,6 @@ router.get('/url/:url', function(req, res, next) {
 });
 
 
-/* POST new account */
-router.post('/create', function(req, res, next) {
-  var account = req.body.account;
-  console.log("account", JSON.stringify(account));
-  if (account.id !== 0) {
-    return res.json({"success":false, "error": 'Account exists'});
-  }
-  if (!utils.verifyURLs(account.urls)) {
-    return res.json({"success":false, "error": 'Bad URL(s)'});
-  }
-  var method = eth.contract.methods.addNewAccount(
-    account.communityId,
-    account.userAddress,
-    JSON.stringify(account.metadata),
-    account.urls,
-  );
-  method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
-      // TODO send email to recipientif URL startsWith mailto
-      res.json({'success':true});
-    }
-  })
-  .catch(function(error) {
-    console.log('call error ' + error);
-    res.json({"success":false, "error": error});
-  });
-});
-
 /* PUT edit account */
 router.put('/update', function(req, res, next) {
   var account = req.body.account;
@@ -143,7 +114,7 @@ router.delete('/:id', function(req, res, next) {
 
 /* PUT give coins */
 router.post('/give', function(req, res, next) {
-  var sender = req.body.id;
+  var sender = req.body.id; // TODO get from session
   var recipient = req.body.email;
   if (!recipient.startsWith("mailto:")) {
     recipient = "mailto:" + recipient;
@@ -164,7 +135,10 @@ router.post('/give', function(req, res, next) {
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      // TODO send email to recipient depending on result and firebase settings
+      const sendEmail = result.created || true; // check firestore as well as result
+      if (sendEmail) {
+        sendKarmaSentMail(req.body.amount, recipient);
+      }
       res.json({"success":true});
     }
   })
@@ -250,6 +224,20 @@ function getAccountForUrl(url, callback) {
   .catch(function(error) {
     console.log('getAccountFor call error ' + id, error);
   });
+}
+
+function sendKarmaSentMail(amount, recipient) {
+  const name = ''; // get from session data
+  var recipientEmail = recipient.replace("mailto:","");
+  // TODO check that the URL is an email address
+  const msg = {
+    to: recipientEmail,
+    from: 'karma@ykarma.com',
+    subject: `${name} just sent you ${amount} YKarma!`,
+    text: 'You should totally find out more!',
+    html: '<strong>You should totally find out more.</strong>',
+  };
+  sgMail.send(msg);  
 }
 
 module.exports = router;

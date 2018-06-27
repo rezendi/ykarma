@@ -9,8 +9,8 @@ class AccountForm extends React.Component {
 
   submitForm = async (values) => {
     console.log("Submitting form", values);
-    fetch(values.id===0 ? '/accounts/create' : '/accounts/update', {
-      method: values.id===0 ? 'POST' : 'PUT',
+    fetch('/accounts/update', {
+      method: 'PUT',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ class AccountForm extends React.Component {
       if (!res.ok) {
         alert("Server error!");
       } else {
-        values.id===0 ? this.props.history.push('/community/' + this.props.match.params.communityId) : window.location.reload();
+        window.location.reload();
       }
     });
   }
@@ -42,7 +42,7 @@ class AccountForm extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.props.initialValues ? this.props.initialValues.name : "New Account"}
+                {this.props.initialValues.name}
               </Panel.Heading>
               <Panel.Body>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
