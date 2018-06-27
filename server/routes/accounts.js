@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bodyParser = require("body-parser");
 var eth = require('./eth');
+var util = require('./util');
 
 // TODO: if it's a community admin, use their address if available
 var communityAdminAddress = null;
@@ -19,6 +20,7 @@ router.get('/for/:communityId', function(req, res, next) {
   method.call(function(error, result) {
     if (error) {
       console.log('getAccountCount error', error);
+      res.json({"success":false, "error": error});
     } else {
       console.log('getAccountCount result', result);
       for (var i = 0; i < result; i++) {
@@ -49,6 +51,10 @@ router.get('/:id', function(req, res, next) {
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = "mailto:" + req.params.url;
+  if (!utils.verifyURLs(url)) {
+    return res.json({"success":false, "error": 'Bad URL(s)'});
+  }
+  if (!utils)
   getAccountForUrl(url, (account) => {
     console.log('callback', account);
     res.json(account);
@@ -63,7 +69,7 @@ router.post('/create', function(req, res, next) {
   if (account.id !== 0) {
     return res.json({"success":false, "error": 'Account exists'});
   }
-  if (!verifyURLs(account.urls)) {
+  if (!utils.verifyURLs(account.urls)) {
     return res.json({"success":false, "error": 'Bad URL(s)'});
   }
   var method = eth.contract.methods.addNewAccount(
@@ -141,7 +147,7 @@ router.post('/give', function(req, res, next) {
   if (!recipient.startsWith("mailto:")) {
     recipient = "mailto:" + recipient;
   }
-  if (!verifyURLs(recipient)) {
+  if (!utils.verifyURLs(recipient)) {
     return res.json({"success":false, "error": "Bad URL"});
   }
   console.log("About to give " + req.body.amount + " from id " + sender + " to", recipient);
@@ -242,10 +248,6 @@ function getAccountForUrl(url, callback) {
   .catch(function(error) {
     console.log('getAccountFor call error ' + id, error);
   });
-}
-
-function verifyURLs(urls) {
-  return true;
 }
 
 module.exports = router;
