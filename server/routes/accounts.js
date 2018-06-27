@@ -52,6 +52,7 @@ router.get('/:id', function(req, res, next) {
   });
 });
 
+
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = "mailto:" + req.params.url;
@@ -92,6 +93,7 @@ router.put('/update', function(req, res, next) {
   });
 });
 
+
 /* DELETE remove account. */
 router.delete('/:id', function(req, res, next) {
   if (req.params.id === 0) {
@@ -111,6 +113,7 @@ router.delete('/:id', function(req, res, next) {
     console.log('call error ' + error);
   });
 });
+
 
 /* PUT give coins */
 router.post('/give', function(req, res, next) {
@@ -155,6 +158,13 @@ router.post('/give', function(req, res, next) {
   .catch(function(error) {
     console.log('call error ' + error);
   });
+});
+
+
+/* POST set token */
+router.post('/token/set', function(req, res, next) {
+  console.log("token set", req.body)
+  res.json({"success":true});
 });
 
 
