@@ -45,6 +45,20 @@ class Api {
       return error;
     });
   }
+
+  static setToken(user) {
+    // TODO ensure this is HTTPS
+    return user.getIdToken(/* forceRefresh */ true).then(function(idToken) {
+      fetch('/accounts/token/set', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+        body: JSON.stringify({ ykid: user.ykid, token: idToken })
+      });
+    }).catch(error => {
+      return error;
+    });
+  }
+
 }
 
 export default Api;

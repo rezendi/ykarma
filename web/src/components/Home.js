@@ -29,7 +29,7 @@ class Home extends React.Component {
   }
 
   render() {
-    if (!this.props.user.uid) {
+    if (!this.props.user || !this.props.user.uid) {
       return (
         <div>Please log in</div>
       );

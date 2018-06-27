@@ -9,4 +9,5 @@ export default {
   vendors: [],
   vendor: {},
   editing: false,
+  tokenSet: false,
 }

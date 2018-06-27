@@ -1,9 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { fetchUser } from '../store/data/actions'
-import Api from '../store/Api';
+import { fetchUser, setToken } from '../store/data/actions'
 import { auth } from '../firebase';
+
 
 class Header extends React.Component {
   
@@ -12,25 +12,13 @@ class Header extends React.Component {
   }
   
   componentWillReceiveProps(nextProps) {
-    // TODO ensure this is HTTPS
-    if (auth.getUser()) {
-      auth.getUser().getIdToken(/* forceRefresh */ true).then(function(idToken) {
-        fetch('/accounts/token/set', {
-          method: 'POST',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-          body: JSON.stringify({ ykid: nextProps.user.ykid, token: idToken })
-        })
-        .then(res => {
-          if (!res.ok) {
-            alert("Server error!");
-          }
-        });
-      });
+    if (!setToken && auth.getUser()) {
+      this.props.setToken(auth.getUser());
     }
   }
 
   render() {
-    if (!this.props.user.uid) {
+    if (!this.props.user || !this.props.user.uid) {
       return (
         <header>
           <nav>
@@ -127,6 +115,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   return {
     fetchUser: () => dispatch(fetchUser()),
+    setToken: (user) => dispatch(setToken(user)),
   }
 }
 

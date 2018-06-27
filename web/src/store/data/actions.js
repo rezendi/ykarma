@@ -97,3 +97,17 @@ export function fetchYkUser(user) {
 export function userFetched(user) {
   return { type: (user === null ? types.NO_USER : types.USER), user };
 }
+
+export function setToken(user) {
+  return function(dispatch) {
+    return Api.setToken(user).then(() => {
+      return dispatch(tokenSet());
+    }).catch(error => {
+      throw(error);
+    });
+  };
+}
+
+export function tokenSet() {
+  return { type: types.TOKEN_SET };
+}

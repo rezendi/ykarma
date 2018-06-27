@@ -9,5 +9,6 @@ admin.initializeApp({
 var db = admin.firestore();
 
 module.exports = {
-    db: db,
+  admin: admin,
+  db: db,
 };

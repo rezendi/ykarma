@@ -140,11 +140,11 @@ router.post('/give', function(req, res, next) {
       console.log('result', result);
       var docRef = firebase.db.collection('email-preferences').doc(recipient);
       docRef.get().then((doc) => {
-        console.log("got doc",doc);
         // TODO: query rather than get entire document?
         var sendEmail = !doc.exists || doc.recipient.data().all || !doc.recipient.data()[sender]; 
         if (sendEmail) {
-          sendKarmaSentMail(req.body.amount, recipient);
+          const senderName = req.session.name || req.session.email;
+          sendKarmaSentMail(senderName, recipient, req.body.amount);
           docRef.update({ [sender]:true }, { create: true } );
         }
         res.json({"success":true});
@@ -164,7 +164,15 @@ router.post('/give', function(req, res, next) {
 /* POST set token */
 router.post('/token/set', function(req, res, next) {
   console.log("token set", req.body)
-  res.json({"success":true});
+  firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
+    req.session.uid = decodedToken.uid;
+    req.session.name = decodedToken.displayName;
+    req.session.email = decodedToken.email;
+    req.session.ykid = req.body.ykid;
+    res.json({"success":true});
+  }).catch(function(error) {
+    res.json({"success":false, "error":error});
+  });
 });
 
 
@@ -246,14 +254,13 @@ function getAccountForUrl(url, callback) {
   });
 }
 
-function sendKarmaSentMail(amount, recipient) {
-  const name = ''; // get from session data
+function sendKarmaSentMail(sender, recipient, amount) {
   var recipientEmail = recipient.replace("mailto:","");
   // TODO check that the URL is an email address
   const msg = {
     to: recipientEmail,
     from: 'karma@ykarma.com',
-    subject: `${name} just sent you ${amount} YKarma!`,
+    subject: `${sender} just sent you ${amount} YKarma!`,
     text: 'You should totally find out more!',
     html: '<strong>You should totally find out more.</strong>',
   };
