@@ -1,5 +1,5 @@
 export default {
-  user: null,
+  user: {},
   communities: [],
   community: { metadata: {}},
   accounts: [],
@@ -9,5 +9,4 @@ export default {
   vendors: [],
   vendor: {},
   editing: false,
-  tokenSet: false,
 }

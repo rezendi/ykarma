@@ -85,9 +85,18 @@ export function fetchYkUser(user) {
   if (user === null) {
     return userFetched(user);
   }
-  return function(dispatch) {
-    return Api.loadAccountForUser(user).then(user => {
-      dispatch(userFetched(user));
+  return function(dispatch, getState) {
+    return Api.loadAccountForUser(user).then(loaded => {
+      dispatch(userFetched(loaded));
+      auth.getUser().getIdToken(/* forceRefresh */ true).then(function(idToken) {
+        fetch('/accounts/token/set', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+          body: JSON.stringify({ ykid: loaded.yk.id, token: idToken })
+        });
+      }).catch(error => {
+        throw(error);
+      })
     }).catch(error => {
       throw(error);
     });
@@ -98,16 +107,3 @@ export function userFetched(user) {
   return { type: (user === null ? types.NO_USER : types.USER), user };
 }
 
-export function setToken(user) {
-  return function(dispatch) {
-    return Api.setToken(user).then(() => {
-      return dispatch(tokenSet());
-    }).catch(error => {
-      throw(error);
-    });
-  };
-}
-
-export function tokenSet() {
-  return { type: types.TOKEN_SET };
-}

@@ -5,10 +5,6 @@ import { fetchUser } from '../store/data/actions'
 
 class Profile extends React.Component {
 
-  componentDidMount() {
-    this.props.fetchUser();
-  }
-  
   render() {
     return (
       <Grid>
@@ -37,10 +33,4 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    fetchUser: () => dispatch(fetchUser()),
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Profile);
+export default connect(mapStateToProps, null)(Profile);

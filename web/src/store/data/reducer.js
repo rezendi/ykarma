@@ -46,15 +46,6 @@ export function editingReducer(state = initialState.editing, action) {
   }
 }
 
-export function tokenReducer(state = initialState.tokenSet, action) {
-  switch (action.type) {
-    case types.TOKEN_SET:
-      return !state;
-    default:
-      return state
-  }
-}
-
 export function userReducer(state = initialState.user, action) {
   switch (action.type) {
     case types.USER:

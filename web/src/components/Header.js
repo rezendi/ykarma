@@ -2,8 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { fetchUser, setToken } from '../store/data/actions'
-import { auth } from '../firebase';
-
 
 class Header extends React.Component {
   
@@ -11,12 +9,6 @@ class Header extends React.Component {
     this.props.fetchUser();
   }
   
-  componentWillReceiveProps(nextProps) {
-    if (!setToken && auth.getUser()) {
-      this.props.setToken(auth.getUser());
-    }
-  }
-
   render() {
     if (!this.props.user || !this.props.user.uid) {
       return (
@@ -115,7 +107,6 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   return {
     fetchUser: () => dispatch(fetchUser()),
-    setToken: (user) => dispatch(setToken(user)),
   }
 }
 
