@@ -127,6 +127,7 @@ router.post('/give', function(req, res, next) {
     sender,
     recipient,
     req.body.amount,
+    '',
   );
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {

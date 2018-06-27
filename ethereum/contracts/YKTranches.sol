@@ -25,7 +25,7 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function give(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags) public onlyOwner {
+  function give(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags, string _message) public onlyOwner {
     require (_recipient > 0);
     uint256 accumulated;
     Giving storage available = giving[_sender];
@@ -42,6 +42,7 @@ contract YKTranches is Ownable, YKStructs {
     Spending storage receiver = spending[_recipient];
     receiver.amounts.push(accumulated);
     receiver.tags.push(_tags);
+    receiver.messages.push(_message);
   }
   
   function availableToSpend(uint256 _id, string _tag) public view onlyOwner returns (uint256) {

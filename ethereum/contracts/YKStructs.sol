@@ -10,8 +10,9 @@ contract YKStructs {
   struct Spending {
     uint256[] amounts;
     string[] tags;
+    string[] messages;
   }
-
+  
   struct Account {
     uint256 id;
     uint256 communityId;

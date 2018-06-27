@@ -41,12 +41,12 @@ contract YKarma is Oracular, YKStructs {
     vendorData = _vendors;
   }
 
-  function giveTo(string _url, uint256 _amount) public {
+  function giveTo(string _url, uint256 _amount, string _message) public {
     uint256 giverId = accountData.accountIdForAddress(msg.sender);
-    give(giverId, _url, _amount);
+    give(giverId, _url, _amount, _message);
   }
 
-  function give(uint256 _giverId, string _url, uint256 _amount) public onlyOracle {
+  function give(uint256 _giverId, string _url, uint256 _amount, string _message) public onlyOracle {
     Account memory giver = accountData.accountForId(_giverId);
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
@@ -55,7 +55,7 @@ contract YKarma is Oracular, YKStructs {
     if (receiverId == 0) {
       receiverId = addNewAccount(community.id, 0, '', _url);
     }
-    trancheData.give(_giverId, receiverId, _amount, community.tags);
+    trancheData.give(_giverId, receiverId, _amount, community.tags, _message);
   }
 
   // TODO make rewards resellable?

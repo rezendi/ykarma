@@ -37,12 +37,12 @@ contract('Paces', function(accounts) {
     await ykarma.recalculateBalances(1);
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[6], '100', "Account replenished");
-    await ykarma.give(1, 'mailto:jay@rezendi.com', 40);
+    await ykarma.give(1, 'mailto:jay@rezendi.com', 40, "Just a message");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[6], '60', "Giving happened");
     vals = await ykarma.accountForId(2);
     assert.equal(""+vals[7], '40', "Giving received");
-    await ykarma.give(1, 'mailto:jay@rezendi.com', 20);
+    await ykarma.give(1, 'mailto:jay@rezendi.com', 20, "Another message");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[6], '40', "Giving happened II");
     vals = await ykarma.accountForId(2);
