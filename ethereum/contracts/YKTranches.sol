@@ -17,16 +17,15 @@ contract YKTranches is Ownable, YKStructs {
   uint256 REFRESH_WINDOW = 40320;
   uint256 GIVING_AMOUNT = 100;
 
-  function availableToGive(uint256 _id) public returns (uint256) {
+  function availableToGive(uint256 _id) public view onlyOwner returns (uint256) {
     uint256 total = 0;
-    recalculateGivingTranches(_id);
     for (uint256 i=0 ; i<giving[_id].amounts.length; i++) {
       total = total.add(giving[_id].amounts[i]);
     }
     return total;
   }
   
-  function give(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags) public {
+  function give(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags) public onlyOwner {
     require (_recipient > 0);
     uint256 accumulated;
     Giving storage available = giving[_sender];
@@ -45,7 +44,7 @@ contract YKTranches is Ownable, YKStructs {
     receiver.tags.push(_tags);
   }
   
-  function availableToSpend(uint256 _id, string _tag) public view returns (uint256) {
+  function availableToSpend(uint256 _id, string _tag) public view onlyOwner returns (uint256) {
     uint256 total = 0;
     Spending storage available = spending[_id];
     for (uint256 i=0; i < available.amounts.length; i++) {
@@ -80,7 +79,7 @@ contract YKTranches is Ownable, YKStructs {
     recipient.amounts.push(GIVING_AMOUNT);
   }
   
-  function recalculateGivingTranches(uint256 _id) public onlyOwner {
+  function recalculateBalances(uint256 _id) public onlyOwner {
     Giving storage available = giving[_id];
     if (available.blocks.length == 0 || block.number < EXPIRY_WINDOW) {
       return;

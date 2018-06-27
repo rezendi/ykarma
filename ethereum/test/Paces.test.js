@@ -34,6 +34,7 @@ contract('Paces', function(accounts) {
     assert.equal(vals[4], 'mailto:jon@rezendi.com', "Account metadata");
     assert.equal(""+vals[6], '0', "Account pre-replenish");
     await ykarma.replenish(1);
+    await ykarma.recalculateBalances(1);
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[6], '100', "Account replenished");
     await ykarma.give(1, 'mailto:jay@rezendi.com', 40);

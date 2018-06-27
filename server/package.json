@@ -12,6 +12,7 @@
     "dot-env": "0.0.1",
     "dotenv": "^6.0.0",
     "express": "~4.16.0",
+    "firebase-admin": "^5.12.1",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
     "morgan": "~1.9.0",

@@ -3,6 +3,7 @@ var router = express.Router();
 var bodyParser = require("body-parser");
 var eth = require('./eth');
 var util = require('./util');
+var firebase = require('./firebase');
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -133,11 +134,21 @@ router.post('/give', function(req, res, next) {
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      const sendEmail = true; // TODO: check result and firestore
-      if (sendEmail) {
-        sendKarmaSentMail(req.body.amount, recipient);
-      }
-      res.json({"success":true});
+      var docRef = firebase.db.collection('email-preferences').doc(recipient);
+      docRef.get().then((doc) => {
+        console.log("got doc",doc);
+        // TODO: query rather than get entire document?
+        var sendEmail = !doc.exists || doc.recipient.data().all || !doc.recipient.data()[sender]; 
+        if (sendEmail) {
+          sendKarmaSentMail(req.body.amount, recipient);
+          docRef.update({ [sender]:true }, { create: true } );
+        }
+        res.json({"success":true});
+      })
+      .catch(err => {
+        console.log('Error getting document', err);
+        res.json({"success":false, "error":err});
+      });
     }
   })
   .catch(function(error) {

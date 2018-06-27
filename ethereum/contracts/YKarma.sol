@@ -133,7 +133,11 @@ contract YKarma is Oracular, YKStructs {
     Community memory c = communityData.communityForId(_communityId);
     return c.accountIds.length;
   }
-  
+
+  function recalculateBalances(uint256 _id) public onlyOracle {
+    trancheData.recalculateBalances(_id);
+  }
+
   //TODO: make spendable a JSON string with tags, ugh
   function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
     Account memory a = accountData.accountForId(_id);
