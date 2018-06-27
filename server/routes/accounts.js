@@ -164,9 +164,7 @@ router.post('/give', function(req, res, next) {
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      if (result) {
-        // TODO send email to recipient
-      }
+      // TODO send email to recipient depending on result and firebase settings
       res.json({"success":true});
     }
   })
