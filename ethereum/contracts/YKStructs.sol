@@ -8,6 +8,7 @@ contract YKStructs {
 }
 
   struct Spending {
+    uint256[] senders;
     uint256[] amounts;
     string[] tags;
     string[] messages;

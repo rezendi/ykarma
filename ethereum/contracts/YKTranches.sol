@@ -40,6 +40,7 @@ contract YKTranches is Ownable, YKStructs {
       }
     }
     Spending storage receiver = spending[_recipient];
+    receiver.senders.push(_sender);
     receiver.amounts.push(accumulated);
     receiver.tags.push(_tags);
     receiver.messages.push(_message);
