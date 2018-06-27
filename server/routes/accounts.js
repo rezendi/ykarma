@@ -84,7 +84,8 @@ router.post('/create', function(req, res, next) {
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      res.json('{success:true}');
+      // TODO send email to recipientif URL startsWith mailto
+      res.json({'success':true});
     }
   })
   .catch(function(error) {
@@ -163,6 +164,9 @@ router.post('/give', function(req, res, next) {
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
+      if (result) {
+        // TODO send email to recipient
+      }
       res.json({"success":true});
     }
   })
