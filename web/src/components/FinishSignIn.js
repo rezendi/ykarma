@@ -1,5 +1,4 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
 import { auth } from '../firebase';
 
 class FinishSignIn extends React.Component {

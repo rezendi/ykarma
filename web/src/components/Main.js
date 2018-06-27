@@ -9,7 +9,6 @@ import Admin from './Admin';
 import Community from './Community';
 import CommunityForm from './CommunityForm';
 import Account from './Account';
-import AccountForm from './AccountForm';
 import Vendor from './Vendor';
 import VendorForm from './VendorForm';
 import Reward from './Reward';

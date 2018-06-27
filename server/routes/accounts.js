@@ -54,10 +54,9 @@ router.get('/:id', function(req, res, next) {
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = "mailto:" + req.params.url;
-  if (!utils.verifyURLs(url)) {
+  if (!util.verifyURLs(url)) {
     return res.json({"success":false, "error": 'Bad URL(s)'});
   }
-  if (!utils)
   getAccountForUrl(url, (account) => {
     console.log('callback', account);
     res.json(account);
@@ -119,7 +118,7 @@ router.post('/give', function(req, res, next) {
   if (!recipient.startsWith("mailto:")) {
     recipient = "mailto:" + recipient;
   }
-  if (!utils.verifyURLs(recipient)) {
+  if (!util.verifyURLs(recipient)) {
     return res.json({"success":false, "error": "Bad URL"});
   }
   console.log("About to give " + req.body.amount + " from id " + sender + " to", recipient);
@@ -128,14 +127,13 @@ router.post('/give', function(req, res, next) {
     recipient,
     req.body.amount,
   );
-  console.log("About to send", req.body);
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      const sendEmail = result.created || true; // check firestore as well as result
+      const sendEmail = true; // TODO: check result and firestore
       if (sendEmail) {
         sendKarmaSentMail(req.body.amount, recipient);
       }

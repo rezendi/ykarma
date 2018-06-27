@@ -1,15 +1,20 @@
+const URL = require('url').URL;
+
 const isValidUrl = (string) => {
   try {
     new URL(string);
     return true;
-  } catch (_) {
+  } catch (error) {
+    console.log("error",error);
     return false;  
   }
 }
 
-function verifyURLs(urls) {
-  for (var url in urls.split(",")) {
-    if (!isValidUrl(url)) {
+function verifyURLs(urlsString) {
+  var split = urlsString.split(",");
+  for (var i = 0; i < split.length; i++) {
+    if (!isValidUrl(split[i])) {
+      console.log("invalid url",split[i])
       return false;
     }
   }
@@ -18,5 +23,5 @@ function verifyURLs(urls) {
 
 
 module.exports = {
-    isValidUrl: isValidUrl,
+  verifyURLs: verifyURLs,
 };
