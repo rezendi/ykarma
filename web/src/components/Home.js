@@ -2,14 +2,9 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
-import { fetchUser } from '../store/data/actions'
 
 class Home extends React.Component {
 
-  componentDidMount() {
-    this.props.fetchUser();
-  }
-  
   submitForm = async (values) => {
     console.log("Submitting form", values);
     fetch('/accounts/give', {
@@ -34,9 +29,14 @@ class Home extends React.Component {
   }
 
   render() {
+    if (!this.props.user.uid) {
+      return (
+        <div>Please log in</div>
+      );
+    }
     if (!this.props.user.ykid) {
       return (
-        <div>User not found...</div>
+        <div>Account for { this.props.user.displayName || this.props.user.email } not found...</div>
       );
     }
     return (
@@ -88,15 +88,9 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    fetchUser: () => dispatch(fetchUser()),
-  }
-}
-
 Home = reduxForm({
   form: 'give',
 })(Home);
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default connect(mapStateToProps, null)(Home);

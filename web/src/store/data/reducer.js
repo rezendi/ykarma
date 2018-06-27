@@ -58,7 +58,7 @@ export function userReducer(state = initialState.editing, action) {
         uid: action.user.uid,
         providerData: action.user.providerData,
         isAdmin: action.user.email === "jon@rezendi.com",
-        ykid: action.user.yk ? action.user.yk.id : null,
+        ykid: action.user.yk ? parseInt(action.user.yk.id) : null,
         givable: action.user.yk ? action.user.yk.givable : 0,
         spendable: action.user.yk ? action.user.yk.spendable : 0,
       }
