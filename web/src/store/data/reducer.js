@@ -60,7 +60,8 @@ export function userReducer(state = initialState.user, action) {
         isAdmin: action.user.email === "jon@rezendi.com",
         ykid: action.user.yk ? parseInt(action.user.yk.id) : null,
         givable: action.user.yk ? action.user.yk.givable : 0,
-        spendable: action.user.yk ? action.user.yk.spendable : 0,
+        given: action.user.yk ? action.user.yk.given : {},
+        spendable: action.user.yk ? action.user.yk.spendable : {},
       }
     case types.NO_USER:
       return {};

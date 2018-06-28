@@ -8,6 +8,8 @@ var firebase = require('./firebase');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const ADMIN_ID = 1;
+
 // TODO: if it's a community admin, use their address if available
 var communityAdminAddress = null;
 eth.web3.eth.getAccounts().then((ethAccounts) => {
@@ -117,7 +119,7 @@ router.delete('/:id', function(req, res, next) {
 
 /* PUT give coins */
 router.post('/give', function(req, res, next) {
-  var sender = req.body.id; // TODO get from session
+  var sender = req.session.ykid == ADMIN_ID ? req.body.id : req.session.ykid;
   var recipient = req.body.email;
   if (!recipient.startsWith("mailto:")) {
     recipient = "mailto:" + recipient;
@@ -125,12 +127,12 @@ router.post('/give', function(req, res, next) {
   if (!util.verifyURLs(recipient)) {
     return res.json({"success":false, "error": "Bad URL"});
   }
-  console.log("About to give " + req.body.amount + " from id " + sender + " to", recipient);
+  console.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
   var method = eth.contract.methods.give(
     sender,
     recipient,
     req.body.amount,
-    '',
+    req.body.message || '',
   );
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
@@ -183,17 +185,8 @@ function getAccountFor(id, callback) {
     if (error) {
       console.log('getAccountFor error', error);
     } else {
-    console.log('getAccountFor result', result);
-      var account = {
-        id:           result[0],
-        communityId:  result[1],
-        userAddress:  result[2],
-        metadata:     JSON.parse(result[3] || '{}'),
-        urls:         result[4],
-        rewards:      result[5],
-        givable:      result[6],
-        spendable:    result[7],
-      };
+      console.log('getAccountFor result', result);
+      var account = getAccountFromResult(result);
       callback(account);
     }
   })
@@ -210,17 +203,8 @@ function getAccountWithinCommunity(communityId, idx, callback) {
     if (error) {
       console.log('accountWithinCommunity error', error);
     } else {
-    console.log('accountWithinCommunity result', result);
-      var account = {
-        id:           result[0],
-        communityId:  result[1],
-        userAddress:  result[2],
-        metadata:     JSON.parse(result[3]),
-        urls:         result[4],
-        rewards:      result[5],
-        givable:      result[6],
-        spendable:    result[7],
-      };
+      console.log('accountWithinCommunity result', result);
+      var account = getAccountFromResult(result);
       callback(account);
     }
   })
@@ -235,23 +219,28 @@ function getAccountForUrl(url, callback) {
     if (error) {
       console.log('getAccountForUrl error', error);
     } else {
-    console.log('getAccountForUrl result', result);
-      var account = {
-        id:           result[0],
-        communityId:  result[1],
-        userAddress:  result[2],
-        metadata:     JSON.parse(result[3] || '{}'),
-        urls:         result[4],
-        rewards:      result[5],
-        givable:      result[6],
-        spendable:    result[7],
-      };
+      console.log('getAccountForUrl result', result);
+      var account = getAccountFromResult(result);
       callback(account);
     }
   })
   .catch(function(error) {
     console.log('getAccountFor call error ' + id, error);
   });
+}
+
+function getAccountFromResult(result) {
+  return {
+    id:           result[0],
+    communityId:  result[1],
+    userAddress:  result[2],
+    metadata:     result[3],
+    urls:         result[4],
+    rewards:      result[5],
+    givable:      result[6],
+    given:        result[7],
+    spendable:    result[8],
+  };
 }
 
 function sendKarmaSentMail(sender, recipient, amount) {

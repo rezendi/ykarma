@@ -137,9 +137,9 @@ contract YKTranches is Ownable, YKStructs {
     uint256 min = 0;
     uint256 max = record.recipients.length;
     string memory recipients = uintArrayToJSONString(record.recipients, min, max);
-    string memory out = "{'recipients':";
+    string memory out = '{"recipients":';
     out = out.toSlice().concat(recipients.toSlice());
-    out = out.toSlice().concat(",'amounts':".toSlice());
+    out = out.toSlice().concat(',"amounts":'.toSlice());
     string memory amounts = uintArrayToJSONString(record.amounts, min, max);
     out = out.toSlice().concat(amounts.toSlice());
     out = out.toSlice().concat("}".toSlice());
@@ -151,15 +151,15 @@ contract YKTranches is Ownable, YKStructs {
     uint256 min = 0;
     uint256 max = available.amounts.length;
     string memory senders = uintArrayToJSONString(available.senders, min, max);
-    string memory out = "{'senders':";
+    string memory out = '{"senders":';
     out = out.toSlice().concat(senders.toSlice());
-    out = out.toSlice().concat(",'amounts':".toSlice());
+    out = out.toSlice().concat(',"amounts":'.toSlice());
     string memory amounts = uintArrayToJSONString(available.amounts, min, max);
     out = out.toSlice().concat(amounts.toSlice());
-    out = out.toSlice().concat(",'tags':".toSlice());
+    out = out.toSlice().concat(',"tags":'.toSlice());
     string memory tags = StringArrayToJSONString(available.tags, min, max);
     out = out.toSlice().concat(tags.toSlice());
-    out = out.toSlice().concat(",'messages':".toSlice());
+    out = out.toSlice().concat(',"messages":'.toSlice());
     string memory messages = StringArrayToJSONString(available.messages, min, max);
     out = out.toSlice().concat(messages.toSlice());
     out = out.toSlice().concat("}".toSlice());
@@ -179,15 +179,16 @@ contract YKTranches is Ownable, YKStructs {
     return out;
   }
   
+  //TODO handle quotes obv.
   function StringArrayToJSONString(string[] _in, uint256 _min, uint256 _max) public pure returns (string) {
     string memory out = "[";
     for (uint i = _min; i < _max; i++) {
-      out = out.toSlice().concat("'".toSlice());
+      out = out.toSlice().concat('"'.toSlice());
       out = out.toSlice().concat(_in[i].toSlice());
       if (i < _max - 1) {
-        out = out.toSlice().concat("',".toSlice());
+        out = out.toSlice().concat('",'.toSlice());
       } else {
-        out = out.toSlice().concat("'".toSlice());
+        out = out.toSlice().concat('"'.toSlice());
       }
     }
     out = out.toSlice().concat("]".toSlice());
