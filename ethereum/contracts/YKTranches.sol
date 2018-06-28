@@ -12,6 +12,7 @@ contract YKTranches is Ownable, YKStructs {
   using SafeMath for uint256;
 
   mapping(uint256 => Giving) giving;
+  mapping(uint256 => Given) given;
   mapping(uint256 => Spending) spending;
   uint256 EXPIRY_WINDOW = 691200;
   uint256 REFRESH_WINDOW = 40320;
@@ -39,6 +40,11 @@ contract YKTranches is Ownable, YKStructs {
         available.amounts[i] = 0;
       }
     }
+    // record for sender
+    given[_sender].recipients.push(_recipient);
+    given[_sender].amounts.push(accumulated);
+    
+    // send to recipient
     Spending storage receiver = spending[_recipient];
     receiver.senders.push(_sender);
     receiver.amounts.push(accumulated);
@@ -124,5 +130,61 @@ contract YKTranches is Ownable, YKStructs {
     strings.slice memory s2 = _tags.toSlice();
     strings.slice memory s3 = s2.find(s1);
     return !s3.empty();
+  }
+  
+  function givenToJSON(uint256 _sender) public view onlyOwner returns (string) {
+    string memory out = "{'recipients':";
+    Given storage record = given[_sender];
+    uint256 min = 0;
+    uint256 max = record.recipients.length;
+    string memory recipients = uintArrayToJSONString(record.recipients, min, max);
+    out = out.toSlice().concat(recipients.toSlice());
+    out = out.toSlice().concat(",'amounts':".toSlice());
+    string memory amounts = uintArrayToJSONString(record.amounts, min, max);
+    out = out.toSlice().concat(amounts.toSlice());
+    out = out.toSlice().concat("}".toSlice());
+    return out;
+  }
+
+  function uintArrayToJSONString(uint256[] _in, uint256 _min, uint256 _max) public pure returns (string) {
+    string memory out = "[";
+    for (uint i = _min; i < _max; i++) {
+      string memory s = uint2str(_in[i]);
+      out = out.toSlice().concat(s.toSlice());
+      if (i < _max - 1) {
+        out = out.toSlice().concat(",".toSlice());
+      }
+    }
+    out = out.toSlice().concat("]".toSlice());
+    return out;
+  }
+  
+  function StringArrayToJSONString(string[] _in, uint256 _min, uint256 _max) public pure returns (string) {
+    string memory out = "[";
+    for (uint i = _min; i < _max; i++) {
+      out = out.toSlice().concat(_in[i].toSlice());
+      if (i < _max - 1) {
+        out = out.toSlice().concat(",".toSlice());
+      }
+    }
+    out = out.toSlice().concat("]".toSlice());
+    return out;
+  }
+  
+  function uint2str(uint i) internal pure returns (string) {
+    if (i == 0) return "0";
+    uint j = i;
+    uint len;
+    while (j != 0){
+      len++;
+      j /= 10;
+    }
+    bytes memory bstr = new bytes(len);
+    uint k = len - 1;
+    while (i != 0){
+      bstr[k--] = byte(48 + i % 10);
+      i /= 10;
+    }
+    return string(bstr);
   }
 }

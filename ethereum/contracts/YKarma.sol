@@ -139,22 +139,21 @@ contract YKarma is Oracular, YKStructs {
   }
 
   //TODO: make spendable a JSON string with tags, ugh
-  function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
+  function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256, uint256, string, uint256) {
     Account memory a = accountData.accountForId(_id);
     Community memory community = communityData.communityForId(a.communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
-    uint256 givable = trancheData.availableToGive(a.id);
     uint256 spendable = trancheData.availableToSpend(a.id, '');
-    return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length, givable, spendable);
+    return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length, trancheData.availableToGive(a.id), trancheData.givenToJSON(a.id), spendable);
   }
   
-  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
+  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, string, string, uint256, uint256, string, uint256) {
     Community memory community = communityData.communityForId(_communityId);
     uint256 accountId = community.accountIds[_idx];
     return accountForId(accountId);
   }
   
-  function accountForUrl(string _url) public view returns (uint256, uint256, address, string, string, uint256, uint256, uint256) {
+  function accountForUrl(string _url) public view returns (uint256, uint256, address, string, string, uint256, uint256, string, uint256) {
     uint256 id = accountData.accountIdForUrl(_url);
     return accountForId(id);
   }

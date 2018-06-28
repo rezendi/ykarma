@@ -5,7 +5,12 @@ contract YKStructs {
   struct Giving {
     uint256[] amounts;
     uint256[] blocks;
-}
+  }
+
+  struct Given {
+    uint256[] recipients;
+    uint256[] amounts;
+  }
 
   struct Spending {
     uint256[] senders;
