@@ -3,11 +3,9 @@ require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
 var bodyParser = require("body-parser");
 var logger = require('morgan');
 var session = require('express-session');
-
 
 var indexRouter = require('./routes/index');
 var accountsRouter = require('./routes/accounts');
@@ -27,8 +25,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+var os = require("os");
+
 app.use(session({
   secret:process.env.SESSION_SECRET,
+  resave: false,
+  httpOnly: false,
+  saveUninitialized: false,
+  cookie: { secure: false }
 }));
 
 app.use('/', indexRouter);

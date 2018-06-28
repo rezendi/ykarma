@@ -1,6 +1,6 @@
 class Api {  
   static loadCommunities() {
-    return fetch('/communities')
+    return fetch('/communities', { credentials: 'include'})
       .then(response => {
         return response.json();
       }).catch(error => {
@@ -9,7 +9,7 @@ class Api {
   }
 
   static loadCommunity(communityId) {
-    return fetch(`/communities/${communityId}`)
+    return fetch(`/communities/${communityId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
       }).catch(error => {
@@ -18,7 +18,7 @@ class Api {
   }
 
   static loadAccountsFor(communityId) {
-    return fetch(`/accounts/for/${communityId}`)
+    return fetch(`/accounts/for/${communityId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
       }).catch(error => {
@@ -27,7 +27,7 @@ class Api {
   }
 
   static loadAccount(accountId) {
-    return fetch(`/accounts/${accountId}`)
+    return fetch(`/accounts/${accountId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
       }).catch(error => {
@@ -36,7 +36,7 @@ class Api {
   }
 
   static loadAccountForUser(user) {
-    return fetch(`/accounts/url/${user.email}`)
+    return fetch(`/accounts/url/${user.email}`, { credentials: 'include'})
       .then(response => {
         return response.json().then((json) => {
           return  { ...user, yk: json };

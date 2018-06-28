@@ -9,6 +9,7 @@ class Home extends React.Component {
     console.log("Submitting form", values);
     fetch('/accounts/give', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

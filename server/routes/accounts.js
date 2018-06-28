@@ -119,6 +119,7 @@ router.delete('/:id', function(req, res, next) {
 
 /* PUT give coins */
 router.post('/give', function(req, res, next) {
+  console.log("session in give", req.session);
   var sender = req.session.ykid == ADMIN_ID ? req.body.id : req.session.ykid;
   var recipient = req.body.email;
   if (!recipient.startsWith("mailto:")) {
@@ -165,12 +166,12 @@ router.post('/give', function(req, res, next) {
 
 /* POST set token */
 router.post('/token/set', function(req, res, next) {
-  console.log("token set", req.body)
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
     req.session.uid = decodedToken.uid;
     req.session.name = decodedToken.displayName;
     req.session.email = decodedToken.email;
     req.session.ykid = req.body.ykid;
+    console.log("session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});

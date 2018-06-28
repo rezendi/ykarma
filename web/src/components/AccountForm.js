@@ -11,6 +11,7 @@ class AccountForm extends React.Component {
     console.log("Submitting form", values);
     fetch('/accounts/update', {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

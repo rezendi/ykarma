@@ -10,6 +10,7 @@ class CommunityForm extends React.Component {
     console.log("Submitting form", values);
     fetch(values.id===0 ? '/communities/create' : '/communities/update', {
       method: values.id===0 ? 'POST' : 'PUT',
+      credentials: 'include',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

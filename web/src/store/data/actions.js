@@ -91,9 +91,14 @@ export function fetchYkUser(user) {
       auth.getUser().getIdToken(/* forceRefresh */ true).then(function(idToken) {
         fetch('/accounts/token/set', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
           body: JSON.stringify({ ykid: loaded.yk.id, token: idToken })
-        });
+        })/*.then(result => {
+          result.json().then((json) => {
+            console.log("token result",json);
+          });
+        })*/;
       }).catch(error => {
         throw(error);
       })
