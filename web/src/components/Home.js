@@ -50,7 +50,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy { this.props.user.email } { this.props.user.ykid } { this.props.user.givable } { this.props.user.given }  { this.props.user.spendable }
+                  Howdy { this.props.user.email } you have { this.props.user.givable } karma available to give
                 </Row>
               </Panel.Body>
             </Panel>

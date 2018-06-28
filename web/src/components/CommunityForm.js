@@ -29,7 +29,13 @@ class CommunityForm extends React.Component {
       if (!res.ok) {
         alert("Server error!");
       } else {
-        values.id===0 ? this.props.history.push('/admin') : window.location.reload();
+        res.json().then((json) => {
+          if (json.success) {
+            values.id===0 ? this.props.history.push('/admin') : window.location.reload();
+          } else {
+            alert("Server failure! " + JSON.stringify(json));
+          }
+        });
       }
     });
   }

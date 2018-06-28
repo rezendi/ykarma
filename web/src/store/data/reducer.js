@@ -31,7 +31,7 @@ export function accountsReducer(state = initialState.accounts, action) {
 export function accountReducer(state = initialState.account, action) {
   switch (action.type) {
     case types.LOAD_ACCOUNT_SUCCESS:
-      return action.account || [];
+      return action.account || { metadata: {}};
     default:
       return state
   }

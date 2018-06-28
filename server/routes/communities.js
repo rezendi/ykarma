@@ -4,16 +4,15 @@ var router = express.Router();
 var eth = require('./eth');
 
 var fromAccount = null;
-
 eth.web3.eth.getAccounts().then((accounts) => {
   fromAccount = accounts[0];
 });
 
-var communities = [];
+const ADMIN_ID = 1;
 
 /* GET community list */
 router.get('/', function(req, res, next) {
-  communities = [];
+  var communities = [];
   var method = eth.contract.methods.getCommunityCount();
   method.call(function(error, result) {
     if (error) {
@@ -49,25 +48,23 @@ router.get('/:id', function(req, res, next) {
 
 /* POST new community. */
 router.post('/create', function(req, res, next) {
+  console.log("session", req.session);
+  if (parseInt(req.session.ykid) !== ADMIN_ID) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
   var community = req.body.community;
   console.log("community", JSON.stringify(community));
   if (community.id !== 0) {
-    res.json({'success':false, 'error':'community already exists'});
+    res.json({'success':false, 'error':'Community already exists'});
   }
-  var method = eth.contract.methods.addCommunity(
-    community.adminAddress,
-    community.flags || '0x0',
-    community.domain || '',
-    JSON.stringify(community.metadata),
-    community.tags || '',
-  );
+  var method = eth.contract.methods.addCommunity(0, '0x0', 'asdf.com', '{"name":"asdf"}', 'asdf');
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      res.json('{success:true}');
+      res.json({"success":true});
     }
   })
   .catch(function(error) {
@@ -78,6 +75,9 @@ router.post('/create', function(req, res, next) {
 /* PUT edit community */
 router.put('/update', function(req, res, next) {
   var community = req.body.community;
+  if (parseInt(req.session.ykid) !== ADMIN_ID && parseInt(req.session.communityAdminId) !== community.id) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
   console.log("community", JSON.stringify(community));
   if (community.id === 0) {
     res.json({'success':false, 'error':'community not saved'});
@@ -107,6 +107,9 @@ router.put('/update', function(req, res, next) {
 
 /* DELETE remove community. */
 router.delete('/:id', function(req, res, next) {
+  if (parseInt(req.session.ykid) !== ADMIN_ID) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
   if (req.params.id === 0) {
     return res.json({"success":false, "error": 'Community not saved'});
   }

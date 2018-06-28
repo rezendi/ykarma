@@ -25,14 +25,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var os = require("os");
-
 app.use(session({
   secret:process.env.SESSION_SECRET,
   resave: false,
   httpOnly: false,
   saveUninitialized: false,
-  cookie: { secure: false }
+  cookie: { secure: process.env.ENVIRONMENT !== "dev" }
 }));
 
 app.use('/', indexRouter);

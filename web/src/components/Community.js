@@ -43,7 +43,7 @@ class Community extends React.Component {
                 </Row>
                 {this.props.accounts.map(account =>
                   <Row key={account.id}>
-                    <Link to={`/account/${account.id}`}>{account.metadata.name}</Link>
+                    <Link to={`/account/${account.id}`}>{account.metadata.name || account.metadata.email}</Link>
                   </Row>
                 )}
               </Panel.Body>

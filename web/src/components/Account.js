@@ -10,14 +10,10 @@ class Account extends React.Component {
   }
 
   render() {
-   if (this.props.account === undefined) {
+    console.log("account", this.props.account);
+   if (this.props.account.id === undefined) {
       return (
         <div>Loading...</div>
-      );
-    }
-   if (this.props.account.metadata === undefined) {
-      return (
-        <div>Server error...</div>
       );
     }
     if (this.props.editing) {

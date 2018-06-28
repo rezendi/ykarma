@@ -22,9 +22,12 @@ contract('Paces', function(accounts) {
     await vendorData.transferOwnership(ykarma.address);
 
     // add a little data
-    await ykarma.addCommunity(accounts[1], false, 'rezendi.com', '{"name":"rezendi"}', 'cool');
+    await ykarma.addCommunity(accounts[1], '0x0', 'rezendi.com', '{"name":"rezendi"}', 'cool');
     let count = await ykarma.getCommunityCount();
     assert.equal(count, 1, "Community created");
+    await ykarma.addCommunity(0, '0x0', 'asdf.com', '{"name":"asdf"}', 'asdf');
+    let count2 = await ykarma.getCommunityCount();
+    assert.equal(count2, 2, "Community created");
     var vals = await ykarma.communityForId(1);
     assert.equal(accounts[1], vals[1]);
     await ykarma.addVendor(1, '{"name":"Rezendivendor"', accounts[2]);

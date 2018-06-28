@@ -8,25 +8,26 @@ var firebase = require('./firebase');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const ADMIN_ID = 1;
-
 // TODO: if it's a community admin, use their address if available
 var communityAdminAddress = null;
 eth.web3.eth.getAccounts().then((ethAccounts) => {
   communityAdminAddress = ethAccounts[0];
 });
 
-var accounts = [];
+const ADMIN_ID = 1;
 
 /* GET account list */
 router.get('/for/:communityId', function(req, res, next) {
-  accounts = [];
   const communityId = parseInt(req.params.communityId);
+  if (parseInt(req.session.ykid) !== ADMIN_ID && parseInt(req.session.communityAdminId) !== communityId) {
+    return res.json([]);
+  }
+  var accounts = [];
   var method = eth.contract.methods.getAccountCount(communityId);
   method.call(function(error, result) {
     if (error) {
       console.log('getAccountCount error', error);
-      res.json({"success":false, "error": error});
+      res.json([]);
     } else {
       console.log('getAccountCount result', result);
       for (var i = 0; i < result; i++) {
@@ -48,6 +49,9 @@ router.get('/for/:communityId', function(req, res, next) {
 /* GET account details */
 router.get('/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
+  if (parseInt(req.session.ykid) !== ADMIN_ID && parseInt(req.session.ykid) !== id) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
   getAccountFor(id, (account) => {
     console.log('callback', account);
     res.json(account);
@@ -57,6 +61,11 @@ router.get('/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
+  /*
+  if (req.session.ykid !== ADMIN_ID && req.session.email !== req.params.url) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
+  */
   var url = "mailto:" + req.params.url;
   if (!util.verifyURLs(url)) {
     return res.json({"success":false, "error": 'Bad URL(s)'});
@@ -73,7 +82,10 @@ router.put('/update', function(req, res, next) {
   var account = req.body.account;
   console.log("account", JSON.stringify(account));
   if (account.id === 0) {
-    return res.json({"success":false, "error": 'Account ID set'});
+    return res.json({"success":false, "error": 'Account ID not set'});
+  }
+  if (req.session.ykid !== ADMIN_ID && req.session.ykid !== account.id) {
+    return res.json({"success":false, "error": "Not authorized"});
   }
   var method = eth.contract.methods.editAccount(
     account.id,
@@ -98,6 +110,9 @@ router.put('/update', function(req, res, next) {
 
 /* DELETE remove account. */
 router.delete('/:id', function(req, res, next) {
+  if (req.session.ykid !== ADMIN_ID) {
+    return res.json({"success":false, "error": "Admin only"});
+  }
   if (req.params.id === 0) {
     return res.json({"success":false, "error": 'Account not saved'});
   }
@@ -119,8 +134,7 @@ router.delete('/:id', function(req, res, next) {
 
 /* PUT give coins */
 router.post('/give', function(req, res, next) {
-  console.log("session in give", req.session);
-  var sender = req.session.ykid == ADMIN_ID ? req.body.id : req.session.ykid;
+  var sender = req.session.ykid === ADMIN_ID ? req.body.id : req.session.ykid;
   var recipient = req.body.email;
   if (!recipient.startsWith("mailto:")) {
     recipient = "mailto:" + recipient;
@@ -171,7 +185,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.name = decodedToken.displayName;
     req.session.email = decodedToken.email;
     req.session.ykid = req.body.ykid;
-    console.log("session", req.session);
+    // console.log("session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});
@@ -220,7 +234,7 @@ function getAccountForUrl(url, callback) {
     if (error) {
       console.log('getAccountForUrl error', error);
     } else {
-      console.log('getAccountForUrl result', result);
+      // console.log('getAccountForUrl result', result);
       var account = getAccountFromResult(result);
       callback(account);
     }
@@ -235,12 +249,12 @@ function getAccountFromResult(result) {
     id:           result[0],
     communityId:  result[1],
     userAddress:  result[2],
-    metadata:     result[3],
+    metadata:     JSON.parse(result[3] || '{}'),
     urls:         result[4],
     rewards:      result[5],
     givable:      result[6],
-    given:        result[7],
-    spendable:    result[8],
+    given:        JSON.parse(result[7] || '{}'),
+    spendable:    JSON.parse(result[8] || '{}'),
   };
 }
 
