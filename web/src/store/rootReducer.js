@@ -8,5 +8,6 @@ export const rootReducer = combineReducers({
   accounts: accountsReducer,
   account: accountReducer,
   editing: editingReducer,
+  form: formReducer,
   user: userReducer,
 });

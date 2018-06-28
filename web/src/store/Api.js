@@ -1,5 +1,3 @@
-import { auth } from '../firebase';
-
 class Api {  
   static loadCommunities() {
     return fetch('/communities')

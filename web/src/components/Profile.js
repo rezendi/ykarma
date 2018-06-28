@@ -1,7 +1,6 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
-import { fetchUser } from '../store/data/actions'
 
 class Profile extends React.Component {
 

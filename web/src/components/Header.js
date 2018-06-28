@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { fetchUser, setToken } from '../store/data/actions'
+import { fetchUser } from '../store/data/actions'
 
 class Header extends React.Component {
   
