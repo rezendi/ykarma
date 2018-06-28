@@ -7,16 +7,24 @@ import AccountForm from './AccountForm';
 class Account extends React.Component {
   componentDidMount() {
     this.props.loadAccount(this.props.match.params.id);
+    this.setState({editing: false});
+  }
+  
+  toggleEditing = () => {
+    if (this.state.editing) {
+      this.setState({editing: false});
+    } else {
+      this.setState({editing: true});
+    }
   }
 
   render() {
-    console.log("account", this.props.account);
    if (this.props.account.id === undefined) {
       return (
         <div>Loading...</div>
       );
     }
-    if (this.props.editing) {
+    if (this.state && this.state.editing) {
       return (
         <AccountForm account = {this.props.account}/>
       );
@@ -27,7 +35,7 @@ class Account extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.props.account.metadata.name} <Button bsStyle="link" onClick={this.props.toggleEditing}>edit</Button>
+                {this.props.account.metadata.name} <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>
               </Panel.Heading>
               <Panel.Body>
                 <form onSubmit={this.submitForm}>
@@ -49,7 +57,6 @@ class Account extends React.Component {
 
 function mapStateToProps(state, ownProps) {
   return {
-    editing: state.editing,
     account: state.account
   }
 }
@@ -57,7 +64,6 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   return {
     loadAccount: (accountId) => dispatch(loadAccount(accountId)),
-    toggleEditing: () => dispatch(toggleEditing()),
   }
 }
 

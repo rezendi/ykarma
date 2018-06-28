@@ -10,6 +10,15 @@ class Community extends React.Component {
   componentDidMount() {
     this.props.loadCommunity(this.props.match.params.id);
     this.props.loadAccountsFor(this.props.match.params.id);
+    this.setState({editing: false});
+  }
+
+  toggleEditing = () => {
+    if (this.state.editing) {
+      this.setState({editing: false});
+    } else {
+      this.setState({editing: true});
+    }
   }
 
   render() {
@@ -23,7 +32,7 @@ class Community extends React.Component {
         <div>Server error...</div>
       );
     }
-    if (this.props.editing) {
+    if (this.state && this.state.editing) {
       return (
         <CommunityForm community = {this.props.community} />
       );
@@ -35,7 +44,7 @@ class Community extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.props.community.metadata.name} <Button bsStyle="link" onClick={this.props.toggleEditing}>edit</Button>
+                {this.props.community.metadata.name} <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>
               </Panel.Heading>
               <Panel.Body>
                 <Row>

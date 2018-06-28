@@ -57,7 +57,13 @@ router.post('/create', function(req, res, next) {
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
   }
-  var method = eth.contract.methods.addCommunity(0, '0x0', 'asdf.com', '{"name":"asdf"}', 'asdf');
+  var method = eth.contract.methods.addCommunity(
+    community.addressAdmin || 0,
+    community.flags || 0x00,
+    community.domain || '',
+    JSON.stringify(community.metadata),
+    community.tags || '',
+  );
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);
@@ -84,12 +90,13 @@ router.put('/update', function(req, res, next) {
   }
   var method = eth.contract.methods.editCommunity(
     community.id,
-    community.addressAdmin,
-    community.isClosed,
+    community.addressAdmin || 0,
+    community.flags || '0x0',
     community.domain || '',
     JSON.stringify(community.metadata),
     community.tags || '',
   );
+  console.log("account", fromAccount);
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
     if (error) {
       console.log('error', error);

@@ -37,6 +37,11 @@ class AccountForm extends React.Component {
   }
 
   render() {
+    let secondRow;
+    if (this.props.initialValues.id === 0) {
+      secondRow =  <Row><label htmlFor="url">URL</label><Field name="url" component="input" type="text"/></Row>;
+    }
+
     return (
       <Grid>
         <Row>
@@ -51,10 +56,7 @@ class AccountForm extends React.Component {
                     <label htmlFor="name">Name</label>
                     <Field name="name" component="input" type="text"/>
                   </Row>
-                  <Row>
-                    <label htmlFor="url">URL</label>
-                    <Field name="url" component="input" type="text"/>
-                  </Row>
+                  {secondRow}
                   <Row>
                     <Button type="submit">Submit</Button>
                   </Row>

@@ -41,6 +41,7 @@ class CommunityForm extends React.Component {
   }
 
   render() {
+    console.log("props",this.props);
     return (
       <Grid>
         <Row>
@@ -76,15 +77,14 @@ CommunityForm = reduxForm({
   form: 'community',
 })(CommunityForm);
 
-CommunityForm = connect(
-  state => ({
+function mapStateToProps(state, ownProps) {
+  return {
     initialValues: {
-      id: state.community.id || 0,
-      name: state.community.metadata.name,
-      description: state.community.metadata.description,
+      id: ownProps.community ? ownProps.community.id : 0,
+      name: ownProps.community ? ownProps.community.metadata.name : '',
+      description: ownProps.community ? ownProps.community.metadata.description : '',
     }
-  }),
-  {community: communityReducer}
-)(CommunityForm)
+  };
+}
 
-export default CommunityForm;
+export default connect(mapStateToProps, null)(CommunityForm);
