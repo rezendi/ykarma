@@ -149,12 +149,13 @@ router.post('/give', function(req, res, next) {
     req.body.amount,
     req.body.message || '',
   );
-  method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
+  method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
+    console.log('error', error);
+    res.json({'success':false, 'error':error});
+  })
+  .on('confirmation', (number, receipt) => {
+    if (number==1) {
+      console.log('receipt', receipt);
       var docRef = firebase.db.collection('email-preferences').doc(recipient);
       docRef.get().then((doc) => {
         // TODO: query rather than get entire document?

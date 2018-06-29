@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import CommunityForm from './CommunityForm';
 import { connect } from 'react-redux'
-import { loadCommunity, loadAccountsFor, toggleEditing } from '../store/data/actions'
+import { loadCommunity, loadAccountsFor } from '../store/data/actions'
 
 class Community extends React.Component {
   
@@ -76,7 +76,6 @@ function mapDispatchToProps(dispatch) {
   return {
     loadCommunity: (communityId) => dispatch(loadCommunity(communityId)),
     loadAccountsFor: (communityId) => dispatch(loadAccountsFor(communityId)),
-    toggleEditing: () => dispatch(toggleEditing()),
   }
 }
 

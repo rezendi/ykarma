@@ -70,6 +70,10 @@ contract YKarma is Oracular, YKStructs {
     accountData.redeem(spenderId, reward.id);
   }
 
+  function lastReplenished(uint256 _accountId) public view returns (uint256) {
+    return trancheData.lastReplenished(_accountId);
+  }
+
   function replenish(uint256 _accountId) public onlyOracle {
     trancheData.replenish(_accountId);
   }
@@ -86,7 +90,7 @@ contract YKarma is Oracular, YKStructs {
     return (c.id, c.adminAddress, c.flags, c.domain, c.metadata, c.tags, c.accountIds.length);
   }
   
-  function addCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) onlyOracle public {
+  function addNewCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) onlyOracle public {
     Community memory community = Community({
       id:           0,
       adminAddress: _adminAddress,
@@ -99,7 +103,7 @@ contract YKarma is Oracular, YKStructs {
     communityData.addCommunity(community);
   }
   
-  function editCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public {
+  function editExistingCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public {
     Community memory community = communityData.communityForId(_id);
     require (community.adminAddress == msg.sender || senderIsOracle());
     Community memory newCommunity = Community({

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
-import { loadAccount, toggleEditing } from '../store/data/actions'
+import { loadAccount } from '../store/data/actions'
 import AccountForm from './AccountForm';
 
 class Account extends React.Component {

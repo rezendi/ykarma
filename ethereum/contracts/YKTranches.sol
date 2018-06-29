@@ -81,6 +81,14 @@ contract YKTranches is Ownable, YKStructs {
     }
   }
   
+  function lastReplenished(uint256 _id) public view returns (uint256) {
+    Giving storage recipient = giving[_id];
+    if (recipient.blocks.length == 0) {
+      return 0;
+    }
+    return recipient.blocks[recipient.blocks.length-1];
+  }
+  
   function replenish(uint256 _id) public onlyOwner {
     Giving storage recipient = giving[_id];
     recipient.blocks.push(block.number);

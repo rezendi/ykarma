@@ -28,7 +28,7 @@ module.exports = (deployer, network, accounts) => {
                             YKVendors.deployed().then((ykv) => {
                               ykv.transferOwnership(YKarma.address, {from : owner});
                               YKarma.deployed().then((yk) => {
-                                yk.addCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha').then(() => {
+                                yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha').then(() => {
                                   yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com').then(() => {
                                     yk.accountForId(1).then(() => {
                                       yk.replenish(1);

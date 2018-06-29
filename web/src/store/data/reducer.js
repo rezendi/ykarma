@@ -37,15 +37,6 @@ export function accountReducer(state = initialState.account, action) {
   }
 }
 
-export function editingReducer(state = initialState.editing, action) {
-  switch (action.type) {
-    case types.EDITING_TOGGLED:
-      return !state;
-    default:
-      return state
-  }
-}
-
 export function userReducer(state = initialState.user, action) {
   switch (action.type) {
     case types.USER:

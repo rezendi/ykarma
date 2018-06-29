@@ -2,7 +2,6 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
-import { communityReducer } from '../store/data/reducer'
 
 class CommunityForm extends React.Component {
 
@@ -41,7 +40,6 @@ class CommunityForm extends React.Component {
   }
 
   render() {
-    console.log("props",this.props);
     return (
       <Grid>
         <Row>

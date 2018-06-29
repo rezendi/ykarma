@@ -57,9 +57,9 @@ router.post('/create', function(req, res, next) {
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
   }
-  var method = eth.contract.methods.addCommunity(
-    community.addressAdmin || 0,
-    community.flags || 0x00,
+  var method = eth.contract.methods.addNewCommunity(
+    community.addressAdmin,
+    community.flags || '0x00',
     community.domain || '',
     JSON.stringify(community.metadata),
     community.tags || '',
@@ -88,22 +88,22 @@ router.put('/update', function(req, res, next) {
   if (community.id === 0) {
     res.json({'success':false, 'error':'community not saved'});
   }
-  var method = eth.contract.methods.editCommunity(
-    community.id,
+  var method = eth.contract.methods.editExistingCommunity(
+    parseInt(community.id),
     community.addressAdmin || 0,
-    community.flags || '0x0',
+    community.flags || '0x00',
     community.domain || '',
     JSON.stringify(community.metadata),
     community.tags || '',
   );
-  console.log("account", fromAccount);
-  method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('error', error);
-      res.json({'success':false, 'error':error});
-    } else {
-      console.log('result', result);
-      res.json(community);
+  method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
+    console.log('error', error);
+    res.json({'success':false, 'error':error});
+  })
+  .on('confirmation', (number, receipt) => {
+    if (number==1) {
+      console.log('receipt', receipt);
+      res.json({'success':true, 'receipt':receipt});
     }
   })
   .catch(function(error) {
