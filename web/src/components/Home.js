@@ -32,12 +32,12 @@ class Home extends React.Component {
   render() {
     if (!this.props.user || !this.props.user.uid) {
       return (
-        <div>Please log in</div>
+        <div>Welcome to YKarma!</div>
       );
     }
     if (!this.props.user.ykid) {
       return (
-        <div>Account for { this.props.user.displayName || this.props.user.email } not found...</div>
+        <div>Fetching account for { this.props.user.displayName || this.props.user.email }...</div>
       );
     }
     return (
