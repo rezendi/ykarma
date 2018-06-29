@@ -197,6 +197,9 @@ contract YKarma is Oracular, YKStructs {
     accountData.editAccount(_id, newAccount);
   }
   
+  function flagAccount(uint256 _id, byte _flags) public {
+  }
+
   function addUrlToAccount(uint256 _id, string _newUrl) public {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender || senderIsOracle());

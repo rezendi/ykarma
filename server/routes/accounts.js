@@ -61,11 +61,9 @@ router.get('/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
-  /*
-  if (req.session.ykid !== ADMIN_ID && req.session.email !== req.params.url) {
+  if (req.session.email!==req.params.url && req.session.ykid != ADMIN_ID) {
     return res.json({"success":false, "error": "Not authorized"});
   }
-  */
   var url = "mailto:" + req.params.url;
   if (!util.verifyURLs(url)) {
     return res.json({"success":false, "error": 'Bad URL(s)'});
@@ -246,16 +244,18 @@ function getAccountForUrl(url, callback) {
 }
 
 function getAccountFromResult(result) {
+  console.log("result",result);
   return {
     id:           result[0],
     communityId:  result[1],
     userAddress:  result[2],
-    metadata:     JSON.parse(result[3] || '{}'),
-    urls:         result[4],
-    rewards:      result[5],
-    givable:      result[6],
-    given:        JSON.parse(result[7] || '{}'),
-    spendable:    JSON.parse(result[8] || '{}'),
+    flags:        result[3],
+    metadata:     JSON.parse(result[4] || '{}'),
+    urls:         result[5],
+    rewards:      result[6],
+    givable:      result[7],
+    given:        JSON.parse(result[8] || '{}'),
+    spendable:    JSON.parse(result[9] || '{}'),
   };
 }
 

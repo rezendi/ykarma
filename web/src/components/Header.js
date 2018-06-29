@@ -3,13 +3,25 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { fetchUser } from '../store/data/actions'
 import { Navbar, Nav, NavItem } from 'react-bootstrap'
+import { auth } from '../firebase'
 
 class Header extends React.Component {
   
   componentDidMount() {
-    this.props.fetchUser();
+      this.props.fetchUser();
   }
   
+  poll = () => {
+    console.log("polling",auth.tokenPosted());
+    if (auth.tokenPosted() && this.props) {
+      this.props.fetchUser();
+      clearInterval(this.polling);
+      console.log("fetched user");
+    }
+  }
+  
+  polling = setInterval(this.poll, 500);
+
   render() {
     return (
       <Navbar>
@@ -20,15 +32,15 @@ class Header extends React.Component {
         </Navbar.Header>
         <Nav>
           { !this.props.user || !this.props.user.uid ?
-              <NavItem href='/login'> Login</NavItem>
+              <NavItem key='login' href='/login'> Login</NavItem>
           : [
-              <NavItem href='/signOut'>Sign Out</NavItem>,
-              <NavItem href='/profile'>Profile</NavItem>,
-              <NavItem href='/user/rewards'>Rewards</NavItem>
+              <NavItem key='signout' href='/signOut'>Sign Out</NavItem>,
+              <NavItem key='profile' href='/profile'>Profile</NavItem>,
+              <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>
           ]}
           { this.props.user && this.props.user.isAdmin ?
             [
-              <NavItem href='/admin'>Admin</NavItem>
+              <NavItem key='admin' href='/admin'>Admin</NavItem>
             ]
           : null}
         </Nav>
