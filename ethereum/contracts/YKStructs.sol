@@ -23,9 +23,11 @@ contract YKStructs {
     uint256 id;
     uint256 communityId;
     address userAddress;
+    byte flags;
     string metadata;
     string urls;
     uint256[] rewardIds;
+    uint256[] offerIds;
   }
 
   struct Community {
@@ -38,19 +40,12 @@ contract YKStructs {
     uint256[] accountIds;
   }
   
-  struct Vendor {
-    uint256 id;
-    uint256 communityId;
-    address vendorAddress;
-    string metadata;
-    uint256[] rewardIds;
-  }
-  
   struct Reward {
     uint256 id;
     uint256 vendorId;
     uint256 ownerId;
     uint256 cost;
+    byte flags;
     string tag;
     string metadata;
   }

@@ -4,7 +4,7 @@ const YKStructs = artifacts.require('YKStructs.sol');
 const YKTranches = artifacts.require('YKTranches.sol');
 const YKAccounts = artifacts.require('YKAccounts.sol');
 const YKCommunities = artifacts.require('YKCommunities.sol');
-const YKVendors = artifacts.require('YKVendors.sol');
+const YKRewards = artifacts.require('YKRewards.sol');
 const YKarma = artifacts.require('YKarma.sol');
 
 module.exports = (deployer, network, accounts) => {
@@ -17,15 +17,15 @@ module.exports = (deployer, network, accounts) => {
             deployer.link(strings, YKTranches, YKAccounts).then(() => {
               deployer.link(SafeMath, YKTranches).then(() => {
                 deployer.deploy(YKCommunities, {from : owner}).then(() => {
-                  deployer.deploy(YKVendors, {from : owner}).then(() => {
-                    deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKVendors.address, {from : owner}).then(() => {
+                  deployer.deploy(YKRewards, {from : owner}).then(() => {
+                    deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner}).then(() => {
                       YKTranches.deployed().then((ykt) => {
                         ykt.transferOwnership(YKarma.address, {from: owner});
                         YKAccounts.deployed().then((yka) => {
                           yka.transferOwnership(YKarma.address, {from : owner});
                           YKCommunities.deployed().then((ykc) => {
                             ykc.transferOwnership(YKarma.address, {from : owner});
-                            YKVendors.deployed().then((ykv) => {
+                            YKRewards.deployed().then((ykv) => {
                               ykv.transferOwnership(YKarma.address, {from : owner});
                               YKarma.deployed().then((yk) => {
                                 yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha').then(() => {

@@ -9,20 +9,20 @@ import "./YKStructs.sol";
 import "./YKTranches.sol";
 import "./YKAccounts.sol";
 import "./YKCommunities.sol";
-import "./YKVendors.sol";
+import "./YKRewards.sol";
 
 contract YKarma is Oracular, YKStructs {
 
   YKTranches trancheData;
   YKAccounts accountData;
   YKCommunities communityData;
-  YKVendors vendorData;
+  YKRewards rewardData;
 
-  constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKVendors _vendors) public Oracular() {
+  constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKRewards _rewards) public Oracular() {
     trancheData = _tranches;
     accountData = _accounts;
     communityData = _communities;
-    vendorData = _vendors;
+    rewardData = _rewards;
   }
   
   function updateTrancheContract(YKTranches _tranches) onlyOracle public {
@@ -37,8 +37,8 @@ contract YKarma is Oracular, YKStructs {
     communityData = _communities;
   }
 
-  function updateVendorsContract(YKVendors _vendors) onlyOracle public {
-    vendorData = _vendors;
+  function updateRewardsContract(YKRewards _rewards) onlyOracle public {
+    rewardData = _rewards;
   }
 
   function giveTo(string _url, uint256 _amount, string _message) public {
@@ -58,15 +58,14 @@ contract YKarma is Oracular, YKStructs {
     trancheData.give(_giverId, receiverId, _amount, community.tags, _message);
   }
 
-  // TODO make rewards resellable?
   function spend(uint256 _rewardId) public {
-    Reward memory reward = vendorData.rewardForId(_rewardId);
-    require(reward.ownerId == 0); // reward can't already have been redeemed, for now at least
+    Reward memory reward = rewardData.rewardForId(_rewardId);
+    require(reward.ownerId == 0);
     uint256 spenderId = accountData.accountIdForAddress(msg.sender);
     uint256 available = trancheData.availableToSpend(spenderId, reward.tag);
     require (available >= reward.cost);
     trancheData.spend(spenderId, reward.cost, reward.tag);
-    vendorData.redeem(spenderId, reward.id);
+    rewardData.redeem(spenderId, reward.id);
     accountData.redeem(spenderId, reward.id);
   }
 
@@ -143,21 +142,21 @@ contract YKarma is Oracular, YKStructs {
   }
 
   //TODO: move JSON data to separate pageable function
-  function accountForId(uint256 _id) public view returns (uint256, uint256, address, string, string, uint256, uint256, string, string) {
+  function accountForId(uint256 _id) public view returns (uint256, uint256, address, byte, string, string, uint256, uint256, string, string) {
     Account memory a = accountData.accountForId(_id);
     Community memory community = communityData.communityForId(a.communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
-    return (a.id, a.communityId, a.userAddress, a.metadata, a.urls, a.rewardIds.length,
+    return (a.id, a.communityId, a.userAddress, a.flags, a.metadata, a.urls, a.rewardIds.length,
             trancheData.availableToGive(a.id), trancheData.givenToJSON(a.id), trancheData.spendingToJSON(a.id));
   }
   
-  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, string, string, uint256, uint256, string, string) {
+  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, byte, string, string, uint256, uint256, string, string) {
     Community memory community = communityData.communityForId(_communityId);
     uint256 accountId = community.accountIds[_idx];
     return accountForId(accountId);
   }
   
-  function accountForUrl(string _url) public view returns (uint256, uint256, address, string, string, uint256, uint256, string, string) {
+  function accountForUrl(string _url) public view returns (uint256, uint256, address, byte, string, string, uint256, uint256, string, string) {
     uint256 id = accountData.accountIdForUrl(_url);
     return accountForId(id);
   }
@@ -169,9 +168,11 @@ contract YKarma is Oracular, YKStructs {
       id:           0,
       communityId:  _communityId,
       userAddress:  _address,
+      flags:        0x0,
       metadata:     _metadata,
       urls:         '',
-      rewardIds:    new uint256[](0)
+      rewardIds:    new uint256[](0),
+      offerIds:    new uint256[](0)
     });
     uint256 newAccountId = accountData.addAccount(account, _url);
     if (_communityId > 0 ) {
@@ -187,9 +188,11 @@ contract YKarma is Oracular, YKStructs {
       id:           _id,
       communityId:  account.communityId, // edited elsewhere
       userAddress:  _newAddress,
+      flags:        account.flags,
       metadata:     _metadata,
       urls:         account.urls,  // edited elsewhere
-      rewardIds:    new uint256[](0)
+      rewardIds:    new uint256[](0),
+      offerIds:    new uint256[](0)
     });
     accountData.editAccount(_id, newAccount);
   }
@@ -214,26 +217,13 @@ contract YKarma is Oracular, YKStructs {
   }
   
   /**
-   * Vendor methods
-   */
-  function addVendor(uint256 _communityId, string _metadata, address _address) onlyOracle public {
-    Vendor memory vendor = Vendor({
-      id: 0,
-      communityId:_communityId,
-      metadata:_metadata,
-      vendorAddress:_address,
-      rewardIds: new uint256[](0)
-    });
-    vendorData.addVendor(vendor);
-  }
-
-  /**
    * Reward methods
    */
   function addReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata) public {
-    Vendor memory vendor = vendorData.vendorForId(_vendorId);
-    require (vendor.vendorAddress == msg.sender || senderIsOracle());
-    Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, cost:_cost, tag:_tag, metadata:_metadata});
-    vendorData.addReward(reward);
+    Account memory account = accountData.accountForId(_vendorId);
+    require (account.userAddress == msg.sender || senderIsOracle());
+    Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, flags:0x0, cost:_cost, tag:_tag, metadata:_metadata});
+    uint256 rewardId = rewardData.addReward(reward);
+    accountData.addReward(_vendorId, rewardId);
   }
 }

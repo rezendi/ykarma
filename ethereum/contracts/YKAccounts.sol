@@ -69,6 +69,10 @@ contract YKAccounts is Ownable, YKStructs {
     return bytes(_url).length > 0;
   }
 
+  function addReward(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
+    accounts[_vendorId].offerIds.push(_rewardId);
+  }
+
   function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
     accounts[_spenderId].rewardIds.push(_rewardId);
   }
