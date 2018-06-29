@@ -9,11 +9,8 @@ import Admin from './Admin';
 import Community from './Community';
 import CommunityForm from './CommunityForm';
 import Account from './Account';
-import Vendor from './Vendor';
-import VendorForm from './VendorForm';
 import Reward from './Reward';
 import RewardForm from './RewardForm';
-import Give from './Give';
 import Spend from './Spend';
 
 const Main = () => (
@@ -28,13 +25,9 @@ const Main = () => (
       <Route exact path='/community/new' component={CommunityForm}/>
       <Route exact path='/community/:id' component={Community}/>
       <Route exact path='/account/:id' component={Account}/>
-      <Route exact path='/vendor/new' component={VendorForm}/>
-      <Route exact path='/vendor/:id' component={Vendor}/>
-      <Route exact path='/vendor' component={Vendor}/>
       <Route exact path='/reward/new' component={RewardForm}/>
       <Route exact path='/reward/:id' component={Reward}/>
       <Route exact path='/user' component={Account}/>
-      <Route exact path='/user/give' component={Give}/>
       <Route exact path='/user/rewards' component={Spend}/>
     </Switch>
   </main>

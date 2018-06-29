@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { fetchUser } from '../store/data/actions'
+import { Navbar, Nav, NavItem } from 'react-bootstrap'
 
 class Header extends React.Component {
   
@@ -10,90 +11,28 @@ class Header extends React.Component {
   }
   
   render() {
-    if (!this.props.user || !this.props.user.uid) {
-      return (
-        <header>
-          <nav>
-            <ul>
-              <li><Link to='/'>Home</Link></li>
-              <li><Link to='/login'>Login</Link></li>
-            </ul>
-          </nav>
-        </header>
-      );
-    }
-    if (!this.props.user.ykid) {
-      return (
-        <header>
-          <nav>
-            <ul>
-              <li><Link to='/'>Home</Link></li>
-              <li><Link to='/signOut'>Sign Out</Link></li>
-            </ul>
-          </nav>
-        </header>
-      );
-    }
-    if (this.props.user.isAdmin) {
-      return (
-        <header>
-          <nav>
-            <ul>
-              <li><Link to='/'>Home</Link></li>
-              <li><Link to='/signOut'>Sign Out</Link></li>
-              <li><Link to='/profile'>Profile</Link></li>
-              <li><Link to='/admin'>Admin</Link></li>
-            </ul>
-          </nav>
-        </header>
-      );
-    }
-    if (this.props.user.isCommunityAdmin) {
-      return (
-        <header>
-          <nav>
-            <ul>
-              <li><Link to='/'>Home</Link></li>
-              <li><Link to='/signOut'>Sign Out</Link></li>
-              <li><Link to='/profile'>Profile</Link></li>
-              <li><Link to='/account/new'>New Account</Link></li>
-              <li><Link to='/vendor/new'>New Vendor</Link></li>
-              <li><Link to='/user/give'>Give</Link></li>
-              <li><Link to='/user/rewards'>Spend</Link></li>
-            </ul>
-          </nav>
-        </header>
-      );
-    }
-    if (this.props.user.isVendor) {
-      return (
-        <header>
-          <nav>
-            <ul>
-              <li><Link to='/'>Home</Link></li>
-              <li><Link to='/signOut'>Sign Out</Link></li>
-              <li><Link to='/profile'>Profile</Link></li>
-              <li><Link to='/vendor'>Vendor Admin</Link></li>
-              <li><Link to='/reward/new'>New Reward</Link></li>
-              <li><Link to='/user/give'>Give</Link></li>
-              <li><Link to='/user/rewards'>Spend</Link></li>
-            </ul>
-          </nav>
-        </header>
-      );
-    }
     return (
-        <header>
-          <nav>
-            <ul>
-              <li><Link to='/'>Home</Link></li>
-              <li><Link to='/signOut'>Sign Out</Link></li>
-              <li><Link to='/profile'>Profile</Link></li>
-              <li><Link to='/user/give'>Give</Link></li>
-              <li><Link to='/user/rewards'>Spend</Link></li>
-            </ul>
-          </nav>
-        </header>
+      <Navbar>
+        <Navbar.Header>
+          <Navbar.Brand>
+            <Link to='/'>YKarma</Link>
+          </Navbar.Brand>
+        </Navbar.Header>
+        <Nav>
+          { !this.props.user || !this.props.user.uid ?
+              <NavItem href='/login'> Login</NavItem>
+          : [
+              <NavItem href='/signOut'>Sign Out</NavItem>,
+              <NavItem href='/profile'>Profile</NavItem>,
+              <NavItem href='/user/rewards'>Rewards</NavItem>
+          ]}
+          { this.props.user && this.props.user.isAdmin ?
+            [
+              <NavItem href='/admin'>Admin</NavItem>
+            ]
+          : null}
+        </Nav>
+      </Navbar>
     );
   }
 }
