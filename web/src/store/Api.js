@@ -36,7 +36,10 @@ class Api {
   }
 
   static loadAccountForUser(user) {
-    return fetch(`/accounts/url/${user.email}`, { credentials: 'include'})
+    const authProvider = sessionStorage.getItem("authProvider");
+    const url = authProvider === "email" ? user.email : "@" + JSON.parse(sessionStorage.getItem("additionalUserInfo")).username;
+    console.log("url", url);
+    return fetch(`/accounts/url/${url}`, { credentials: 'include'})
       .then(response => {
         return response.json().then((json) => {
           return  { ...user, yk: json };

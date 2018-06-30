@@ -13,14 +13,13 @@ class Header extends React.Component {
   }
   
   poll = () => {
-    console.log("polling");
     if (auth.tokenPosted() && this.props) {
       this.props.fetchUser();
       clearInterval(this.polling);
       console.log("fetched user");
     }
     var diff = (new Date()).getTime() - this.state.start
-    console.log("diff", diff);
+    // console.log("diff", diff);
     if (diff > 8000) {
       clearInterval(this.polling);
     }

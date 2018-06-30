@@ -179,6 +179,13 @@ router.post('/give', function(req, res, next) {
 
 /* POST set token */
 router.post('/token/set', function(req, res, next) {
+  if (!req.body.token) {
+    req.session.uid = null;
+    req.session.name = null;
+    req.session.email = null;
+    req.session.ykid = null;
+    return res.json({"success":true});
+  }
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
     req.session.uid = decodedToken.uid;
     req.session.name = decodedToken.displayName;

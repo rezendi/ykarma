@@ -53,10 +53,17 @@ const setToken = (idToken) => {
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
     body: JSON.stringify({ token: idToken })
   }).then(result => {
-    result.json().then((json) => {
-      console.log("token result",json);
-      sessionStorage.setItem("tokenPosted", json.success);
-    });
+    if (result.ok) {
+      result.json().then((json) => {
+        console.log("token result",json);
+        sessionStorage.setItem("tokenPosted", json.success);
+      })
+    } else {
+      console.log("token failure", idToken);
+    }
+  }).catch(error => {
+    console.log("token error for", error);
+    console.log("token error token", idToken);
   });
 }
 
@@ -64,6 +71,7 @@ var currentUser;
 
 auth.onAuthStateChanged(function (user) {
   if (user) {
+    // console.log("user", user);
     var forceRefresh = sessionStorage.getItem("currentToken") == null;
     if ( (new Date()).getTime() - (sessionStorage.getItem("currentTokenSet") || 0) > 300000) {
       forceRefresh = true;
@@ -78,6 +86,7 @@ auth.onAuthStateChanged(function (user) {
       console.log("setToken error", error);
     })
   } else {
+    console.log("Signing out");
     setToken(null);
     sessionStorage.clear();
   }

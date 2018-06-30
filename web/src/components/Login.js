@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { Field, reduxForm } from 'redux-form';
 import { auth } from '../firebase';
+import * as firebase from 'firebase'
 
 class Login extends React.Component {
 
@@ -10,6 +11,24 @@ class Login extends React.Component {
     auth.sendSignInLinkToEmail(values.email);
     alert("Email sent!");
     this.props.history.push("/");
+  }
+  
+  doTwitter = () => {
+    var provider = new firebase.auth.TwitterAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(function(result) {
+      // var token = result.credential.accessToken;
+      // var secret = result.credential.secret;
+      // var user = result.user;
+      sessionStorage.setItem("authProvider", "twitter");
+      sessionStorage.setItem("additionalUserInfo", JSON.stringify(result.additionalUserInfo));
+      this.props.history.push("/");
+    }).catch(function(error) {
+      // var errorCode = error.code;
+      var errorMessage = error.message;
+      // var email = error.email;
+      // var credential = error.credential;
+      console.log("twitter error", errorMessage);
+    });
   }
 
   render() {
@@ -22,6 +41,9 @@ class Login extends React.Component {
                   Login
                 </Panel.Heading>
                 <Panel.Body>
+                  <Row>
+                    <Button type="submit" onClick={this.doTwitter}>Log In with Twitter</Button>
+                  </Row>
                   <form onSubmit={this.props.handleSubmit(this.doLogin)}>
                     <Row>
                       <label htmlFor="email">Email</label>
