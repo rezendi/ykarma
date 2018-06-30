@@ -31,12 +31,12 @@ class Home extends React.Component {
   }
 
   render() {
+    // console.log("user", this.props.user);
     if (!this.props.user || !this.props.user.uid) {
       return (
         <div>Welcome to YKarma!</div>
       );
     }
-    console.log("user", this.props.user);
     if (!this.props.user.ykid) {
       return (
         <div>Fetching account for { this.props.user.displayName || this.props.user.email }...</div>
@@ -75,7 +75,7 @@ class Home extends React.Component {
                     <Field name="recipient" component="input" type="text" placeholder="Email or Twitter handle"/>
                     &nbsp;
                     <label htmlFor="message">saying</label>
-                    <Field name="message" component="input" type="text" size="28" maxlength="128" placeholder="Add an optional message here"/>
+                    <Field name="message" component="input" type="text" size="28" maxLength="128" placeholder="Add an optional message here"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>

@@ -64,6 +64,9 @@ export function loadAccountSuccess(account) {
 
 
 export function fetchUser() {
+  if (auth.currentUser) {
+    return fetchYkUser(auth.currentUser);
+  }
   return function(dispatch) {
     firebase.auth.onAuthStateChanged(user => {
       return dispatch(fetchYkUser(user));
@@ -76,7 +79,7 @@ export function fetchYkUser(user) {
     return userFetched(user);
   }
   return function(dispatch, getState) {
-    console.log("getting id token");
+    // console.log("getting id token");
     return user.getIdToken(true /*forceRefresh*/).then((idToken) => {
       auth.setToken(idToken).then((result) => {
         result.json().then((json) => {

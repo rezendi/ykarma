@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { fetchUser } from '../store/data/actions'
 import { Navbar, Nav, NavItem } from 'react-bootstrap'
-import { auth } from '../firebase'
 
 class Header extends React.Component {
   
