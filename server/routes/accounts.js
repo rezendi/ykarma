@@ -291,7 +291,7 @@ function getAccountForUrl(url, callback) {
     if (error) {
       console.log('getAccountForUrl error', error);
     } else {
-      // console.log('getAccountForUrl result', result);
+      console.log('getAccountForUrl result', result);
       var account = getAccountFromResult(result);
       callback(account);
     }
@@ -302,7 +302,7 @@ function getAccountForUrl(url, callback) {
 }
 
 function getAccountFromResult(result) {
-  console.log("result",result);
+  // console.log("result",result);
   return {
     id:           result[0],
     communityId:  result[1],

@@ -65,13 +65,9 @@ export function loadAccountSuccess(account) {
 
 export function fetchUser() {
   return function(dispatch) {
-    if (auth.getUser()) {
-      return dispatch(fetchYkUser(auth.getUser()));
-    } else {
-      firebase.auth.onAuthStateChanged(user => {
-        return dispatch(fetchYkUser(user));
-      });
-    }
+    firebase.auth.onAuthStateChanged(user => {
+      return dispatch(fetchYkUser(user));
+    });
   }
 }
 
@@ -80,8 +76,21 @@ export function fetchYkUser(user) {
     return userFetched(user);
   }
   return function(dispatch, getState) {
-    return Api.loadAccountForUser(user).then(loaded => {
-      dispatch(userFetched(loaded));
+    console.log("getting id token");
+    return user.getIdToken(true /*forceRefresh*/).then((idToken) => {
+      auth.setToken(idToken).then((result) => {
+        result.json().then((json) => {
+          Api.loadAccountForUser(user).then(loaded => {
+            dispatch(userFetched(loaded));
+          }).catch(error => {
+            throw(error);
+          });
+        }).catch(error => {
+          throw(error);
+        });
+      }).catch(error => {
+        throw(error);
+      });
     }).catch(error => {
       throw(error);
     });

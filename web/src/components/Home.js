@@ -18,6 +18,7 @@ class Home extends React.Component {
         id: this.props.user.ykid,
         recipient: values.recipient,
         amount: values.coins,
+        message: values.message,
       })
     })
     .then(res => {
@@ -67,11 +68,14 @@ class Home extends React.Component {
               <Panel.Body>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                   <Row>
-                    <Field name="coins" component="input" type="text" size="9" placeholder="Number of"/>
+                    <Field name="coins" component="input" type="text" size="7" placeholder="Number"/>
                     <label htmlFor="coins">coins</label>
                     &nbsp;
                     <label htmlFor="recipient">to</label>
                     <Field name="recipient" component="input" type="text" placeholder="Email or Twitter handle"/>
+                    &nbsp;
+                    <label htmlFor="message">saying</label>
+                    <Field name="message" component="input" type="text" size="28" maxlength="128" placeholder="Add an optional message here"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
