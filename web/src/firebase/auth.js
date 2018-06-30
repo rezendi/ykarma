@@ -47,11 +47,17 @@ export const doSignOut = () =>
 // Current user
 
 const setToken = (idToken) => {
+  const authProvider = localStorage.getItem("authProvider");
+  var handle = null;
+  if (authProvider === "twitter") {
+    const additionalInfo = JSON.parse(localStorage.getItem("additionalUserInfo") || "{}")
+    handle = "@" + additionalInfo.username;
+  }
   fetch('/accounts/token/set', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-    body: JSON.stringify({ token: idToken })
+    body: JSON.stringify({ token: idToken, handle: handle })
   }).then(result => {
     if (result.ok) {
       result.json().then((json) => {
@@ -72,11 +78,12 @@ var currentUser;
 auth.onAuthStateChanged(function (user) {
   if (user) {
     // console.log("user", user);
+    console.log("Setting token");
     var forceRefresh = sessionStorage.getItem("currentToken") == null;
     if ( (new Date()).getTime() - (sessionStorage.getItem("currentTokenSet") || 0) > 300000) {
       forceRefresh = true;
     }
-    user.getIdToken(forceRefresh).then(function(idToken) {
+    user.getIdToken(true).then(function(idToken) {
       if (sessionStorage.getItem("currentToken") !== idToken) {
         setToken(idToken);
         sessionStorage.setItem("currentToken", idToken);
@@ -89,6 +96,7 @@ auth.onAuthStateChanged(function (user) {
     console.log("Signing out");
     setToken(null);
     sessionStorage.clear();
+    localStorage.clear();
   }
   currentUser = user;
 });

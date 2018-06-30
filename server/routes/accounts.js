@@ -61,15 +61,43 @@ router.get('/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
-  if (req.session.email!==req.params.url && req.session.ykid != ADMIN_ID) {
+  var url = req.params.url;
+  if (req.session.email!==url && req.session.handle != url && req.session.ykid != ADMIN_ID) {
+    console.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
   }
-  var url = "mailto:" + req.params.url;
+  if (!url || url.length === 0) {
+    console.log("No url", req.params);
+    return res.json({"success":false, "error": "No url"});
+  }
+  if (url.indexOf("@") > 0) {
+    if (!url.startsWith("mailto:")) {
+      url = "mailto:" + url;
+    }
+  } else {
+    if (url.startsWith("@")) {
+      url = url.substring(1);
+    }
+    url = "https://twitter.com/" + url;
+  }
   if (!util.verifyURLs(url)) {
-    return res.json({"success":false, "error": 'Bad URL(s)'});
+    console.log("Bad URL");
+    return res.json({"success":false, "error": "Bad URL"});
   }
   getAccountForUrl(url, (account) => {
-    console.log('callback', account);
+    // console.log('accountForUrl callback', account);
+    req.session.ykid = parseInt(account.id);
+    req.session.name = account.metadata.name;
+    var urls = account.urls.split(",");
+    for (var url in urls) {
+      if (url.startsWith("mailto:")) {
+        req.session.email = url.substring(7);
+      }
+      if (url.startsWith("https://twitter.com/")) {
+        req.session.handle = url.substring(20);
+      }
+    }
+    // console.log("account session", req.session);
     res.json(account);
   });
 });
@@ -130,17 +158,31 @@ router.delete('/:id', function(req, res, next) {
 });
 
 
-/* PUT give coins */
+/* POST give coins */
 router.post('/give', function(req, res, next) {
   var sender = req.session.ykid === ADMIN_ID ? req.body.id : req.session.ykid;
-  var recipient = req.body.email;
-  if (!recipient.startsWith("mailto:")) {
-    recipient = "mailto:" + recipient;
+  var recipient = req.body.recipient;
+  // console.log("Recipient", recipient);
+  if (!recipient || recipient.length === 0) {
+    console.log("No recipient", req.body);
+    return res.json({"success":false, "error": "No recipient"});
+  }
+  if (recipient.indexOf("@") > 0) {
+    if (!recipient.startsWith("mailto:")) {
+      recipient = "mailto:" + recipient;
+    }
+  } else {
+    if (recipient.startsWith("@")) {
+      recipient = recipient.substring(1);
+    }
+    recipient = "https://twitter.com/" + recipient;
   }
   if (!util.verifyURLs(recipient)) {
+    console.log("Bad URL");
     return res.json({"success":false, "error": "Bad URL"});
   }
   console.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
+  var notifying = false;
   var method = eth.contract.methods.give(
     sender,
     recipient,
@@ -152,23 +194,30 @@ router.post('/give', function(req, res, next) {
     res.json({'success':false, 'error':error});
   })
   .on('confirmation', (number, receipt) => {
-    if (number==1) {
-      console.log('receipt', receipt);
-      var docRef = firebase.db.collection('email-preferences').doc(recipient);
-      docRef.get().then((doc) => {
-        // TODO: query rather than get entire document?
-        var sendEmail = !doc.exists || doc.recipient.data().all || !doc.recipient.data()[sender]; 
-        if (sendEmail) {
-          const senderName = req.session.name || req.session.email;
-          sendKarmaSentMail(senderName, recipient, req.body.amount);
-          docRef.update({ [sender]:true }, { create: true } );
-        }
+    if (number >= 1 && !notifying) {
+      notifying = true;
+      console.log('got receipt');
+      if (recipient.startsWith("mailto:")) {
+        var docRef = firebase.db.collection('email-preferences').doc(recipient);
+        docRef.get().then((doc) => {
+          // TODO: query rather than get entire document?
+          var sendEmail = !doc.exists || doc.recipient.data().all || !doc.recipient.data()[sender]; 
+          if (sendEmail) {
+            console.log("sending mail");
+            const senderName = req.session.name || req.session.email;
+            sendKarmaSentMail(senderName, recipient, req.body.amount);
+            docRef.update({ [sender]:true }, { create: true } );
+          }
+          res.json({"success":true});
+        })
+        .catch(err => {
+          console.log('Error getting document', err);
+          res.json({"success":false, "error":err});
+        });
+      } else {
+        // TODO: Twitter notifications
         res.json({"success":true});
-      })
-      .catch(err => {
-        console.log('Error getting document', err);
-        res.json({"success":false, "error":err});
-      });
+      }
     }
   })
   .catch(function(error) {
@@ -179,19 +228,21 @@ router.post('/give', function(req, res, next) {
 
 /* POST set token */
 router.post('/token/set', function(req, res, next) {
+  // console.log("token set", req.body);
   if (!req.body.token) {
     req.session.uid = null;
     req.session.name = null;
     req.session.email = null;
     req.session.ykid = null;
+    req.session.handle = null;
     return res.json({"success":true});
   }
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
     req.session.uid = decodedToken.uid;
-    req.session.name = decodedToken.displayName;
-    req.session.email = decodedToken.email;
-    req.session.ykid = req.body.ykid;
-    // console.log("session", req.session);
+    req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
+    req.session.email = req.session.email ? req.session.email : decodedToken.email;
+    req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
+    console.log("session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});

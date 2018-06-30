@@ -47,6 +47,7 @@ export function userReducer(state = initialState.user, action) {
         phoneNumber: action.user.phoneNumber,
         photoURL: action.user.photoURL,
         uid: action.user.uid,
+        handle: action.user.handle,
         providerData: action.user.providerData,
         isAdmin: action.user.email === "jon@rezendi.com",
         ykid: action.user.yk ? parseInt(action.user.yk.id, 10) : null,

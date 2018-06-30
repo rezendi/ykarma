@@ -36,13 +36,21 @@ class Api {
   }
 
   static loadAccountForUser(user) {
-    const authProvider = sessionStorage.getItem("authProvider");
-    const url = authProvider === "email" ? user.email : "@" + JSON.parse(sessionStorage.getItem("additionalUserInfo")).username;
-    console.log("url", url);
+    const authProvider = localStorage.getItem("authProvider");
+    const additionalInfo = JSON.parse(localStorage.getItem("additionalUserInfo") || "{}")
+    var handle = null;
+    var url = user.email;
+    if (authProvider === "twitter") {
+      handle = "@" + additionalInfo.username;
+      url = handle;
+    }
+    // console.log("url", url);
     return fetch(`/accounts/url/${url}`, { credentials: 'include'})
       .then(response => {
         return response.json().then((json) => {
-          return  { ...user, yk: json };
+          const vals = { ...user, yk: json, handle: handle };
+          // console.log("vals", vals);
+          return vals;
         });
       }).catch(error => {
       return error;

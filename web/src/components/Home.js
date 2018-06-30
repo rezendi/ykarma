@@ -16,7 +16,7 @@ class Home extends React.Component {
       },
       body: JSON.stringify({
         id: this.props.user.ykid,
-        email: values.email,
+        recipient: values.recipient,
         amount: values.coins,
       })
     })
@@ -35,6 +35,7 @@ class Home extends React.Component {
         <div>Welcome to YKarma!</div>
       );
     }
+    console.log("user", this.props.user);
     if (!this.props.user.ykid) {
       return (
         <div>Fetching account for { this.props.user.displayName || this.props.user.email }...</div>
@@ -52,6 +53,9 @@ class Home extends React.Component {
                 <Row>
                   Howdy { this.props.user.email } you have { this.props.user.givable } karma available to give
                 </Row>
+                <Row>
+                  Spendable: { JSON.stringify(this.props.user.spendable) }
+                </Row>
               </Panel.Body>
             </Panel>
           </Col>
@@ -63,12 +67,11 @@ class Home extends React.Component {
               <Panel.Body>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                   <Row>
-                    <Field name="coins" component="input" type="text" placeholder="Number of coins"/>
+                    <Field name="coins" component="input" type="text" size="9" placeholder="Number of"/>
                     <label htmlFor="coins">coins</label>
-                  </Row>
-                  <Row>
-                    <label htmlFor="email">to</label>
-                    <Field name="email" component="input" type="text" placeholder="Recipient's email address"/>
+                    &nbsp;
+                    <label htmlFor="recipient">to</label>
+                    <Field name="recipient" component="input" type="text" placeholder="Email or Twitter handle"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>

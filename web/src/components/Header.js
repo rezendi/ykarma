@@ -13,6 +13,7 @@ class Header extends React.Component {
   }
   
   poll = () => {
+    console.log("polling");
     if (auth.tokenPosted() && this.props) {
       this.props.fetchUser();
       clearInterval(this.polling);
