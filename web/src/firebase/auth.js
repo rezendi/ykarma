@@ -15,7 +15,7 @@ var devLinkCodeSettings = {
   handleCodeInApp: true,
 };
 
-const prodLinkCodeSettings = devLinkCodeSettings;
+const prodLinkCodeSettings = devActionCodeSettings;
 
 const actionCodeSettings = process.env.NODE_ENV === 'production' ? prodActionCodeSettings : devActionCodeSettings;
 const linkCodeSettings = process.env.NODE_ENV === 'production' ? prodLinkCodeSettings : devLinkCodeSettings;
@@ -63,23 +63,14 @@ export const sendLinkToLinkEmail = (email) => {
 };
 
 // Sign in
-export const linkEmailViaEmailLink = async (href) => {
+export const linkEmailViaEmailLink = async (user, href) => {
   if (auth.isSignInWithEmailLink(href)) {
     var email = window.localStorage.getItem('emailForLinkIn');
     if (!email) {
       email = window.prompt('Please provide your email for confirmation');
     }
     var credential = firebase.auth.EmailAuthProvider.credentialWithLink(email, window.location.href);
-    firebase.auth().currentUser.linkAndRetrieveDataWithCredential(credential)
-      .then(function(result) {
-        window.localStorage.removeItem('emailForLinkIn');
-        console.log("Logged in as user", result.user);
-        console.log("Additional info", result.additionalUserInfo);
-        localStorage.setItem("additionalEmailInfo", JSON.stringify(result.additionalUserInfo));
-      })
-      .catch(function(error) {
-        console.log("Firebase sign-in error", error);
-      });
+    return user.linkAndRetrieveDataWithCredential(credential);
   }
 };
 

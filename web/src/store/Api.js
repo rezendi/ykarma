@@ -57,23 +57,23 @@ class Api {
     });
   }
 
-  static addTwitterHandle(handle) {
+  static addUrl(url) {
     return fetch('/accounts/addUrl', {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({ url: handle })
+      body: JSON.stringify({ url: url })
     }).catch(error => {
       return error;
     });
   }
 
-  static removeTwitterHandle() {
+  static removeUrl(type) {
     return fetch('/accounts/removeUrl', {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({ type: "twitter" })
+      body: JSON.stringify({ type: type })
     }).catch(error => {
       return error;
     });

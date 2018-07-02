@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
+import { auth } from '../firebase';
 import * as firebase from 'firebase'
 import Api from '../store/Api';
 
@@ -11,7 +12,7 @@ class Profile extends React.Component {
     var provider = new firebase.auth.TwitterAuthProvider();
     firebase.auth().currentUser.linkWithPopup(provider).then(function(result) {
       localStorage.setItem("additionalUserInfo", JSON.stringify(result.additionalUserInfo));
-      Api.addTwitterHandle(result.additionalUserInfo.username).then(() => {
+      Api.addUrl(result.additionalUserInfo.username).then(() => {
         window.location.reload();
       });
     }).catch(function(error) {
@@ -23,7 +24,7 @@ class Profile extends React.Component {
   removeTwitter = () => {
     firebase.auth().currentUser.unlink("twitter.com").then(function(result) {
       localStorage.setItem("additionalUserInfo", "{}");
-      Api.removeTwitterHandle().then(() => {
+      Api.removeUrl("twitter").then(() => {
         window.location.reload();
       });
     }).catch(function(error) {
@@ -33,11 +34,14 @@ class Profile extends React.Component {
   }
   
   addEmail = async (values) => {
-    console.log("Adding email", values);
+    auth.sendLinkToLinkEmail(values.email);
+    alert("Email sent!");
   }
 
   removeEmail = () => {
-    console.log("Removing email");
+    Api.removeUrl("email").then(() => {
+      window.location.reload();
+    });
   }
 
   render() {
@@ -68,7 +72,7 @@ class Profile extends React.Component {
                   <Button type="submit" onClick={this.removeEmail}>Remove Email</Button>
                 </Row>
                 <Row>
-                  Also { localStorage.getItem("additionalUserInfo") } and localStorage.getItem("additionalEmailInfo")
+                  Also { localStorage.getItem("additionalUserInfo") } and { localStorage.getItem("additionalEmailInfo") }
                 </Row>
               </Panel.Body>
             </Panel>
