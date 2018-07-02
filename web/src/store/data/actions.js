@@ -79,21 +79,35 @@ export function fetchYkUser(user) {
     return userFetched(user);
   }
   return function(dispatch, getState) {
-    // console.log("getting id token");
-    return user.getIdToken(true /*forceRefresh*/).then((idToken) => {
-      auth.setToken(idToken).then((result) => {
-        result.json().then((json) => {
-          Api.loadAccountForUser(user).then(loaded => {
-            dispatch(userFetched(loaded));
+    var forceRefresh = sessionStorage.getItem("currentToken") == null;
+    if ( (new Date()).getTime() - (sessionStorage.getItem("currentTokenSet") || 0) > 60000) {
+      forceRefresh = true;
+    }
+    // console.log("getting id token", forceRefresh);
+    return user.getIdToken(forceRefresh).then((idToken) => {
+      if (!forceRefresh) {
+        Api.loadAccountForUser(user).then(loaded => {
+          dispatch(userFetched(loaded));
+        }).catch(error => {
+          throw(error);
+        });
+      } else {
+        sessionStorage.setItem("currentToken", idToken);
+        sessionStorage.setItem("currentTokenSet", (new Date()).getTime());
+        auth.setToken(idToken).then((result) => {
+          result.json().then((json) => {
+            Api.loadAccountForUser(user).then(loaded => {
+              dispatch(userFetched(loaded));
+            }).catch(error => {
+              throw(error);
+            });
           }).catch(error => {
             throw(error);
           });
         }).catch(error => {
           throw(error);
         });
-      }).catch(error => {
-        throw(error);
-      });
+      }        
     }).catch(error => {
       throw(error);
     });
