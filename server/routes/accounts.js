@@ -61,24 +61,14 @@ router.get('/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
-  var url = req.params.url;
   if (req.session.email!==url && req.session.handle != url && req.session.ykid != ADMIN_ID) {
     console.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
   }
-  if (!url || url.length === 0) {
+  var url = getLongUrlFromShort(req.params.url);
+  if (url.length === 0) {
     console.log("No url", req.params);
     return res.json({"success":false, "error": "No url"});
-  }
-  if (url.indexOf("@") > 0) {
-    if (!url.startsWith("mailto:")) {
-      url = "mailto:" + url;
-    }
-  } else {
-    if (url.startsWith("@")) {
-      url = url.substring(1);
-    }
-    url = "https://twitter.com/" + url;
   }
   if (!util.verifyURLs(url)) {
     console.log("Bad URL");
@@ -100,6 +90,21 @@ router.get('/url/:url', function(req, res, next) {
     // console.log("account session", req.session);
     res.json(account);
   });
+});
+
+
+/* PUT add URL */
+router.put('/addUrl', function(req, res, next) {
+  var url = req.body.url;
+  console.log("adding url", url);
+  res.json({"success":true});
+});
+
+/* PUT remove URL */
+router.put('/removeUrl', function(req, res, next) {
+  var type = req.body.type;
+  console.log("removing url type", type);
+  res.json({"success":true});
 });
 
 
@@ -161,21 +166,11 @@ router.delete('/:id', function(req, res, next) {
 /* POST give coins */
 router.post('/give', function(req, res, next) {
   var sender = req.session.ykid === ADMIN_ID ? req.body.id : req.session.ykid;
-  var recipient = req.body.recipient;
+  var recipient = getLongUrlFromShort(req.body.recipient);
   // console.log("Recipient", recipient);
-  if (!recipient || recipient.length === 0) {
+  if (recipient.length === 0) {
     console.log("No recipient", req.body);
     return res.json({"success":false, "error": "No recipient"});
-  }
-  if (recipient.indexOf("@") > 0) {
-    if (!recipient.startsWith("mailto:")) {
-      recipient = "mailto:" + recipient;
-    }
-  } else {
-    if (recipient.startsWith("@")) {
-      recipient = recipient.substring(1);
-    }
-    recipient = "https://twitter.com/" + recipient;
   }
   if (!util.verifyURLs(recipient)) {
     console.log("Bad URL");
@@ -328,6 +323,24 @@ function sendKarmaSentMail(sender, recipient, amount) {
     html: '<strong>You should totally find out more.</strong>',
   };
   sgMail.send(msg);  
+}
+
+function getLongUrlFromShort(shortUrl) {
+  var url = shortUrl;
+  if (!url || url.length === 0) {
+    return '';
+  }
+  if (url.indexOf("@") > 0) {
+    if (!url.startsWith("mailto:")) {
+      url = "mailto:" + url;
+    }
+  } else {
+    if (url.startsWith("@")) {
+      url = url.substring(1);
+    }
+    url = "https://twitter.com/" + url;
+  }
+  return url;
 }
 
 module.exports = router;

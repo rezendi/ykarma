@@ -55,6 +55,8 @@ export function userReducer(state = initialState.user, action) {
         given: action.user.yk ? action.user.yk.given : {},
         spendable: action.user.yk ? action.user.yk.spendable : {},
       }
+    case types.TWITTER_ADDED:
+      return { ...state, handle: action.handle }
     case types.NO_USER:
       return {};
     default:

@@ -33,6 +33,7 @@ export const signInViaEmailLink = async (href) => {
         window.localStorage.removeItem('emailForSignIn');
         console.log("Logged in as user", result.user);
         console.log("Additional info", result.additionalUserInfo);
+        localStorage.setItem("additionalUserInfo", JSON.stringify(result.additionalUserInfo));
       })
       .catch(function(error) {
         console.log("Firebase sign-in error", error);

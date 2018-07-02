@@ -3,6 +3,8 @@ import Api from '../Api';
 import { auth, firebase } from '../../firebase';
 
 
+// Communities
+
 export function loadCommunities() {
   return function(dispatch) {
     return Api.loadCommunities().then(communities => {
@@ -33,6 +35,8 @@ export function loadCommunitySuccess(community) {
 }
 
 
+// Accounts
+
 export function loadAccountsFor(communityId) {
   return function(dispatch) {
     return Api.loadAccountsFor(communityId).then(accounts => {
@@ -62,6 +66,8 @@ export function loadAccountSuccess(account) {
   return { type: types.LOAD_ACCOUNT_SUCCESS, account};
 }
 
+
+// User
 
 export function fetchUser() {
   if (auth.currentUser) {
@@ -117,4 +123,3 @@ export function fetchYkUser(user) {
 export function userFetched(user) {
   return { type: (user === null ? types.NO_USER : types.USER), user };
 }
-
