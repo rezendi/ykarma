@@ -66,5 +66,4 @@ Login = reduxForm({
   form: 'login',
 })(Login);
 
-
 export default Login

@@ -1,4 +1,5 @@
 import { auth } from './firebase';
+import * as firebase from 'firebase'
 
 // Action code settings
 var devActionCodeSettings = {
@@ -8,7 +9,16 @@ var devActionCodeSettings = {
 
 const prodActionCodeSettings = devActionCodeSettings;
 
+// Link code settings
+var devLinkCodeSettings = {
+  url: 'http://localhost:3000/linkEmail',
+  handleCodeInApp: true,
+};
+
+const prodLinkCodeSettings = devLinkCodeSettings;
+
 const actionCodeSettings = process.env.NODE_ENV === 'production' ? prodActionCodeSettings : devActionCodeSettings;
+const linkCodeSettings = process.env.NODE_ENV === 'production' ? prodLinkCodeSettings : devLinkCodeSettings;
 
 // Send sign in link
 export const sendSignInLinkToEmail = (email) => {
@@ -33,13 +43,46 @@ export const signInViaEmailLink = async (href) => {
         window.localStorage.removeItem('emailForSignIn');
         console.log("Logged in as user", result.user);
         console.log("Additional info", result.additionalUserInfo);
-        localStorage.setItem("additionalUserInfo", JSON.stringify(result.additionalUserInfo));
+        localStorage.setItem("additionalEmailInfo", JSON.stringify(result.additionalUserInfo));
       })
       .catch(function(error) {
         console.log("Firebase sign-in error", error);
       });
   }
 };
+
+// Send link link
+export const sendLinkToLinkEmail = (email) => {
+  auth.sendSignInLinkToEmail(email, linkCodeSettings)
+  .then(function() {
+    window.localStorage.setItem('emailForLinkIn', email);
+  })
+  .catch(function(error) {
+    console.log("Firebase sign-in link link error", error);
+  });
+};
+
+// Sign in
+export const linkEmailViaEmailLink = async (href) => {
+  if (auth.isSignInWithEmailLink(href)) {
+    var email = window.localStorage.getItem('emailForLinkIn');
+    if (!email) {
+      email = window.prompt('Please provide your email for confirmation');
+    }
+    var credential = firebase.auth.EmailAuthProvider.credentialWithLink(email, window.location.href);
+    firebase.auth().currentUser.linkAndRetrieveDataWithCredential(credential)
+      .then(function(result) {
+        window.localStorage.removeItem('emailForLinkIn');
+        console.log("Logged in as user", result.user);
+        console.log("Additional info", result.additionalUserInfo);
+        localStorage.setItem("additionalEmailInfo", JSON.stringify(result.additionalUserInfo));
+      })
+      .catch(function(error) {
+        console.log("Firebase sign-in error", error);
+      });
+  }
+};
+
 
 // Sign out
 export const doSignOut = () =>

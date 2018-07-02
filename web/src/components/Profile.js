@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
+import { Field, reduxForm } from 'redux-form';
 import * as firebase from 'firebase'
 import Api from '../store/Api';
 
@@ -30,6 +31,14 @@ class Profile extends React.Component {
       console.log("twitter error", errorMessage);
     });
   }
+  
+  addEmail = async (values) => {
+    console.log("Adding email", values);
+  }
+
+  removeEmail = () => {
+    console.log("Removing email");
+  }
 
   render() {
     return (
@@ -45,13 +54,21 @@ class Profile extends React.Component {
                   Howdy { JSON.stringify(this.props.user) }
                 </Row>
                 <Row>
-                  Also { localStorage.getItem("additionalUserInfo") }
-                </Row>
-                <Row>
                   <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button>
+                  <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button>
+                </Row>
+                <form onSubmit={this.props.handleSubmit(this.addEmail)}>
+                  <Row>
+                    <label htmlFor="email">Email</label>
+                    <Field name="email" component="input" type="text"/>
+                    <Button type="submit">Submit</Button>
+                  </Row>
+                </form>
+                <Row>
+                  <Button type="submit" onClick={this.removeEmail}>Remove Email</Button>
                 </Row>
                 <Row>
-                  <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button>
+                  Also { localStorage.getItem("additionalUserInfo") } and localStorage.getItem("additionalEmailInfo")
                 </Row>
               </Panel.Body>
             </Panel>
@@ -67,5 +84,9 @@ function mapStateToProps(state, ownProps) {
     user: state.user,
   }
 }
+
+Profile = reduxForm({
+  form: 'profile',
+})(Profile);
 
 export default connect(mapStateToProps, null)(Profile);

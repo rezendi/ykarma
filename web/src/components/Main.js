@@ -4,6 +4,7 @@ import Home from './Home';
 import Profile from './Profile';
 import Login from './Login';
 import FinishSignIn from './FinishSignIn';
+import LinkEmail from './LinkEmail';
 import SignOut from './SignOut';
 import Admin from './Admin';
 import Community from './Community';
@@ -19,6 +20,7 @@ const Main = () => (
       <Route exact path='/' component={Home}/>
       <Route exact path='/login' component={Login}/>
       <Route exact path='/finishSignIn' component={FinishSignIn}/>
+      <Route exact path='/linkEmail' component={LinkEmail}/>
       <Route exact path='/signOut' component={SignOut}/>
       <Route exact path='/profile' component={Profile}/>
       <Route exact path='/admin' component={Admin}/>
