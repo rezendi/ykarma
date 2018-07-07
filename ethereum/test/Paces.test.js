@@ -32,7 +32,7 @@ contract('Paces', function(accounts) {
     await ykarma.addNewAccount(1, '', '{"name":"Jon"}', 'mailto:jon@rezendi.com', );
     vals = await ykarma.accountForId(1);
     assert.equal(vals[4], '{"name":"Jon"}', "Account metadata");
-    assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account metadata");
+    assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
     assert.equal(""+vals[7], '0', "Account pre-replenish");
     await ykarma.replenish(1);
     await ykarma.recalculateBalances(1);
@@ -49,6 +49,12 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals[8], '{"recipients":[2,2],"amounts":[40,20]}', "Giving recorded");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])["messages"][1], "Another message", "Giving received II");
+    await ykarma.addUrlToAccount(2, "https://twitter.com/jayrezendi");
+    vals = await ykarma.accountForId(2);
+    assert.equal(vals[5], 'mailto:jay@rezendi.com,https://twitter.com/jayrezendi', "Adding an URL");
+    await ykarma.removeUrlFromAccount(2, "https://twitter.com/jayrezendi");
+    vals = await ykarma.accountForId(2);
+    //assert.equal(vals[5], 'mailto:jay@rezendi.com', "Adding an URL");
     
     // check the data is there
   });

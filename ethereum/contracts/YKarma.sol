@@ -201,13 +201,13 @@ contract YKarma is Oracular, YKStructs {
     accountData.flagAccount(_id, _flags);
   }
 
-  function addUrlToAccount(uint256 _id, string _newUrl) public {
+  function addUrlToExistingAccount(uint256 _id, string _newUrl) public returns (bool) {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender || senderIsOracle());
-    accountData.addUrlToAccount(_id, _newUrl);
+    return accountData.addUrlToAccount(_id, _newUrl);
   }
   
-  function removeUrlFromAccount(uint256 _id, string _oldUrl) public {
+  function removeUrlFromExistingAccount(uint256 _id, string _oldUrl) public {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender || senderIsOracle());
     accountData.removeUrlFromAccount(_id, _oldUrl);

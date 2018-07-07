@@ -80,8 +80,8 @@ router.get('/url/:url', function(req, res, next) {
 
 /* PUT add URL */
 router.put('/addUrl', function(req, res, next) {
-  console.log("adding url", url);
   var url = getLongUrlFromShort(req.body.url);
+  console.log("trying to add url", url);
   if (url.startsWith('error')) {
     return res.json({"success":false, "error": url});
   }
@@ -333,22 +333,25 @@ function getAccountForUrl(url, callback) {
 }
 
 function addUrlToAccount(id, url, callback) {
-  var method = eth.contract.methods.addUrlToAccount(id, url);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('addUrlToAccount error', error);
-    } else {
-      callback(result);
-    }
+  console.log("adding url "+url, id);
+  var notifying = false;
+  var method = eth.contract.methods.addUrlToExistingAccount(id, url);
+  method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
+    console.log('addUrlToAccount error', error);
+    callback(false);
   })
-  .catch(function(error) {
-    console.log('addUrlToAccount call error ' + id, error);
+  .on('confirmation', (number, receipt) => {
+    if (number >= 1 && !notifying) {
+      console.log('addUrlToAccount result', receipt);
+      notifying = true;
+      callback(true);
+    }
   });
 }
 
 function removeUrlFromAccount(id, url, callback) {
-  var method = eth.contract.methods.removeUrlFromAccount(id, url);
-  method.call(function(error, result) {
+  var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
+  method.send(function(error, result) {
     if (error) {
       console.log('removeUrlFromAccount error', error);
     } else {
@@ -419,7 +422,9 @@ function getLongUrlFromShort(shortUrl) {
     if (url.startsWith("@")) {
       url = url.substring(1);
     }
-    url = "https://twitter.com/" + url;
+    if (!url.startsWith("https:")) {
+      url = "https://twitter.com/" + url;
+    }
   }
   if (!util.verifyURLs(url)) {
     return 'error Bad URL';
