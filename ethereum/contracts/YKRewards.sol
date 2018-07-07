@@ -19,7 +19,18 @@ contract YKRewards is Ownable, YKStructs {
     return reward.id;
   }
   
+  function editReward(Reward reward) public onlyOwner returns (uint256) {
+    rewards[reward.id].cost     = reward.cost;
+    rewards[reward.id].tag      = reward.tag;
+    rewards[reward.id].metadata = reward.metadata;
+  }
+  
   function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
     rewards[_rewardId].ownerId = _spenderId;
   }
+
+  function deleteReward(uint256 _id) public onlyOwner returns (uint256) {
+    delete rewards[_id];
+  }
+  
 }

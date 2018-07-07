@@ -52,6 +52,10 @@ contract YKAccounts is Ownable, YKStructs {
     accounts[_id].metadata    = _newValues.metadata;
   }
 
+  function flagAccount(uint256 _id, byte _flags) public onlyOwner {
+    accounts[_id].flags = _flags;
+  }
+
   function removeUrlFromAccount(uint256 _id, string _newUrl) public onlyOwner returns (bool) {
     // TODO FIXME remove only selected url!
     accounts[_id].urls = '';
@@ -75,6 +79,15 @@ contract YKAccounts is Ownable, YKStructs {
 
   function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
     accounts[_spenderId].rewardIds.push(_rewardId);
+  }
+  
+  function deleteReward(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
+    Account storage vendor = accounts[_vendorId];
+    for (uint i = 0; i < vendor.rewardIds.length; i++) {
+      if (vendor.rewardIds[i] == _rewardId) {
+        delete vendor.rewardIds[i];
+      }
+    }
   }
 }
 

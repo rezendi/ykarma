@@ -198,6 +198,7 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function flagAccount(uint256 _id, byte _flags) public {
+    accountData.flagAccount(_id, _flags);
   }
 
   function addUrlToAccount(uint256 _id, string _newUrl) public {
@@ -206,10 +207,10 @@ contract YKarma is Oracular, YKStructs {
     accountData.addUrlToAccount(_id, _newUrl);
   }
   
-  function removeUrlFromAccount(uint256 _id, string _newUrl) public {
+  function removeUrlFromAccount(uint256 _id, string _oldUrl) public {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender || senderIsOracle());
-    accountData.removeUrlFromAccount(_id, _newUrl);
+    accountData.removeUrlFromAccount(_id, _oldUrl);
   }
   
   function deleteAccount(uint256 _id) public {
@@ -222,11 +223,47 @@ contract YKarma is Oracular, YKStructs {
   /**
    * Reward methods
    */
-  function addReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata) public {
+  function addNewReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata, byte _flags) public {
     Account memory account = accountData.accountForId(_vendorId);
     require (account.userAddress == msg.sender || senderIsOracle());
-    Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, flags:0x0, cost:_cost, tag:_tag, metadata:_metadata});
+    Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, flags:_flags, cost:_cost, tag:_tag, metadata:_metadata});
     uint256 rewardId = rewardData.addReward(reward);
     accountData.addReward(_vendorId, rewardId);
   }
+  
+  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, byte, string, string) {
+    Reward memory reward = rewardData.rewardForId(_id);
+    if (reward.ownerId != 0) {
+      Account memory account = accountData.accountForId(reward.ownerId);
+      require (account.userAddress == msg.sender || senderIsOracle());
+    }
+    return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.flags, reward.tag, reward.metadata);
+  }
+  
+  function editExistingReward(uint256 _id, uint256 _cost, string _tag, string _metadata, byte _flags) public {
+    Reward memory reward = rewardData.rewardForId(_id);
+    require (reward.ownerId == 0);
+    Account memory account = accountData.accountForId(reward.vendorId);
+    require (account.userAddress == msg.sender || senderIsOracle());
+    Reward memory newReward = Reward({
+      id:           _id,
+      vendorId:     reward.vendorId,
+      ownerId:      reward.ownerId,
+      flags:        _flags,
+      metadata:     _metadata,
+      tag:          _tag,
+      cost:         _cost
+    });
+    rewardData.editReward(newReward);
+  }
+
+  function deleteReward(uint256 _id) public {
+    Reward memory reward = rewardData.rewardForId(_id);
+    require (reward.ownerId == 0);
+    Account memory account = accountData.accountForId(reward.vendorId);
+    require (account.userAddress == msg.sender || senderIsOracle());
+    accountData.deleteReward(reward.vendorId, reward.id);
+    rewardData.deleteReward(_id);
+  }
+  
 }

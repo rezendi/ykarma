@@ -19,7 +19,7 @@ const ADMIN_ID = 1;
 /* GET account list */
 router.get('/for/:communityId', function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
-  if (parseInt(req.session.ykid) !== ADMIN_ID && parseInt(req.session.communityAdminId) !== communityId) {
+  if (req.session.ykid !== ADMIN_ID && req.session.communityAdminId !== communityId) {
     return res.json([]);
   }
   var accounts = [];
@@ -49,7 +49,7 @@ router.get('/for/:communityId', function(req, res, next) {
 /* GET account details */
 router.get('/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
-  if (parseInt(req.session.ykid) !== ADMIN_ID && parseInt(req.session.ykid) !== id) {
+  if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   getAccountFor(id, (account) => {
@@ -66,27 +66,12 @@ router.get('/url/:url', function(req, res, next) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   var url = getLongUrlFromShort(req.params.url);
-  if (url.length === 0) {
-    console.log("No url", req.params);
-    return res.json({"success":false, "error": "No url"});
-  }
-  if (!util.verifyURLs(url)) {
-    console.log("Bad URL");
-    return res.json({"success":false, "error": "Bad URL"});
+  if (url.startsWith('error')) {
+    return res.json({"success":false, "error": url});
   }
   getAccountForUrl(url, (account) => {
     // console.log('accountForUrl callback', account);
-    req.session.ykid = parseInt(account.id);
-    req.session.name = account.metadata.name;
-    var urls = account.urls.split(",");
-    for (var url in urls) {
-      if (url.startsWith("mailto:")) {
-        req.session.email = url.substring(7);
-      }
-      if (url.startsWith("https://twitter.com/")) {
-        req.session.handle = url.substring(20);
-      }
-    }
+    getSessionFromAccount(req, account);
     // console.log("account session", req.session);
     res.json(account);
   });
@@ -95,16 +80,63 @@ router.get('/url/:url', function(req, res, next) {
 
 /* PUT add URL */
 router.put('/addUrl', function(req, res, next) {
-  var url = req.body.url;
   console.log("adding url", url);
-  res.json({"success":true});
+  var url = getLongUrlFromShort(req.body.url);
+  if (url.startsWith('error')) {
+    return res.json({"success":false, "error": url});
+  }
+
+  if (req.session.ykid) {
+    addUrlToAccount(req.session.ykid, url, (result) => {
+      if (req.body.url.indexOf("@") > 0) {
+        req.session.email = req.body.url;
+      } else {
+        req.session.handle = req.body.url;
+      }
+      res.json({"success":result});
+    });
+    return;
+  }
+    
+  // Are we not logged in as a YK user but hoping to add this current URL as a YK user?
+  const existing = req.session.handle || req.session.email;
+  var longExisting = getLongUrlFromShort(existing);
+  if (longExisting.startsWith('error')) {
+    return res.json({"success":false, "error": "existing "+longExisting});
+  }
+  getAccountForUrl(url, (account) => {
+    getSessionFromAccount(req, account);
+    addUrlToAccount(req.session.ykid, url, (result) => {
+      if (req.body.url.indexOf("@") > 0) {
+        req.session.email = req.body.url;
+      } else {
+        req.session.handle = req.body.url;
+      }
+      res.json({"success":result});
+    });
+  });
 });
 
 /* PUT remove URL */
 router.put('/removeUrl', function(req, res, next) {
-  var type = req.body.type;
   console.log("removing url type", type);
-  res.json({"success":true});
+  var type = req.body.type;
+  var url = '';
+  if (type=="twitter") {
+    if (!req.session.handle) {
+      return res.json({"success":false, "error": "No handle to remove"});      
+    }
+    url = getLongUrlFromShort(req.session.handle);
+  }
+  if (type=="email") {
+    if (!req.session.email) {
+      res.json({"success":false, "error": "No email to remove"});
+    }
+    url = getLongUrlFromShort(req.session.email);
+  }
+  removeUrlFromAccount(req.session.ykid, url, (result) => {
+    res.json({"success":result});
+  });
 });
 
 
@@ -167,14 +199,8 @@ router.delete('/:id', function(req, res, next) {
 router.post('/give', function(req, res, next) {
   var sender = req.session.ykid === ADMIN_ID ? req.body.id : req.session.ykid;
   var recipient = getLongUrlFromShort(req.body.recipient);
-  // console.log("Recipient", recipient);
-  if (recipient.length === 0) {
-    console.log("No recipient", req.body);
-    return res.json({"success":false, "error": "No recipient"});
-  }
-  if (!util.verifyURLs(recipient)) {
-    console.log("Bad URL");
-    return res.json({"success":false, "error": "Bad URL"});
+  if (recipient.startsWith('error')) {
+    return res.json({"success":false, "error": recipient});
   }
   console.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
   var notifying = false;
@@ -296,6 +322,51 @@ function getAccountForUrl(url, callback) {
   });
 }
 
+function addUrlToAccount(id, url, callback) {
+  var method = eth.contract.methods.addUrlToAccount(id, url);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('addUrlToAccount error', error);
+    } else {
+      callback(result);
+    }
+  })
+  .catch(function(error) {
+    console.log('addUrlToAccount call error ' + id, error);
+  });
+}
+
+function removeUrlFromAccount(id, url, callback) {
+  var method = eth.contract.methods.removeUrlFromAccount(id, url);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('removeUrlFromAccount error', error);
+    } else {
+      callback(result);
+    }
+  })
+  .catch(function(error) {
+    console.log('removeUrlFromAccount call error ' + id, error);
+  });
+}
+
+
+// Utility functions
+
+function getSessionFromAccount(req, account) {
+  req.session.ykid = parseInt(account.id);
+  req.session.name = account.metadata.name;
+  var urls = account.urls.split(",");
+  for (var url in urls) {
+    if (url.startsWith("mailto:")) {
+      req.session.email = url.substring(7);
+    }
+    if (url.startsWith("https://twitter.com/")) {
+      req.session.handle = url.substring(20);
+    }
+  }
+}
+
 function getAccountFromResult(result) {
   // console.log("result",result);
   return {
@@ -328,7 +399,7 @@ function sendKarmaSentMail(sender, recipient, amount) {
 function getLongUrlFromShort(shortUrl) {
   var url = shortUrl;
   if (!url || url.length === 0) {
-    return '';
+    return 'error No URL';
   }
   if (url.indexOf("@") > 0) {
     if (!url.startsWith("mailto:")) {
@@ -339,6 +410,9 @@ function getLongUrlFromShort(shortUrl) {
       url = url.substring(1);
     }
     url = "https://twitter.com/" + url;
+  }
+  if (!util.verifyURLs(url)) {
+    return 'error Bad URL';
   }
   return url;
 }
