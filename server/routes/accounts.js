@@ -271,6 +271,16 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
+// GET set up test
+router.get('/setUpTest', function(req, res, next) {
+  if(process.env.NODE_ENV === 'test') {
+    req.session.email = "test@rezendi.com";
+    req.session.ykid = 2;
+  }
+  return res.json({"success":true});
+});
+
+
 function getAccountFor(id, callback) {
   var method = eth.contract.methods.accountForId(id);
   console.log("accountForId", id);
@@ -416,5 +426,6 @@ function getLongUrlFromShort(shortUrl) {
   }
   return url;
 }
+
 
 module.exports = router;

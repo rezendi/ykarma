@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
+    "chai": "^4.1.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "dot-env": "0.0.1",
@@ -16,7 +17,10 @@
     "firebase-admin": "^5.12.1",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
+    "mocha": "^5.2.0",
     "morgan": "~1.9.0",
+    "supertest": "^3.1.0",
+    "supertest-session": "^3.3.0",
     "web3": "^1.0.0-beta.34"
   }
 }
