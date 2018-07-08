@@ -7,6 +7,8 @@ import "./YKStructs.sol";
 
 contract YKAccounts is Ownable, YKStructs {
   using strings for *;
+
+  string DELIM = "||";
   uint256 maxAccountId;
   mapping(uint256 => Account) accounts;
   mapping(string => uint256) accountsByUrl;
@@ -38,7 +40,7 @@ contract YKAccounts is Ownable, YKStructs {
     require(accountIdForUrl(_url)==0);
     string memory urls = accounts[_accountId].urls;
     if (bytes(urls).length > 0) {
-      string memory commaUrl = ",".toSlice().concat(_url.toSlice());
+      string memory commaUrl = DELIM.toSlice().concat(_url.toSlice());
       accounts[_accountId].urls = urls.toSlice().concat(commaUrl.toSlice());
     } else {
       accounts[_accountId].urls = _url;
@@ -48,6 +50,14 @@ contract YKAccounts is Ownable, YKStructs {
   }
   
   function editAccount(uint256 _id, Account _newValues) public onlyOwner {
+    if (_newValues.userAddress != accounts[_id].userAddress) {
+      if (accounts[_id].userAddress != 0) {
+        delete accountsByAddress[accounts[_id].userAddress];
+      }
+      if (_newValues.userAddress != 0) {
+        accountsByAddress[_newValues.userAddress] = _id;
+      }
+    }
     accounts[_id].userAddress = _newValues.userAddress;
     accounts[_id].metadata    = _newValues.metadata;
   }
@@ -56,10 +66,23 @@ contract YKAccounts is Ownable, YKStructs {
     accounts[_id].flags = _flags;
   }
 
-  function removeUrlFromAccount(uint256 _id, string _newUrl) public onlyOwner returns (bool) {
-    // TODO FIXME remove only selected url!
-    accounts[_id].urls = '';
-    accountsByUrl[_newUrl] = 0;
+  function removeUrlFromAccount(uint256 _id, string _oldUrl) public onlyOwner returns (bool) {
+    strings.slice memory urls = accounts[_id].urls.toSlice();
+    string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
+    for(uint i = 0; i < separated.length; i++) {
+      separated[i] = urls.split(DELIM.toSlice()).toString();
+    }
+    string memory newUrls = '';
+    for (uint j = 0; j < separated.length; j++) {
+      if (separated[j].toSlice().compare(_oldUrl.toSlice()) != 0) {
+        newUrls = newUrls.toSlice().concat(separated[j].toSlice());
+        if (j < separated.length-1 && separated[j+1].toSlice().compare(_oldUrl.toSlice()) != 0) {
+        newUrls = newUrls.toSlice().concat(DELIM.toSlice());
+        }
+      }
+    }
+    accounts[_id].urls = newUrls;
+    accountsByUrl[_oldUrl] = 0;
     return true;
   }
 

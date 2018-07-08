@@ -49,12 +49,16 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals[8], '{"recipients":[2,2],"amounts":[40,20]}', "Giving recorded");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])["messages"][1], "Another message", "Giving received II");
-    await ykarma.addUrlToAccount(2, "https://twitter.com/jayrezendi");
+    vals = await ykarma.accountForUrl("mailto:jay@rezendi.com");
+    assert.equal(vals[0], 2, "Getting an account by URL");
+    await ykarma.addUrlToExistingAccount(2, "https://twitter.com/jayrezendi");
     vals = await ykarma.accountForId(2);
-    assert.equal(vals[5], 'mailto:jay@rezendi.com,https://twitter.com/jayrezendi', "Adding an URL");
-    await ykarma.removeUrlFromAccount(2, "https://twitter.com/jayrezendi");
+    assert.equal(vals[5], 'mailto:jay@rezendi.com||https://twitter.com/jayrezendi', "Adding an URL");
+    vals = await ykarma.accountForUrl("https://twitter.com/jayrezendi");
+    assert.equal(vals[0], 2, "Getting an account by an added URL");
+    await ykarma.removeUrlFromExistingAccount(2, "https://twitter.com/jayrezendi");
     vals = await ykarma.accountForId(2);
-    //assert.equal(vals[5], 'mailto:jay@rezendi.com', "Adding an URL");
+    assert.equal(vals[5], 'mailto:jay@rezendi.com', "Removing a URL");
     
     // check the data is there
   });
