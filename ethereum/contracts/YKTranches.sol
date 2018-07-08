@@ -29,15 +29,15 @@ contract YKTranches is Ownable, YKStructs {
   function give(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags, string _message) public onlyOwner {
     require (_recipient > 0);
     uint256 accumulated;
-    Giving storage available = giving[_sender];
-    for (uint256 i=0; i < available.amounts.length; i++) {
-      if (accumulated.add(available.amounts[i]) >= _amount) {
-        available.amounts[i] = available.amounts[i].sub(_amount.sub(accumulated));
+    uint256[] storage amounts = giving[_sender].amounts;
+    for (uint256 i=0; i < amounts.length; i++) {
+      if (accumulated.add(amounts[i]) >= _amount) {
+        amounts[i] = amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
         break;
       } else {
-        accumulated = accumulated.add(available.amounts[i]);
-        available.amounts[i] = 0;
+        accumulated = accumulated.add(amounts[i]);
+        amounts[i] = 0;
       }
     }
     // record for sender
@@ -63,20 +63,21 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function spend(uint256 _amount, uint256 _spender, string _tag) public onlyOwner {
+  function spend(uint256 _spenderId, uint256 _amount, string _tag) public onlyOwner {
     uint256 accumulated;
-    Spending storage available = spending[_spender];
-    for (uint i = 0; i < available.amounts.length; i++) {
+    Spending storage available = spending[_spenderId];
+    uint256[] storage amounts = available.amounts;
+    for (uint i = 0; i < amounts.length; i++) {
       if (!tagsIncludesTag(available.tags[i], _tag)) {
         continue;
       }
-      if (accumulated.add(available.amounts[i]) >= _amount) {
-        available.amounts[i] = available.amounts[i].sub(_amount.sub(accumulated));
+      if (accumulated.add(amounts[i]) >= _amount) {
+        amounts[i] = amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
         break;
       } else {
-        accumulated = accumulated.add(available.amounts[i]);
-        available.amounts[i] = 0;
+        accumulated = accumulated.add(amounts[i]);
+        amounts[i] = 0;
       }
     }
   }
@@ -140,8 +141,8 @@ contract YKTranches is Ownable, YKStructs {
     return !s3.empty();
   }
   
-  function givenToJSON(uint256 _sender) public view onlyOwner returns (string) {
-    Given storage record = given[_sender];
+  function givenToJSON(uint256 _senderId) public view onlyOwner returns (string) {
+    Given storage record = given[_senderId];
     uint256 min = 0;
     uint256 max = record.recipients.length;
     string memory recipients = uintArrayToJSONString(record.recipients, min, max);
@@ -154,8 +155,8 @@ contract YKTranches is Ownable, YKStructs {
     return out;
   }
 
-  function spendingToJSON(uint256 _sender) public view onlyOwner returns (string) {
-    Spending storage available = spending[_sender];
+  function spendingToJSON(uint256 _spenderId) public view onlyOwner returns (string) {
+    Spending storage available = spending[_spenderId];
     uint256 min = 0;
     uint256 max = available.amounts.length;
     string memory senders = uintArrayToJSONString(available.senders, min, max);

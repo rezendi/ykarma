@@ -43,10 +43,14 @@ contract YKarma is Oracular, YKStructs {
 
   function giveTo(string _url, uint256 _amount, string _message) public {
     uint256 giverId = accountData.accountIdForAddress(msg.sender);
-    give(giverId, _url, _amount, _message);
+    doGive(giverId, _url, _amount, _message);
   }
 
   function give(uint256 _giverId, string _url, uint256 _amount, string _message) public onlyOracle {
+    doGive(_giverId, _url, _amount, _message);
+  }
+  
+  function doGive(uint256 _giverId, string _url, uint256 _amount, string _message) internal {
     Account memory giver = accountData.accountForId(_giverId);
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
@@ -58,15 +62,23 @@ contract YKarma is Oracular, YKStructs {
     trancheData.give(_giverId, receiverId, _amount, community.tags, _message);
   }
 
-  function spend(uint256 _rewardId) public {
-    Reward memory reward = rewardData.rewardForId(_rewardId);
-    require(reward.ownerId == 0);
+  function buy(uint256 _rewardId) public {
     uint256 spenderId = accountData.accountIdForAddress(msg.sender);
-    uint256 available = trancheData.availableToSpend(spenderId, reward.tag);
+    doPurchase(spenderId, _rewardId);
+  }
+
+  function purchase(uint256 _buyerId, uint256 _rewardId) public onlyOracle {
+    doPurchase(_buyerId, _rewardId);
+  }
+
+  function doPurchase(uint256 _buyerId, uint256 _rewardId) internal {
+    Reward memory reward = rewardData.rewardForId(_rewardId);
+    require(reward.ownerId == 0); // for now
+    uint256 available = trancheData.availableToSpend(_buyerId, reward.tag);
     require (available >= reward.cost);
-    trancheData.spend(spenderId, reward.cost, reward.tag);
-    rewardData.redeem(spenderId, reward.id);
-    accountData.redeem(spenderId, reward.id);
+    trancheData.spend(_buyerId, reward.cost, reward.tag);
+    rewardData.redeem(_buyerId, reward.id);
+    accountData.redeem(_buyerId, reward.id);
   }
 
   function lastReplenished(uint256 _accountId) public view returns (uint256) {

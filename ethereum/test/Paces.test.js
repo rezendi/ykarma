@@ -2,6 +2,7 @@ const YKarma = artifacts.require("YKarma");
 const YKTranches = artifacts.require("YKTranches");
 const YKAccounts = artifacts.require("YKAccounts");
 const YKCommunities = artifacts.require("YKCommunities");
+const YKRewards = artifacts.require("YKRewards");
 
 contract('Paces', function(accounts) {
   const deployer = accounts[0];
@@ -12,7 +13,7 @@ contract('Paces', function(accounts) {
     let trancheData = await YKTranches.new();
     let accountData = await YKAccounts.new();
     let communityData = await YKCommunities.new();
-    let rewardData = await YKCommunities.new();
+    let rewardData = await YKRewards.new();
     let ykarma = await YKarma.new(trancheData.address, accountData.address, communityData.address, rewardData.address);
     assert.notEqual(ykarma.address, 0, "Contract created");
     await trancheData.transferOwnership(ykarma.address);
@@ -38,6 +39,8 @@ contract('Paces', function(accounts) {
     await ykarma.recalculateBalances(1);
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '100', "Account replenished");
+    
+    // try giving to a new account, adding URLs to it
     await ykarma.give(1, 'mailto:jay@rezendi.com', 40, "Just a message");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '60', "Giving happened");
@@ -60,28 +63,37 @@ contract('Paces', function(accounts) {
     vals = await ykarma.accountForId(2);
     assert.equal(vals[5], 'mailto:jay@rezendi.com', "Removing a URL");
     
-    // check the data is there
+    // create a reward, update it, delete it, create two new ones, fail purchase of wrong tag
+    await ykarma.addNewReward(2, 10, "alpha", '{"name":"My Doomed Reward"}', '0x00');
+    vals = await ykarma.rewardForId(1);
+    assert.equal(vals[1], 2, "Created reward");
+    assert.equal(vals[3], 10);
+    assert.equal(vals[5], 'alpha');
+    assert.equal(vals[6], '{"name":"My Doomed Reward"}');
+    await ykarma.editExistingReward(1, 5, "alpha?", '{"name":"My Dooomed Reward"}', '0x01');
+    vals = await ykarma.rewardForId(1);
+    assert.equal(vals[3], 5, "Updated reward");
+    assert.equal(vals[5], 'alpha?');
+    await ykarma.deleteReward(1);
+    vals = await ykarma.rewardForId(1);
+    assert.equal(vals[1], 0);
+    await ykarma.addNewReward(1, 10, "cool", '{"name":"My Cool Reward"}', '0x00');
+    await ykarma.addNewReward(1, 10, "test", '{"name":"My Test Reward"}', '0x00');
+    vals = await ykarma.rewardForId(2);
+    assert.equal(vals[2], 0, "No owner");
+    vals = await ykarma.rewardForId(3);
+    assert.equal(vals[5], 'test', "Beta tag");
+    var exc = null;
+    try { await ykarma.purchase(2, 3); } catch(e){ exc = e; }
+    assert.notEqual(exc, null, "Exception generated");
+    
+    // A successful purchase
+    vals = await ykarma.accountForId(2);
+    assert.equal(JSON.parse(vals[9]).amounts[0], 40, "Karma ready to spend");
+    await ykarma.purchase(2, 2);
+    vals = await ykarma.rewardForId(2);
+    assert.equal(vals[2], 2, "Reward successfully transferred");
+    vals = await ykarma.accountForId(2);
+    assert.equal(JSON.parse(vals[9]).amounts[0], 30, "Karma spent");
   });
 });
-    
-    // admin adds a user
-    
-    // admin adds another user
-    
-    // users' giving accounts are replenished
-    
-    // user A sends to user B
-    
-    // user A sends to user C, not yet on system
-    
-    // oracle adds user C, tokens transferred
-    
-    // admin adds a vendor
-    
-    // oracle adds another vendor
-    
-    // vendor adds an item
-    
-    // user buys item from vendor
-    
-    // time travel, recalculate, test demurrage
