@@ -9,6 +9,7 @@ var session = require('express-session');
 
 var indexRouter = require('./routes/index');
 var accountsRouter = require('./routes/accounts');
+var rewardsRouter = require('./routes/rewards');
 var communitiesRouter = require('./routes/communities');
 
 var app = express();
@@ -35,6 +36,7 @@ app.use(session({
 
 app.use('/', indexRouter);
 app.use('/accounts', accountsRouter);
+app.use('/rewards', rewardsRouter);
 app.use('/communities', communitiesRouter);
 
 // catch 404 and forward to error handler

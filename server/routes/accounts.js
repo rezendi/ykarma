@@ -172,7 +172,7 @@ router.put('/update', function(req, res, next) {
 
 
 /* DELETE remove account. */
-router.delete('/:id', function(req, res, next) {
+router.delete('/destroy/:id', function(req, res, next) {
   if (req.session.ykid !== ADMIN_ID) {
     return res.json({"success":false, "error": "Admin only"});
   }
