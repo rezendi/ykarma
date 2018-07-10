@@ -131,7 +131,7 @@ describe('Account', function () {
                       if (err) done (err);
                       var acct = JSON.parse(res.text);
                       expect(acct.urls).to.equal("mailto:test@rezendi.com");
-                      dont();
+                      done();
                     });
                 });
             });
@@ -141,12 +141,63 @@ describe('Account', function () {
 
 });
 
-describe('Account', function () {
+describe('Reward', function () {
   it('should add, get, update, and delete a reward', function (done) {
     api.get('/accounts/setUpTest').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-      done();
+      api.post('/rewards/create')
+        .send({"cost":10, "tag": "test", "metadata":'{"name":"Test Reward One"}'})
+        .set('Cookie', TestCookies).expect(200)
+        .end(function (err, res) {
+          if (err) done (err);
+          expect(res.text).to.equal('{"success":true}');
+          TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+          api.get('/rewards/vendedBy/2')
+            .set('Cookie', TestCookies).expect(200)
+            .end(function (err, res) {
+              if (err) done (err);
+              var rwds = JSON.parse(res.text);
+              expect(rwds.length).to.equal(1);
+              expect(rwds[0].metadata.name).to.equal("Test Reward One");
+              expect(rwds[0].id).to.equal(1);
+              expect(rwds[0].cost).to.equal(10);
+              expect(rwds[0].tag).to.equal("test");
+              TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+              api.put('/rewards/update')
+                .send({"id":1, "tag": "test", "metadata":'{"name":"Updated Test Reward One"}'})
+                .set('Cookie', TestCookies).expect(200)
+                .end(function (err, res) {
+                  if (err) done (err);
+                  expect(res.text).to.equal('{"success":true}');
+                  TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                  api.get('/rewards/1')
+                    .set('Cookie', TestCookies).expect(200)
+                    .end(function (err, res) {
+                      if (err) done (err);
+                      var rwd = JSON.parse(res.text);
+                      expect(rwd.metadata.name).to.equal("Updated Test Reward One");
+                      expect(rwd.cost).to.equal(10);
+                      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                      api.delete('/rewards/1')
+                        .set('Cookie', TestCookies).expect(200)
+                        .end(function (err, res) {
+                          if (err) done (err);
+                          expect(res.text).to.equal('{"success":true}');
+                          TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                          api.get('/rewards/vendedBy/2')
+                            .set('Cookie', TestCookies).expect(200)
+                            .end(function (err, res) {
+                              if (err) done (err);
+                              var rwds = JSON.parse(res.text);
+                              expect(rwds.length).to.equal(0);
+                              done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
   });
 

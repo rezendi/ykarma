@@ -7,6 +7,24 @@ const YKCommunities = artifacts.require('YKCommunities.sol');
 const YKRewards = artifacts.require('YKRewards.sol');
 const YKarma = artifacts.require('YKarma.sol');
 
+function seed_data(yk) {
+  yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha').then(() => {
+    yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com').then(() => {
+      yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com').then(() => {
+        yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@rezendi.com').then(() => {
+          yk.accountForId(1).then(() => {
+            yk.replenish(1).then(() => {
+              yk.accountForId(2).then(() => {
+                yk.replenish(2);
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+}
+
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
   deployer.deploy(strings, {from : owner}).then(() => {
@@ -28,15 +46,7 @@ module.exports = (deployer, network, accounts) => {
                             YKRewards.deployed().then((ykv) => {
                               ykv.transferOwnership(YKarma.address, {from : owner});
                               YKarma.deployed().then((yk) => {
-                                yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha').then(() => {
-                                  yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com').then(() => {
-                                    yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com').then(() => {
-                                      yk.accountForId(1).then(() => {
-                                        yk.replenish(1);
-                                      });
-                                    });
-                                  });
-                                });
+                                seed_data(yk);
                               });
                             });
                           });

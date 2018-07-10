@@ -13,28 +13,39 @@ eth.web3.eth.getAccounts().then((accounts) => {
 
 const ADMIN_ID = 1;
 
+/* GET individual reward */
+router.get('/:id', function(req, res, next) {
+  res.json({"success":false});
+});
+
 /* GET my rewards owned list */
 router.get('/ownedBy/:accountId', function(req, res, next) {
+  res.json({"success":false});
 });
 
 /* GET my rewards vended list */
 router.get('/vendedBy/:accountId', function(req, res, next) {
+  res.json({"success":false});
 });
 
 /* GET my rewards available list */
 router.get('/availableTo/:accountId', function(req, res, next) {
+  res.json({"success":false});
 });
 
 /* POST create a reward */
-router.post('/new', function(req, res, next) {
+router.post('/create', function(req, res, next) {
+  res.json({"success":false});
 });
 
 /* POST create a reward */
 router.put('/update', function(req, res, next) {
+  res.json({"success":false});
 });
 
 /* POST create a reward */
 router.delete('/destroy/:id', function(req, res, next) {
+  res.json({"success":false});
 });
 
 
