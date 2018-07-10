@@ -11,6 +11,7 @@ var TestCookies = [];
 describe('Account', function () {
 
   it('should add a URL to an account, then remove one', function (done) {
+    this.timeout(5000);
     api.get('/accounts/setUpTest').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -34,7 +35,23 @@ describe('Account', function () {
                   if (err) done (err);
                   var acct = JSON.parse(res.text);
                   expect(acct.urls).to.equal("mailto:test@rezendi.com||https://twitter.com/testrezendi");
-                  done();
+                  TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                  api.put('/accounts/removeUrl')
+                    .send({"url":"@testrezendi"})
+                    .set('Cookie', TestCookies).expect(200)
+                    .end(function (err, res) {
+                      if (err) done (err);
+                      expect(res.text).to.equal('{"success":true}');
+                      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                      api.get('/accounts/url/test@rezendi.com')
+                        .set('Cookie', TestCookies).expect(200)
+                        .end(function (err, res) {
+                          if (err) done (err);
+                          var acct = JSON.parse(res.text);
+                          expect(acct.urls).to.equal("mailto:test@rezendi.com");
+                          done();
+                        });
+                    });
                 });
             });
         });
@@ -42,6 +59,7 @@ describe('Account', function () {
   });
 
   it('should list accounts for a community', function (done) {
+    this.timeout(5000);
     api.get('/accounts/setUpTest').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -56,6 +74,7 @@ describe('Account', function () {
   });
 
   it('should update account metadata', function (done) {
+    this.timeout(5000);
     api.get('/accounts/setUpTest').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -80,6 +99,7 @@ describe('Account', function () {
   });
 
   it('should send karma to another account', function (done) {
+    this.timeout(5000);
     api.get('/accounts/setUpTest').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -101,48 +121,12 @@ describe('Account', function () {
     });
   });
 
-  it('should add and remove a URL', function (done) {
-    api.get('/accounts/setUpTest').expect(200).end((err, res) => {
-      if (err) done (err);
-      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-      api.put('/accounts/addUrl')
-        .send({"url":"@testrezendi"})
-        .set('Cookie', TestCookies).expect(200)
-        .end(function (err, res) {
-          if (err) done (err);
-          expect(res.text).to.equal('{"success":true}');
-          TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-          api.get('/accounts/url/test@rezendi.com')
-            .set('Cookie', TestCookies).expect(200)
-            .end(function (err, res) {
-              if (err) done (err);
-              var acct = JSON.parse(res.text);
-              expect(acct.urls).to.equal("mailto:test@rezendi.com||https://twitter.com/testrezendi");
-              api.put('/accounts/removeUrl')
-                .send({"url":"@testrezendi"})
-                .set('Cookie', TestCookies).expect(200)
-                .end(function (err, res) {
-                  if (err) done (err);
-                  expect(res.text).to.equal('{"success":true}');
-                  TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-                  api.get('/accounts/url/test@rezendi.com')
-                    .set('Cookie', TestCookies).expect(200)
-                    .end(function (err, res) {
-                      if (err) done (err);
-                      var acct = JSON.parse(res.text);
-                      expect(acct.urls).to.equal("mailto:test@rezendi.com");
-                      done();
-                    });
-                });
-            });
-        });
-    });
-  });
-
 });
 
 describe('Reward', function () {
+
   it('should add, get, update, and delete a reward', function (done) {
+    this.timeout(5000);
     api.get('/accounts/setUpTest').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');

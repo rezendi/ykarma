@@ -119,21 +119,24 @@ router.put('/addUrl', function(req, res, next) {
 
 /* PUT remove URL */
 router.put('/removeUrl', function(req, res, next) {
-  console.log("removing url type", type);
-  var type = req.body.type;
-  var url = '';
-  if (type=="twitter") {
-    if (!req.session.handle) {
-      return res.json({"success":false, "error": "No handle to remove"});      
+  var url = getLongUrlFromShort(req.body.url);
+  if (url.startsWith("error")) {
+    console.log("removing url type", type);
+    var type = req.body.type;
+    if (type=="twitter") {
+      if (!req.session.handle) {
+        return res.json({"success":false, "error": "No handle to remove"});      
+      }
+      url = getLongUrlFromShort(req.session.handle);
     }
-    url = getLongUrlFromShort(req.session.handle);
-  }
-  if (type=="email") {
-    if (!req.session.email) {
-      res.json({"success":false, "error": "No email to remove"});
+    if (type=="email") {
+      if (!req.session.email) {
+        res.json({"success":false, "error": "No email to remove"});
+      }
+      url = getLongUrlFromShort(req.session.email);
     }
-    url = getLongUrlFromShort(req.session.email);
   }
+  console.log("removing url", url);
   removeUrlFromAccount(req.session.ykid, url, (result) => {
     res.json({"success":result});
   });
@@ -350,12 +353,18 @@ function addUrlToAccount(id, url, callback) {
 }
 
 function removeUrlFromAccount(id, url, callback) {
+  console.log("removing url "+url, id);
+  var notifying = false;
   var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
-  method.send(function(error, result) {
-    if (error) {
-      console.log('removeUrlFromAccount error', error);
-    } else {
-      callback(result);
+  method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
+    console.log('removeUrlFromAccount error', error);
+    callback(false);
+  })
+  .on('confirmation', (number, receipt) => {
+    if (number >= 1 && !notifying) {
+      console.log('removeUrlFromAccount result', receipt);
+      notifying = true;
+      callback(true);
     }
   })
   .catch(function(error) {
