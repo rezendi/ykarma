@@ -16,12 +16,26 @@ eth.web3.eth.getAccounts().then((ethAccounts) => {
 
 const ADMIN_ID = 1;
 
+// GET set up test
+router.get('/setup', function(req, res, next) {
+  if(process.env.NODE_ENV === 'test') {
+    req.session.email = "test@rezendi.com";
+    req.session.ykid = 2;
+    req.session.communityAdminId = 1;
+  }
+  return res.json({"success":true});
+});
+
+
 /* GET account list */
 router.get('/for/:communityId', function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
   if (req.session.ykid !== ADMIN_ID && req.session.communityAdminId !== communityId) {
+    console.log("not allowed to get accounts for",communityId);
+    console.log("communityAdminId",req.session.communityAdminId);
     return res.json([]);
   }
+  console.log("getting accounts for",communityId);
   var accounts = [];
   var method = eth.contract.methods.getAccountCount(communityId);
   method.call(function(error, result) {
@@ -33,9 +47,9 @@ router.get('/for/:communityId', function(req, res, next) {
       for (var i = 0; i < result; i++) {
         getAccountWithinCommunity(communityId, i, (account) => {
           accounts.push(account);
-          console.log('callback', accounts);
           if (accounts.length >= result) {
-            res.json(accounts);
+            // console.log('accounts', accounts);
+            return res.json(accounts);
           }
         });
       }
@@ -61,18 +75,18 @@ router.get('/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
-  if (req.session.email!==url && req.session.handle != url && req.session.ykid != ADMIN_ID) {
+  var url = req.params.url;
+  if (req.session.email !== url && req.session.handle !== url && req.session.ykid !== ADMIN_ID) {
     console.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
   }
-  var url = getLongUrlFromShort(req.params.url);
+  url = getLongUrlFromShort(url);
   if (url.startsWith('error')) {
     return res.json({"success":false, "error": url});
   }
   getAccountForUrl(url, (account) => {
-    // console.log('accountForUrl callback', account);
     getSessionFromAccount(req, account);
-    // console.log("account session", req.session);
+    // console.log("account", account);
     res.json(account);
   });
 });
@@ -136,7 +150,6 @@ router.put('/removeUrl', function(req, res, next) {
       url = getLongUrlFromShort(req.session.email);
     }
   }
-  console.log("removing url", url);
   removeUrlFromAccount(req.session.ykid, url, (result) => {
     res.json({"success":result});
   });
@@ -146,13 +159,14 @@ router.put('/removeUrl', function(req, res, next) {
 /* PUT edit account */
 router.put('/update', function(req, res, next) {
   var account = req.body.account;
-  console.log("account", JSON.stringify(account));
+  console.log("updating account", account);
   if (account.id === 0) {
     return res.json({"success":false, "error": 'Account ID not set'});
   }
   if (req.session.ykid !== ADMIN_ID && req.session.ykid !== account.id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
+  console.log("About to edit", account);
   var method = eth.contract.methods.editAccount(
     account.id,
     account.userAddress,
@@ -164,7 +178,7 @@ router.put('/update', function(req, res, next) {
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
-      res.json(account);
+      res.json({"success":true});
     }
   })
   .catch(function(error) {
@@ -274,16 +288,6 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-// GET set up test
-router.get('/setUpTest', function(req, res, next) {
-  if(process.env.NODE_ENV === 'test') {
-    req.session.email = "test@rezendi.com";
-    req.session.ykid = 2;
-  }
-  return res.json({"success":true});
-});
-
-
 function getAccountFor(id, callback) {
   var method = eth.contract.methods.accountForId(id);
   console.log("accountForId", id);
@@ -303,13 +307,12 @@ function getAccountFor(id, callback) {
 
 function getAccountWithinCommunity(communityId, idx, callback) {
   var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
-  console.log("accountWithinCommunity id", communityId);
-  console.log("accountWithinCommunity idx", idx);
+  // console.log("accountWithinCommunity idx "+idx, communityId);
   method.call(function(error, result) {
     if (error) {
       console.log('accountWithinCommunity error', error);
     } else {
-      console.log('accountWithinCommunity result', result);
+      // console.log('accountWithinCommunity result', result);
       var account = getAccountFromResult(result);
       callback(account);
     }
@@ -340,12 +343,12 @@ function addUrlToAccount(id, url, callback) {
   var notifying = false;
   var method = eth.contract.methods.addUrlToExistingAccount(id, url);
   method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
-    console.log('addUrlToAccount error', error);
+    // console.log('addUrlToAccount error', error);
     callback(false);
   })
   .on('confirmation', (number, receipt) => {
     if (number >= 1 && !notifying) {
-      console.log('addUrlToAccount result', receipt);
+      //console.log('addUrlToAccount result', receipt);
       notifying = true;
       callback(true);
     }
@@ -362,7 +365,7 @@ function removeUrlFromAccount(id, url, callback) {
   })
   .on('confirmation', (number, receipt) => {
     if (number >= 1 && !notifying) {
-      console.log('removeUrlFromAccount result', receipt);
+      // console.log('removeUrlFromAccount result', receipt);
       notifying = true;
       callback(true);
     }

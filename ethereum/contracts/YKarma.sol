@@ -59,7 +59,7 @@ contract YKarma is Oracular, YKStructs {
     if (receiverId == 0) {
       receiverId = addNewAccount(community.id, 0, '', _url);
     }
-    trancheData.give(_giverId, receiverId, _amount, community.tags, _message);
+    trancheData.performGive(_giverId, receiverId, _amount, community.tags, _message);
   }
 
   function buy(uint256 _rewardId) public {
