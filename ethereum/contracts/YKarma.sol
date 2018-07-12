@@ -51,7 +51,6 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function doGive(uint256 _giverId, string _url, uint256 _amount, string _message) internal {
-    require(_giverId != 0);
     Account memory giver = accountData.accountForId(_giverId);
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
@@ -73,7 +72,6 @@ contract YKarma is Oracular, YKStructs {
   }
 
   function doPurchase(uint256 _buyerId, uint256 _rewardId) internal {
-    require(_buyerId != 0 && _rewardId != 0);
     Reward memory reward = rewardData.rewardForId(_rewardId);
     require(reward.ownerId == 0); // for now
     uint256 available = trancheData.availableToSpend(_buyerId, reward.tag);
@@ -238,7 +236,6 @@ contract YKarma is Oracular, YKStructs {
    * Reward methods
    */
   function addNewReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata, byte _flags) public {
-    require(_vendorId != 0);
     Account memory account = accountData.accountForId(_vendorId);
     require (account.userAddress == msg.sender || senderIsOracle());
     Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, flags:_flags, cost:_cost, tag:_tag, metadata:_metadata});
@@ -253,28 +250,6 @@ contract YKarma is Oracular, YKStructs {
       require (account.userAddress == msg.sender || senderIsOracle());
     }
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.flags, reward.tag, reward.metadata);
-  }
-  
-  function getRewardsOwnedCount(uint256 _id) public view onlyOracle returns (uint256) {
-    Account memory account = accountData.accountForId(_id);
-    return account.rewardIds.length;
-  }
-
-  function rewardByOwner(uint256 _ownerId, uint256 _idx) public view onlyOracle returns (uint256, uint256, uint256, uint256, byte, string, string) {
-    Account memory account = accountData.accountForId(_ownerId);
-    uint256 rewardId = account.rewardIds[_idx];
-    return rewardForId(rewardId);
-  }
-  
-  function getRewardsVendedCount(uint256 _id) public view onlyOracle returns (uint256) {
-    Account memory account = accountData.accountForId(_id);
-    return account.offerIds.length;
-  }
-
-  function rewardByVendor(uint256 _vendorId, uint256 _idx) public view returns (uint256, uint256, uint256, uint256, byte, string, string) {
-    Account memory account = accountData.accountForId(_vendorId);
-    uint256 rewardId = account.offerIds[_idx];
-    return rewardForId(rewardId);
   }
   
   function editExistingReward(uint256 _id, uint256 _cost, string _tag, string _metadata, byte _flags) public {
@@ -303,4 +278,14 @@ contract YKarma is Oracular, YKStructs {
     rewardData.deleteReward(_id);
   }
   
+  function getRewardsCount(uint256 _id, bool _ownerVendor) public view onlyOracle returns (uint256) {
+    Account memory account = accountData.accountForId(_id);
+    return _ownerVendor ? account.rewardIds.length : account.offerIds.length;
+  }
+
+  function rewardByIdx(uint256 _vendorId, uint256 _idx, bool _ownerVendor) public view returns (uint256, uint256, uint256, uint256, byte, string, string) {
+    Account memory account = accountData.accountForId(_vendorId);
+    uint256 rewardId = _ownerVendor ? account.rewardIds[_idx] : account.offerIds[_idx];
+    return rewardForId(rewardId);
+  }
 }

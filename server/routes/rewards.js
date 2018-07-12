@@ -38,8 +38,7 @@ router.get('/vendedBy/:accountId', function(req, res, next) {
 
 function getListOfRewards(isOwner, accountId, res) {
   var rewards = [];
-  const methods = eth.contract.methods;
-  var method = isOwner ? methods.getRewardsOwnedCount(accountId) : methods.getRewardsVendedCount(accountId);
+  const method = eth.contract.methods.getRewardsCount(accountId, isOwner);
   method.call(function(error, totalRewards) {
     if (error) {
       console.log('getListOfRewards error', error);
@@ -165,9 +164,8 @@ function getRewardFor(id, callback) {
   });
 }
 
-function getRewardByIndex(iwOwner, accountId, idx, callback) {
-  const methods = eth.contract.methods;
-  var method = isOwner ? methods.rewardByOwner(accountId, idx) : methods.rewardByVendor(accountId, idx);
+function getRewardByIndex(isOwner, accountId, idx, callback) {
+  const method = eth.contract.methods.rewardByIx(accountId, idx, isOwner);
   method.call(function(error, result) {
     if (error) {
       console.log('getRewardByIndex error', error);
