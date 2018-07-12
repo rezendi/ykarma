@@ -51,6 +51,7 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function doGive(uint256 _giverId, string _url, uint256 _amount, string _message) internal {
+    require(_giverId != 0);
     Account memory giver = accountData.accountForId(_giverId);
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
@@ -72,6 +73,7 @@ contract YKarma is Oracular, YKStructs {
   }
 
   function doPurchase(uint256 _buyerId, uint256 _rewardId) internal {
+    require(_buyerId != 0 && _rewardId != 0);
     Reward memory reward = rewardData.rewardForId(_rewardId);
     require(reward.ownerId == 0); // for now
     uint256 available = trancheData.availableToSpend(_buyerId, reward.tag);
@@ -236,6 +238,7 @@ contract YKarma is Oracular, YKStructs {
    * Reward methods
    */
   function addNewReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata, byte _flags) public {
+    require(_vendorId != 0);
     Account memory account = accountData.accountForId(_vendorId);
     require (account.userAddress == msg.sender || senderIsOracle());
     Reward memory reward = Reward({id:0, vendorId:_vendorId, ownerId:0, flags:_flags, cost:_cost, tag:_tag, metadata:_metadata});

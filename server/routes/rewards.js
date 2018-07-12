@@ -11,14 +11,15 @@ eth.web3.eth.getAccounts().then((accounts) => {
   fromAccount = accounts[0];
 });
 
+const ADMIN_ID = 1;
+
 /* GET individual reward */
 router.get('/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   getRewardFor(id, (reward) => {
     console.log('callback', reward);
-    res.json(reward);
+    res.json({"success":true, "reward":reward});
   });
-  res.json({"success":false});
 });
 
 /* GET my rewards owned list */
@@ -61,6 +62,7 @@ function getListOfRewards(isOwner, accountId, res) {
   });
 }
 
+// TODO
 /* GET my rewards available list */
 router.get('/availableTo/:accountId', function(req, res, next) {
   if (!req.session.ykid) {
@@ -73,6 +75,21 @@ router.post('/create', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
+  var reward = req.body.reward;
+  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.tag, reward.metadata, reward.flags);
+  method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
+    if (error) {
+      console.log('create reward error', error);
+      res.json({"success":false, "error": error});
+    } else {
+      console.log('result', result);
+      res.json({"success":true, "result": result});
+    }
+  })
+  .catch(function(error) {
+    console.log('create reward call error ' + error);
+    res.json({"success":false, "error": error});
+  });
 });
 
 /* PUT update a reward */
@@ -80,6 +97,26 @@ router.put('/update', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
+  var reward = req.body.reward;
+  getRewardFor(reward.id, (existing) => {
+    if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
+      return res.json({"success":false, "error": "Not authorized"});
+    }
+    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost, reward.tag, reward.metadata, reward.flags);
+    method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
+      if (error) {
+        console.log('update reward error', error);
+        res.json({"success":false, "error": error});
+      } else {
+        console.log('result', result);
+        res.json({"success":true, "result": result});
+      }
+    })
+    .catch(function(error) {
+      console.log('update reward call error ' + error);
+      res.json({"success":false, "error": error});
+    });
+  });
 });
 
 /* DELETE delete a reward */
@@ -87,6 +124,26 @@ router.delete('/destroy/:id', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
+  var reward = req.body.reward;
+  getRewardFor(reward.id, (existing) => {
+    if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
+      return res.json({"success":false, "error": "Not authorized"});
+    }
+    var method = eth.contract.methods.deleteReward(reward.id);
+    method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
+      if (error) {
+        console.log('delete reward error', error);
+        res.json({"success":false, "error": error});
+      } else {
+        console.log('result', result);
+        res.json({"success":true, "result": result});
+      }
+    })
+    .catch(function(error) {
+      console.log('delete reward call error ' + error);
+      res.json({"success":false, "error": error});
+    });
+  });
 });
 
 function getRewardFor(id, callback) {
@@ -95,6 +152,7 @@ function getRewardFor(id, callback) {
   method.call(function(error, result) {
     if (error) {
       console.log('getRewardFor error', error);
+      callback({});
     } else {
       console.log('getRewardFor result', result);
       var reward = getRewardFromResult(result);
@@ -103,6 +161,7 @@ function getRewardFor(id, callback) {
   })
   .catch(function(error) {
     console.log('getAccountFor call error ' + id, error);
+    callback({});
   });
 }
 

@@ -174,7 +174,7 @@ router.put('/update', function(req, res, next) {
   );
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
-      console.log('error', error);
+      console.log('update account error', error);
       res.json({"success":false, "error": error});
     } else {
       console.log('result', result);
@@ -182,7 +182,7 @@ router.put('/update', function(req, res, next) {
     }
   })
   .catch(function(error) {
-    console.log('call error ' + error);
+    console.log('update account call error ' + error);
     res.json({"success":false, "error": error});
   });
 });
