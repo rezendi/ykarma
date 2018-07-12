@@ -252,6 +252,28 @@ contract YKarma is Oracular, YKStructs {
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.flags, reward.tag, reward.metadata);
   }
   
+  function getRewardsOwnedCount(uint256 _id) public view onlyOracle returns (uint256) {
+    Account memory account = accountData.accountForId(_id);
+    return account.rewardIds.length;
+  }
+
+  function rewardByOwner(uint256 _ownerId, uint256 _idx) public view onlyOracle returns (uint256, uint256, uint256, uint256, byte, string, string) {
+    Account memory account = accountData.accountForId(_ownerId);
+    uint256 rewardId = account.rewardIds[_idx];
+    return rewardForId(rewardId);
+  }
+  
+  function getRewardsVendedCount(uint256 _id) public view onlyOracle returns (uint256) {
+    Account memory account = accountData.accountForId(_id);
+    return account.offerIds.length;
+  }
+
+  function rewardByVendor(uint256 _vendorId, uint256 _idx) public view returns (uint256, uint256, uint256, uint256, byte, string, string) {
+    Account memory account = accountData.accountForId(_vendorId);
+    uint256 rewardId = account.offerIds[_idx];
+    return rewardForId(rewardId);
+  }
+  
   function editExistingReward(uint256 _id, uint256 _cost, string _tag, string _metadata, byte _flags) public {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);

@@ -319,6 +319,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
   })
   .catch(function(error) {
     console.log('accountWithinCommunity call error ' + id, error);
+    callback({});
   });
 }
 
