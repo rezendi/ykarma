@@ -87,8 +87,15 @@ contract YKAccounts is Ownable, YKStructs {
   }
 
   function deleteAccount(uint256 _id) public onlyOwner {
+    strings.slice memory urls = accounts[_id].urls.toSlice();
+    string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
+    for(uint i = 0; i < separated.length; i++) {
+      separated[i] = urls.split(DELIM.toSlice()).toString();
+    }
+    for (uint j = 0; j < separated.length; j++) {
+      delete accountsByUrl[separated[j]];
+    }
     delete accounts[_id];
-    // TODO FIXME delete other mappings
   }
 
   // TODO

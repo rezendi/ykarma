@@ -8,8 +8,6 @@ contract('Paces', function(accounts) {
   const deployer = accounts[0];
 
   it('should be put through its paces', async function() {
-    assert.equal(4*4, 16, "Test running");
-
     let trancheData = await YKTranches.new();
     let accountData = await YKAccounts.new();
     let communityData = await YKCommunities.new();
@@ -23,11 +21,11 @@ contract('Paces', function(accounts) {
 
     // add a little data
     await ykarma.addNewCommunity(accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');
-    let count = await ykarma.getCommunityCount();
+    var count = await ykarma.getCommunityCount();
     assert.equal(count, 1, "Community created");
     await ykarma.addNewCommunity(0, '0x00', 'asdf.com', '{"name":"asdf"}', 'asdf');
-    let count2 = await ykarma.getCommunityCount();
-    assert.equal(count2, 2, "Community created");
+    count = await ykarma.getCommunityCount();
+    assert.equal(count, 2, "Community created");
     var vals = await ykarma.communityForId(1);
     assert.equal(accounts[1], vals[1]);
     await ykarma.addNewAccount(1, '', '{"name":"Jon"}', 'mailto:jon@rezendi.com', );
@@ -95,5 +93,15 @@ contract('Paces', function(accounts) {
     assert.equal(vals[2], 2, "Reward successfully transferred");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9]).amounts[0], 30, "Karma spent");
+    
+    await ykarma.deleteAccount(2);
+    vals = await ykarma.accountForId(2);
+    assert.equal(vals[0], 0);
+
+    vals = await ykarma.communityForId(2);
+    assert.equal(vals[0], 2, "Community not deleted");
+    await ykarma.deleteCommunity(2);
+    vals = await ykarma.communityForId(2);
+    assert.equal(vals[0], 0, "Community deleted");
   });
 });
