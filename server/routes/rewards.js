@@ -17,7 +17,7 @@ const ADMIN_ID = 1;
 router.get('/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   getRewardFor(id, (reward) => {
-    console.log('callback', reward);
+    //console.log('callback', reward);
     res.json({"success":true, "reward":reward});
   });
 });
@@ -74,18 +74,19 @@ router.post('/create', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
-  console.log("creating");
   var reward = req.body.reward;
-  console.log("reward", reward);
+  //console.log("reward", reward);
+  var notifying = false;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.tag, reward.metadata, reward.flags);
-  method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
-    console.log("sent");
-    if (error) {
-      console.log('create reward error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
-      res.json({"success":true, "result": result});
+  method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
+    console.log('error', error);
+    res.json({'success':false, 'error':error});
+  })
+  .on('confirmation', (number, receipt) => {
+    if (number >= 1 && !notifying) {
+      notifying = true;
+      //console.log('result', receipt);
+      return res.json({"success":true, "result": receipt});
     }
   })
   .catch(function(error) {
@@ -99,64 +100,61 @@ router.put('/update', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
+  var notifying = false;
   var reward = req.body.reward;
   getRewardFor(reward.id, (existing) => {
-    if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
+    if (req.session.ykid !== parseInt(existing.vendorId) && req.session.ykid !== ADMIN_ID) {
       return res.json({"success":false, "error": "Not authorized"});
     }
-    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost, reward.tag, reward.metadata, reward.flags);
-    method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
-      if (error) {
-        console.log('update reward error', error);
-        res.json({"success":false, "error": error});
-      } else {
-        console.log('result', result);
-        res.json({"success":true, "result": result});
+    //console.log("existing", existing);
+    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.tag || existing.tag, reward.metadata || existing.metadata, reward.flags || existing.flags);
+    method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
+      console.log('error', error);
+      res.json({'success':false, 'error':error});
+    })
+    .on('confirmation', (number, receipt) => {
+      if (number >= 1 && !notifying) {
+        notifying = true;
+        //console.log('result', receipt);
+        return res.json({"success":true, "result": receipt});
       }
     })
-    .catch(function(error) {
-      console.log('update reward call error ' + error);
-      res.json({"success":false, "error": error});
-    });
-  });
+  })
 });
 
 /* DELETE delete a reward */
-router.delete('/destroy/:id', function(req, res, next) {
+router.delete('/:id', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
-  var reward = req.body.reward;
-  getRewardFor(reward.id, (existing) => {
+  var notifying = false;
+  getRewardFor(req.params.id, (existing) => {
     if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
       return res.json({"success":false, "error": "Not authorized"});
     }
-    var method = eth.contract.methods.deleteReward(reward.id);
-    method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
-      if (error) {
-        console.log('delete reward error', error);
-        res.json({"success":false, "error": error});
-      } else {
-        console.log('result', result);
-        res.json({"success":true, "result": result});
+    var method = eth.contract.methods.deleteReward(existing.id);
+    method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
+      console.log('error', error);
+      res.json({'success':false, 'error':error});
+    })
+    .on('confirmation', (number, receipt) => {
+      if (number >= 1 && !notifying) {
+        notifying = true;
+        //console.log('result', receipt);
+        res.json({"success":true, "result": receipt});
       }
     })
-    .catch(function(error) {
-      console.log('delete reward call error ' + error);
-      res.json({"success":false, "error": error});
-    });
   });
 });
 
 function getRewardFor(id, callback) {
   var method = eth.contract.methods.rewardForId(id);
-  console.log("rewardForId", id);
   method.call(function(error, result) {
     if (error) {
       console.log('getRewardFor error', error);
       callback({});
     } else {
-      console.log('getRewardFor result', result);
+      //console.log('getRewardFor result', result);
       var reward = getRewardFromResult(result);
       callback(reward);
     }

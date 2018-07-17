@@ -113,9 +113,15 @@ contract YKAccounts is Ownable, YKStructs {
   
   function deleteReward(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
     Account storage vendor = accounts[_vendorId];
+    bool found = false;
     for (uint i = 0; i < vendor.rewardIds.length; i++) {
       if (vendor.rewardIds[i] == _rewardId) {
-        delete vendor.rewardIds[i];
+        vendor.rewardIds[i] = vendor.rewardIds[vendor.rewardIds.length - 1];
+        delete vendor.rewardIds[vendor.rewardIds.length - 1];
+        found = true;
+      }
+      if (found) {
+        vendor.rewardIds.length--;
       }
     }
   }

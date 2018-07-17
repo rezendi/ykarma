@@ -246,15 +246,15 @@ router.post('/give', function(req, res, next) {
             sendKarmaSentMail(senderName, recipient, req.body.amount);
             docRef.update({ [sender]:true }, { create: true } );
           }
-          res.json({"success":true});
+          return res.json({"success":true});
         })
         .catch(err => {
           console.log('Error getting document', err);
-          res.json({"success":false, "error":err});
+          return res.json({"success":false, "error":err});
         });
       } else {
         // TODO: Twitter notifications
-        res.json({"success":true});
+        return res.json({"success":true});
       }
     }
   })
@@ -368,7 +368,7 @@ function removeUrlFromAccount(id, url, callback) {
     if (number >= 1 && !notifying) {
       // console.log('removeUrlFromAccount result', receipt);
       notifying = true;
-      callback(true);
+      return callback(true);
     }
   })
   .catch(function(error) {

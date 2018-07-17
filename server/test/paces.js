@@ -129,7 +129,7 @@ describe('Account', function () {
 describe.only('Reward', function () {
 
   it('should add, get, update, and delete a reward', function (done) {
-    this.timeout(5000);
+    this.timeout(8000);
     api.get('/accounts/setup').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -139,45 +139,40 @@ describe.only('Reward', function () {
         .end(function (err, res) {
           if (err) done (err);
           expect(JSON.parse(res.text).success).to.equal(true);
-          TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
           api.get('/rewards/vendedBy/2')
             .set('Cookie', TestCookies).expect(200)
             .end(function (err, res) {
               if (err) done (err);
               var rwds = JSON.parse(res.text).rewards;
-              console.log("got", rwds);
-              expect(rwds.length).to.be.above(1);
+              expect(rwds.length).to.equal(1);
               expect(rwds[0].metadata.name).to.equal("Test Reward One");
               expect(rwds[0].id).to.not.equal('0');
               expect(rwds[0].cost).to.equal('10');
               expect(rwds[0].tags).to.equal("test");
-              TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
               api.put('/rewards/update')
-                .send({"id":1, "tag": "test", "metadata":'{"name":"Updated Test Reward One"}'})
+                .send({"reward":{"id":1, "tag":"test", "metadata":'{"name":"Updated Test Reward One"}'}})
                 .set('Cookie', TestCookies).expect(200)
                 .end(function (err, res) {
                   if (err) done (err);
-                  expect(res.text).to.equal('{"success":true}');
-                  TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                  expect(JSON.parse(res.text).success).to.equal(true);
                   api.get('/rewards/1')
                     .set('Cookie', TestCookies).expect(200)
                     .end(function (err, res) {
                       if (err) done (err);
-                      var rwd = JSON.parse(res.text);
+                      var rwd = JSON.parse(res.text).reward;
                       expect(rwd.metadata.name).to.equal("Updated Test Reward One");
-                      expect(rwd.cost).to.equal(10);
-                      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                      expect(rwd.cost).to.equal('10');
                       api.delete('/rewards/1')
                         .set('Cookie', TestCookies).expect(200)
                         .end(function (err, res) {
                           if (err) done (err);
-                          expect(res.text).to.equal('{"success":true}');
-                          TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+                          expect(JSON.parse(res.text).success).to.equal(true);
                           api.get('/rewards/vendedBy/2')
                             .set('Cookie', TestCookies).expect(200)
                             .end(function (err, res) {
                               if (err) done (err);
-                              var rwds = JSON.parse(res.text);
+                              var rwds = JSON.parse(res.text).rewards;
+                              console.log("got",rwds);
                               expect(rwds.length).to.equal(0);
                               done();
                             });
