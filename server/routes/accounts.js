@@ -159,14 +159,14 @@ router.put('/removeUrl', function(req, res, next) {
 /* PUT edit account */
 router.put('/update', function(req, res, next) {
   var account = req.body.account;
-  console.log("updating account", account);
+  //console.log("updating account", account);
   if (account.id === 0) {
     return res.json({"success":false, "error": 'Account ID not set'});
   }
   if (req.session.ykid !== ADMIN_ID && req.session.ykid !== account.id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
-  console.log("About to edit", account);
+  //console.log("About to edit", account);
   var method = eth.contract.methods.editAccount(
     account.id,
     account.userAddress,
