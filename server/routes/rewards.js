@@ -45,7 +45,7 @@ function getListOfRewards(isOwner, accountId, res) {
       return res.json({"success":false, "error": error});
     } else {
       //console.log('getRewardsOwnedCount result', result);
-      for (var i = 0; i < result; i++) {
+      for (var i = 0; i < totalRewards; i++) {
         getRewardByIndex(isOwner, accountId, i, (reward) => {
           rewards.push(reward);
           if (rewards.length >= totalRewards) {
@@ -74,9 +74,12 @@ router.post('/create', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
+  console.log("creating");
   var reward = req.body.reward;
+  console.log("reward", reward);
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.tag, reward.metadata, reward.flags);
   method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
+    console.log("sent");
     if (error) {
       console.log('create reward error', error);
       res.json({"success":false, "error": error});
@@ -165,7 +168,7 @@ function getRewardFor(id, callback) {
 }
 
 function getRewardByIndex(isOwner, accountId, idx, callback) {
-  const method = eth.contract.methods.rewardByIx(accountId, idx, isOwner);
+  const method = eth.contract.methods.rewardByIdx(accountId, idx, isOwner);
   method.call(function(error, result) {
     if (error) {
       console.log('getRewardByIndex error', error);
