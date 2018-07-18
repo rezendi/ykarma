@@ -44,7 +44,10 @@ function getListOfRewards(isOwner, accountId, res) {
       console.log('getListOfRewards error', error);
       return res.json({"success":false, "error": error});
     } else {
-      //console.log('getRewardsOwnedCount result', result);
+      //console.log('getRewardsOwnedCount result', totalRewards);
+      if (parseInt(totalRewards)===0) {
+        return res.json({"success":true, "rewards":[]});
+      }
       for (var i = 0; i < totalRewards; i++) {
         getRewardByIndex(isOwner, accountId, i, (reward) => {
           rewards.push(reward);
