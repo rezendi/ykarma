@@ -3,6 +3,7 @@ import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
 import { auth } from '../firebase';
+import { editMetadata } from '../firebase';
 import * as firebase from 'firebase'
 import Api from '../store/Api';
 
@@ -44,6 +45,31 @@ class Profile extends React.Component {
     });
   }
 
+  editMetadata = async (values) => {
+    console.log("Submitting form", values);
+    fetch('/accounts/update', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account: {
+          id: this.props.user.ykid,
+          metadata: { name: values.name},
+        }
+      })
+    })
+    .then(res => {
+      if (!res.ok) {
+        alert("Server error!");
+      } else {
+        window.location.reload();
+      }
+    });
+  }
+
   render() {
     return (
       <Grid>
@@ -72,6 +98,16 @@ class Profile extends React.Component {
                   <Button type="submit" onClick={this.removeEmail}>Remove Email</Button>
                 </Row>
                 <Row>
+                  Edit Metadata
+                </Row>
+                <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
+                  <Row>
+                    <label htmlFor="name">Name</label>
+                    <Field name="name" component="input" type="text"/>
+                    <Button type="submit">Submit</Button>
+                  </Row>
+                </form>
+                <Row>
                   Also { localStorage.getItem("additionalUserInfo") } and { localStorage.getItem("additionalEmailInfo") }
                 </Row>
               </Panel.Body>
@@ -92,5 +128,11 @@ function mapStateToProps(state, ownProps) {
 Profile = reduxForm({
   form: 'profile',
 })(Profile);
+
+Profile = connect(
+  state => ({
+    initialValues: state.user.metadata
+  }),
+)(Profile)
 
 export default connect(mapStateToProps, null)(Profile);

@@ -126,7 +126,7 @@ describe('Account', function () {
 
 });
 
-describe.only('Reward', function () {
+describe('Reward', function () {
 
   it('should add, get, update, and delete a reward', function (done) {
     this.timeout(5000);
