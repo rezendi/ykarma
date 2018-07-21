@@ -64,6 +64,7 @@ contract YKTranches is Ownable, YKStructs {
   }
   
   function spend(uint256 _spenderId, uint256 _amount, string _tag) public onlyOwner {
+    require (availableToSpend(_spenderId, _tag) >= _amount);
     uint256 accumulated;
     Spending storage available = spending[_spenderId];
     uint256[] storage amounts = available.amounts;

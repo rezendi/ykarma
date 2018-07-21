@@ -23,12 +23,12 @@ contract YKCommunities is Ownable, YKStructs {
     communities[_communityId].accountIds.push(_accountId);
   }
   
-  function editCommunity(uint256 _id, Community _newValues) public onlyOwner {
-    communities[_id].adminAddress  = _newValues.adminAddress;
-    communities[_id].flags         = _newValues.flags;
-    communities[_id].domain        = _newValues.domain;
-    communities[_id].metadata      = _newValues.metadata;
-    communities[_id].tags          = _newValues.tags;
+  function editCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public onlyOwner {
+    communities[_id].adminAddress  = _adminAddress;
+    communities[_id].flags         = _flags;
+    communities[_id].domain        = _domain;
+    communities[_id].metadata      = _metadata;
+    communities[_id].tags          = _tags;
   }
 
   function removeAccount(uint256 _communityId, uint256 _accountId) public onlyOwner {
@@ -47,5 +47,24 @@ contract YKCommunities is Ownable, YKStructs {
     return communities[_id].flags & 0x01 == 0x01;
   }
   
+  function addReward(uint256 _communityId, uint256 _rewardId) public onlyOwner {
+    communities[_communityId].accountIds.push(_rewardId);
+  }
+  
+  function deleteReward(uint256 _communityId, uint256 _rewardId) public onlyOwner {
+    uint256[] storage rewardIds = communities[_communityId].rewardIds;
+    bool found = false;
+    for (uint i = 0; i < rewardIds.length; i++) {
+      if (rewardIds[i] == _rewardId) {
+        rewardIds[i] = rewardIds[rewardIds.length - 1];
+        delete rewardIds[rewardIds.length - 1];
+        found = true;
+      }
+      if (found) {
+        rewardIds.length--;
+      }
+    }
+  }
+
 }
 

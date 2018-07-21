@@ -22,23 +22,30 @@ router.get('/:id', function(req, res, next) {
   });
 });
 
+/* GET rewards available for a community */
+router.get('/availableTo/:communityId', function(req, res, next) {
+  const communityId = parseInt(req.params.accountId);
+  console.log("getting rewards owned by", ownerId);
+  return getListOfRewards(0, communityId, res);
+});
+
 /* GET my rewards owned list */
 router.get('/ownedBy/:accountId', function(req, res, next) {
   const ownerId = parseInt(req.params.accountId);
   console.log("getting rewards owned by", ownerId);
-  return getListOfRewards(true, ownerId, res);
+  return getListOfRewards(1, ownerId, res);
 });
 
 /* GET my rewards vended list */
 router.get('/vendedBy/:accountId', function(req, res, next) {
   const vendorId = parseInt(req.params.accountId);
   console.log("getting rewards vended by", vendorId);
-  return getListOfRewards(false, vendorId, res);
+  return getListOfRewards(2, vendorId, res);
 });
 
-function getListOfRewards(isOwner, accountId, res) {
+function getListOfRewards(idType, accountId, res) {
   var rewards = [];
-  const method = eth.contract.methods.getRewardsCount(accountId, isOwner);
+  const method = eth.contract.methods.getRewardsCount(accountId, idType);
   method.call(function(error, totalRewards) {
     if (error) {
       console.log('getListOfRewards error', error);
@@ -49,7 +56,7 @@ function getListOfRewards(isOwner, accountId, res) {
         return res.json({"success":true, "rewards":[]});
       }
       for (var i = 0; i < totalRewards; i++) {
-        getRewardByIndex(isOwner, accountId, i, (reward) => {
+        getRewardByIndex(idType, accountId, i, (reward) => {
           rewards.push(reward);
           if (rewards.length >= totalRewards) {
             // console.log('rewards', rewards);
@@ -63,14 +70,6 @@ function getListOfRewards(isOwner, accountId, res) {
     console.log('getListOfRewards call error', error);
   });
 }
-
-// TODO
-/* GET my rewards available list */
-router.get('/availableTo/:accountId', function(req, res, next) {
-  if (!req.session.ykid) {
-    return res.json({"success":false, "error": "Not logged in"});
-  }
-});
 
 /* POST create a reward */
 router.post('/create', function(req, res, next) {
@@ -168,8 +167,8 @@ function getRewardFor(id, callback) {
   });
 }
 
-function getRewardByIndex(isOwner, accountId, idx, callback) {
-  const method = eth.contract.methods.rewardByIdx(accountId, idx, isOwner);
+function getRewardByIndex(idType, accountId, idx, callback) {
+  const method = eth.contract.methods.rewardByIdx(accountId, idx, idType);
   method.call(function(error, result) {
     if (error) {
       console.log('getRewardByIndex error', error);

@@ -49,17 +49,18 @@ contract YKAccounts is Ownable, YKStructs {
     return true;
   }
   
-  function editAccount(uint256 _id, Account _newValues) public onlyOwner {
-    if (_newValues.userAddress != accounts[_id].userAddress) {
+  function editAccount(uint256 _id, address _newAddress, string _newMetadata, byte _newFlags) public onlyOwner {
+    if (_newAddress != accounts[_id].userAddress) {
       if (accounts[_id].userAddress != 0) {
         delete accountsByAddress[accounts[_id].userAddress];
       }
-      if (_newValues.userAddress != 0) {
-        accountsByAddress[_newValues.userAddress] = _id;
+      if (_newAddress != 0) {
+        accountsByAddress[_newAddress] = _id;
       }
     }
-    accounts[_id].userAddress = _newValues.userAddress;
-    accounts[_id].metadata    = _newValues.metadata;
+    accounts[_id].userAddress = _newAddress;
+    accounts[_id].metadata    = _newMetadata;
+    accounts[_id].flags       = _newFlags;
   }
 
   function flagAccount(uint256 _id, byte _flags) public onlyOwner {
