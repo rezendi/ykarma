@@ -9,7 +9,7 @@ class AccountForm extends React.Component {
 
   submitForm = async (values) => {
     console.log("Submitting form", values);
-    fetch('/accounts/update', {
+    var res = await fetch('/accounts/update', {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -27,13 +27,16 @@ class AccountForm extends React.Component {
         }
       })
     })
-    .then(res => {
-      if (!res.ok) {
-        alert("Server error!");
-      } else {
+    if (!res.ok) {
+      alert("Server error!");
+    } else {
+      var json = await res.json();
+      if (json.success) {
         window.location.reload();
+      } else {
+        alert("Server failure! " + JSON.stringify(json));
       }
-    });
+    }
   }
 
   render() {

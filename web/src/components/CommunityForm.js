@@ -7,7 +7,7 @@ class CommunityForm extends React.Component {
 
   submitForm = async (values) => {
     console.log("Submitting form", values);
-    fetch(values.id===0 ? '/communities/create' : '/communities/update', {
+    var res = await fetch(values.id===0 ? '/communities/create' : '/communities/update', {
       method: values.id===0 ? 'POST' : 'PUT',
       credentials: 'include',
       headers: {
@@ -24,19 +24,16 @@ class CommunityForm extends React.Component {
         }
       })
     })
-    .then(res => {
-      if (!res.ok) {
-        alert("Server error!");
+    if (!res.ok) {
+      alert("Server error!");
+    } else {
+      var json = await res.json();
+      if (json.success) {
+        this.props.history.push('/admin');
       } else {
-        res.json().then((json) => {
-          if (json.success) {
-            values.id===0 ? this.props.history.push('/admin') : window.location.reload();
-          } else {
-            alert("Server failure! " + JSON.stringify(json));
-          }
-        });
+        alert("Server failure! " + JSON.stringify(json));
       }
-    });
+    }
   }
 
   render() {

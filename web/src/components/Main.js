@@ -27,9 +27,9 @@ const Main = () => (
       <Route exact path='/community/new' component={CommunityForm}/>
       <Route exact path='/community/:id' component={Community}/>
       <Route exact path='/account/:id' component={Account}/>
+      <Route exact path='/user' component={Account}/>
       <Route exact path='/reward/new' component={RewardForm}/>
       <Route exact path='/reward/:id' component={Reward}/>
-      <Route exact path='/user' component={Account}/>
       <Route exact path='/user/rewards' component={Spend}/>
     </Switch>
   </main>
