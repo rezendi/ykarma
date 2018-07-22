@@ -79,6 +79,17 @@ class Api {
     });
   }
 
+  static loadRewards(type) {
+    return fetch('/rewards/available', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({ type: type })
+    }).catch(error => {
+      return error;
+    });
+  }
+
   
 }
 

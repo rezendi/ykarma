@@ -123,3 +123,18 @@ export function fetchYkUser(user) {
 export function userFetched(user) {
   return { type: (user === null ? types.NO_USER : types.USER), user };
 }
+
+export function loadRewards() {
+  return function(dispatch) {
+    return Api.loadRewads().then(rewards => {
+      dispatch(loadRewardsSuccess(rewards));
+    }).catch(error => {
+      throw(error);
+    });
+  };
+}
+
+export function loadRewardsSuccess(rewards) {
+  return { type: types.LOAD_REWARDS_SUCCESS, rewards};
+}
+

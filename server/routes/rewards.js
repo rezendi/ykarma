@@ -22,11 +22,11 @@ router.get('/:id', function(req, res, next) {
   });
 });
 
-/* GET rewards available for a community */
-router.get('/availableTo/:communityId', function(req, res, next) {
-  const communityId = parseInt(req.params.accountId);
+/* GET rewards available to the currenty user */
+// for now just their community's rewards, if any
+router.get('/available', function(req, res, next) {
   console.log("getting rewards owned by", ownerId);
-  return getListOfRewards(0, communityId, res);
+  return getListOfRewards(0, req.session.ykcid, res);
 });
 
 /* GET my rewards owned list */

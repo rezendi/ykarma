@@ -21,6 +21,7 @@ router.get('/setup', function(req, res, next) {
   if(process.env.NODE_ENV === 'test') {
     req.session.email = "test@rezendi.com";
     req.session.ykid = 2;
+    req.session.ykcid = 1;
     req.session.communityAdminId = 1;
   }
   return res.json({"success":true});
@@ -171,6 +172,7 @@ router.put('/update', function(req, res, next) {
     account.id,
     account.userAddress,
     JSON.stringify(account.metadata),
+    '0x00'
   );
   method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
     if (error) {
@@ -272,6 +274,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.name = null;
     req.session.email = null;
     req.session.ykid = null;
+    req.session.ykcid = null;
     req.session.handle = null;
     return res.json({"success":true});
   }
@@ -381,6 +384,7 @@ function removeUrlFromAccount(id, url, callback) {
 
 function getSessionFromAccount(req, account) {
   req.session.ykid = parseInt(account.id);
+  req.session.ykcid = parseInt(account.communityId);
   req.session.name = account.metadata.name;
   var urls = account.urls.split(",");
   for (var url in urls) {

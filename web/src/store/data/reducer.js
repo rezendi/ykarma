@@ -64,3 +64,12 @@ export function userReducer(state = initialState.user, action) {
       return state
   }
 }
+
+export function rewardReducer(state = initialState.reward, action) {
+  switch (action.type) {
+    case types.LOAD_REWARDS_SUCCESS:
+      return action.rewards || [];
+    default:
+      return state
+  }
+}
