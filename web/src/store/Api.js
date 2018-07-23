@@ -86,7 +86,6 @@ class Api {
   }
 
   static loadAvailableRewards() {
-    console.log("loading rewards");
     return fetch('/rewards/available', {
       method: 'GET',
       credentials: 'include',

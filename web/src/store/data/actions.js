@@ -127,9 +127,10 @@ export function userFetched(user) {
 export function loadAvailableRewards() {
   return function(dispatch) {
     return firebase.auth.onAuthStateChanged(user => {
-      console.log("auth state changed");
-      return Api.loadAvailableRewards().then(rewards => {
-        dispatch(loadRewardsSuccess(rewards));
+      return Api.loadAvailableRewards().then(result => {
+        return result.json().then(json => {
+          dispatch(loadRewardsSuccess(json.rewards));
+        });
       }).catch(error => {
         throw(error);
       });

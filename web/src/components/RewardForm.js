@@ -36,7 +36,7 @@ class RewardForm extends React.Component {
     } else {
       var json = await res.json();
       if (json.success) {
-        this.props.history.push('/rewards');
+        values.id===0 ? window.location.reload() : this.props.history.push('/user/rewards');
       } else {
         alert("Server failure! " + JSON.stringify(json));
       }

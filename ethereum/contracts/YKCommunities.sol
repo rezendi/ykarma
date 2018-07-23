@@ -57,7 +57,7 @@ contract YKCommunities is Ownable, YKStructs {
   }
   
   function addRewardToCommunity(uint256 _communityId, uint256 _rewardId) public onlyOwner {
-    communities[_communityId].accountIds.push(_rewardId);
+    communities[_communityId].rewardIds.push(_rewardId);
   }
   
   function deleteRewardFromCommunity(uint256 _communityId, uint256 _rewardId) public onlyOwner {

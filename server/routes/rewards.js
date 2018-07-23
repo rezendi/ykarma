@@ -14,7 +14,7 @@ eth.web3.eth.getAccounts().then((accounts) => {
 const ADMIN_ID = 1;
 
 /* GET individual reward */
-router.get('/:id', function(req, res, next) {
+router.get('/reward/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   getRewardFor(id, (reward) => {
     //console.log('callback', reward);
@@ -25,7 +25,6 @@ router.get('/:id', function(req, res, next) {
 /* GET rewards available to the currenty user */
 // for now just their community's rewards, if any
 router.get('/available', function(req, res, next) {
-  console.log("hi", req.session);
   console.log("getting rewards available to community", req.session.ykcid);
   return getListOfRewards(0, req.session.ykcid, res);
 });
@@ -44,22 +43,22 @@ router.get('/vendedBy/:accountId', function(req, res, next) {
   return getListOfRewards(2, vendorId, res);
 });
 
-function getListOfRewards(idType, accountId, res) {
+function getListOfRewards(idType, id, res) {
   var rewards = [];
   console.log("idType", idType);
-  console.log("accountId", accountId);
-  const method = eth.contract.methods.getRewardsCount(accountId, idType);
+  console.log("id", id);
+  const method = eth.contract.methods.getRewardsCount(id, idType);
   method.call(function(error, totalRewards) {
     if (error) {
       console.log('getListOfRewards error', error);
       return res.json({"success":false, "error": error});
     } else {
-      //console.log('getRewardsOwnedCount result', totalRewards);
+      // console.log('getListOfRewards result', totalRewards);
       if (parseInt(totalRewards)===0) {
         return res.json({"success":true, "rewards":[]});
       }
       for (var i = 0; i < totalRewards; i++) {
-        getRewardByIndex(idType, accountId, i, (reward) => {
+        getRewardByIndex(idType, id, i, (reward) => {
           rewards.push(reward);
           if (rewards.length >= totalRewards) {
             // console.log('rewards', rewards);

@@ -11,6 +11,7 @@ class Spend extends React.Component {
   }
 
   render() {
+    const rewards = this.props.rewards || [];
     return (
         <Grid>
           <Row>
@@ -20,9 +21,9 @@ class Spend extends React.Component {
                   Spend
                 </Panel.Heading>
                 <Panel.Body>
-                  {this.props.rewards.map(reward =>
+                  {rewards.map(reward =>
                     <Row key={reward.id}>
-                      {reward.metadata} {reward.cost}
+                      {reward.metadata.name} {reward.metadata.description} {reward.cost} {reward.quantity}
                     </Row>
                   )}
                 </Panel.Body>

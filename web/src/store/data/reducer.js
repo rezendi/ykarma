@@ -65,7 +65,7 @@ export function userReducer(state = initialState.user, action) {
   }
 }
 
-export function rewardReducer(state = initialState.reward, action) {
+export function rewardsReducer(state = initialState.rewards, action) {
   switch (action.type) {
     case types.LOAD_REWARDS_SUCCESS:
       return action.rewards || [];
