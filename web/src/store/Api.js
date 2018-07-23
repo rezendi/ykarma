@@ -3,7 +3,8 @@ class Api {
     return fetch('/communities', { credentials: 'include'})
       .then(response => {
         return response.json();
-      }).catch(error => {
+    }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }
@@ -12,7 +13,7 @@ class Api {
     return fetch(`/communities/${communityId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
-      }).catch(error => {
+    }).catch(error => {
       return error;
     });
   }
@@ -21,7 +22,8 @@ class Api {
     return fetch(`/accounts/for/${communityId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
-      }).catch(error => {
+    }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }
@@ -30,7 +32,8 @@ class Api {
     return fetch(`/accounts/${accountId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
-      }).catch(error => {
+    }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }
@@ -52,7 +55,8 @@ class Api {
           // console.log("vals", vals);
           return vals;
         });
-      }).catch(error => {
+    }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }
@@ -64,6 +68,7 @@ class Api {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({ url: url })
     }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }
@@ -75,17 +80,19 @@ class Api {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({ type: type })
     }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }
 
-  static loadRewards(type) {
+  static loadAvailableRewards() {
+    console.log("loading rewards");
     return fetch('/rewards/available', {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({ type: type })
     }).catch(error => {
+      console.log("error", error);
       return error;
     });
   }

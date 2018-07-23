@@ -25,7 +25,8 @@ router.get('/:id', function(req, res, next) {
 /* GET rewards available to the currenty user */
 // for now just their community's rewards, if any
 router.get('/available', function(req, res, next) {
-  console.log("getting rewards owned by", ownerId);
+  console.log("hi", req.session);
+  console.log("getting rewards available to community", req.session.ykcid);
   return getListOfRewards(0, req.session.ykcid, res);
 });
 
@@ -45,6 +46,8 @@ router.get('/vendedBy/:accountId', function(req, res, next) {
 
 function getListOfRewards(idType, accountId, res) {
   var rewards = [];
+  console.log("idType", idType);
+  console.log("accountId", accountId);
   const method = eth.contract.methods.getRewardsCount(accountId, idType);
   method.call(function(error, totalRewards) {
     if (error) {
@@ -77,11 +80,8 @@ router.post('/create', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var reward = req.body.reward;
-  console.log("reward", reward);
-  console.log("ykid", req.session.ykid);
   var notifying = false;
-  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags);
-  console.log("method", method);
+  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags || '0x00');
   method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
     console.log('error', error);
     res.json({'success':false, 'error':error});
@@ -111,7 +111,7 @@ router.put('/update', function(req, res, next) {
       return res.json({"success":false, "error": "Not authorized"});
     }
     //console.log("existing", existing);
-    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.tag || existing.tag, reward.metadata || existing.metadata, reward.flags || existing.flags);
+    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, reward.metadata || existing.metadata, reward.flags || existing.flags);
     method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
       console.log('error', error);
       res.json({'success':false, 'error':error});
@@ -192,9 +192,10 @@ function getRewardFromResult(result) {
     vendorId: result[1],
     ownerId:  result[2],
     cost:     result[3],
-    flags:    result[4],
-    tags:     result[5],
-    metadata: JSON.parse(result[6] || '{}'),
+    quantity: result[4],
+    flags:    result[5],
+    tags:     result[6],
+    metadata: JSON.parse(result[7] || '{}'),
   };
 }
 

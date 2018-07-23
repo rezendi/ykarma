@@ -1,9 +1,8 @@
 import React from 'react';
-import { Grid, Row, Col, Panel, FormControl, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
-import { rewardReducer } from '../store/data/reducer'
 
 class RewardForm extends React.Component {
 
@@ -11,7 +10,8 @@ class RewardForm extends React.Component {
     var body = JSON.stringify({
       reward: {
         id: values.id,
-        cost: parseInt(values.cost),
+        cost: parseInt(values.cost, 10),
+        quantity: parseInt(values.quantity, 10 ),
         tag: values.tag,
         metadata: {
           name: values.name,
@@ -67,6 +67,10 @@ class RewardForm extends React.Component {
                     <Field name="cost" component="input" type="text"/>
                   </Row>
                   <Row>
+                    <label htmlFor="quantity">Quantity</label>
+                    <Field name="quantity" component="input" type="text"/>
+                  </Row>
+                  <Row>
                     <label htmlFor="tag">Tag</label>
                     <Field name="tag" component="input" type="text"/>
                   </Row>
@@ -90,12 +94,14 @@ function mapStateToProps(state, ownProps) {
       name: ownProps.reward.metadata ? ownProps.reward.metadata.name : '',
       description: ownProps.reward.metadata ? ownProps.reward.metadata.description : '',
       cost: ownProps.reward.cost,
+      quantity: ownProps.reward.quantity,
       tag: ownProps.reward.tag
     } : {
       id: state.reward.id || 0,
       name: state.reward.metadata ? state.reward.metadata.name : '',
       description: state.reward.metadata ? state.reward.metadata.description : '',
       cost: state.reward.cost,
+      quantity: state.reward.quantity,
       tag: state.reward.tag
     }
   };

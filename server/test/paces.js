@@ -136,7 +136,7 @@ describe('Reward', function () {
       // console.log("set-cookie", res.headers['set-cookie']);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       api.post('/rewards/create')
-        .send({"reward":{"cost":10, "tag": "test", "metadata":'{"name":"Test Reward One"}', "flags": '0x00'}})
+        .send({"reward":{"cost":10, "quantity": 1, "tag": "test", "metadata":'{"name":"Test Reward One"}', "flags": '0x00'}})
         .set('Cookie', TestCookies).expect(200)
         .end(function (err, res) {
           if (err) done (err);

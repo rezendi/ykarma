@@ -1,13 +1,13 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
-import { loadRewards } from '../store/data/actions'
+import { loadAvailableRewards } from '../store/data/actions'
 import RewardForm from './RewardForm'
 
 class Spend extends React.Component {
 
   componentDidMount() {
-    this.props.loadRewards();
+    this.props.loadAvailableRewards();
   }
 
   render() {
@@ -51,7 +51,7 @@ function mapStateToProps(state, ownProps) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    loadRewards: () => dispatch(loadRewards()),
+    loadAvailableRewards: () => dispatch(loadAvailableRewards()),
   }
 }
 

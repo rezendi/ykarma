@@ -124,12 +124,15 @@ export function userFetched(user) {
   return { type: (user === null ? types.NO_USER : types.USER), user };
 }
 
-export function loadRewards() {
+export function loadAvailableRewards() {
   return function(dispatch) {
-    return Api.loadRewards().then(rewards => {
-      dispatch(loadRewardsSuccess(rewards));
-    }).catch(error => {
-      throw(error);
+    return firebase.auth.onAuthStateChanged(user => {
+      console.log("auth state changed");
+      return Api.loadAvailableRewards().then(rewards => {
+        dispatch(loadRewardsSuccess(rewards));
+      }).catch(error => {
+        throw(error);
+      });
     });
   };
 }
