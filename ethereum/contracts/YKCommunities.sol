@@ -12,8 +12,17 @@ contract YKCommunities is Ownable, YKStructs {
     return communities[_id];
   }
   
-  function addCommunity(Community community) public onlyOwner returns (uint256) {
-    community.id = maxCommunityId + 1;
+  function addCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public onlyOwner returns (uint256) {
+    Community memory community = Community({
+      id:           maxCommunityId + 1,
+      adminAddress: _adminAddress,
+      flags:        _flags,
+      domain:       _domain,
+      metadata:     _metadata,
+      tags:         _tags,
+      accountIds:   new uint256[](0),
+      rewardIds:    new uint256[](0)
+    });
     communities[community.id] = community;
     maxCommunityId += 1;
     return community.id;
@@ -47,11 +56,11 @@ contract YKCommunities is Ownable, YKStructs {
     return communities[_id].flags & 0x01 == 0x01;
   }
   
-  function addReward(uint256 _communityId, uint256 _rewardId) public onlyOwner {
+  function addRewardToCommunity(uint256 _communityId, uint256 _rewardId) public onlyOwner {
     communities[_communityId].accountIds.push(_rewardId);
   }
   
-  function deleteReward(uint256 _communityId, uint256 _rewardId) public onlyOwner {
+  function deleteRewardFromCommunity(uint256 _communityId, uint256 _rewardId) public onlyOwner {
     uint256[] storage rewardIds = communities[_communityId].rewardIds;
     bool found = false;
     for (uint i = 0; i < rewardIds.length; i++) {

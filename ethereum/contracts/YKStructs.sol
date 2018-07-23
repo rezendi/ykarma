@@ -46,6 +46,7 @@ contract YKStructs {
     uint256 vendorId;
     uint256 ownerId;
     uint256 cost;
+    uint256 quantity;
     byte flags;
     string tag;
     string metadata;

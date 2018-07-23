@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { loadRewards } from '../store/data/actions'
+import RewardForm from './RewardForm'
 
 class Spend extends React.Component {
 
@@ -26,6 +27,14 @@ class Spend extends React.Component {
                   )}
                 </Panel.Body>
               </Panel>
+              <Panel>
+                <Panel.Heading>
+                  Add Reward
+                </Panel.Heading>
+                <Panel.Body>
+                  <RewardForm reward = {{}}/>
+                </Panel.Body>
+              </Panel>
             </Col>
           </Row>
         </Grid>
@@ -36,7 +45,7 @@ class Spend extends React.Component {
 function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
-    rewards: state.rewards,
+    rewards: state.rewards || [],
   }
 }
 

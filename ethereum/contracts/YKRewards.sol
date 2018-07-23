@@ -12,25 +12,35 @@ contract YKRewards is Ownable, YKStructs {
     return rewards[_id];
   }
   
-  function addReward(Reward reward) public onlyOwner returns (uint256) {
-    reward.id = maxRewardId + 1;
+  function addReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags)  public onlyOwner returns (uint256) {
+    Reward memory reward = Reward({
+      id:       maxRewardId + 1,
+      vendorId: _vendorId,
+      ownerId:  0,
+      flags:    _flags,
+      cost:     _cost,
+      quantity: _quantity,
+      tag:      _tag,
+      metadata: _metadata
+    });
     rewards[reward.id] = reward;
     maxRewardId += 1;
     return reward.id;
   }
   
-  function editReward(uint256 _id, uint256 _newCost, string _newTag, string _newMetadata, byte _newFlags) public onlyOwner returns (uint256) {
-    rewards[_id].cost     = _newCost;
-    rewards[_id].tag      = _newTag;
-    rewards[_id].metadata = _newMetadata;
-    rewards[_id].flags    = _newFlags;
+  function editReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags) public onlyOwner returns (uint256) {
+    rewards[_id].cost     = _cost;
+    rewards[_id].quantity = _quantity;
+    rewards[_id].tag      = _tag;
+    rewards[_id].metadata = _metadata;
+    rewards[_id].flags    = _flags;
   }
   
   function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
     rewards[_rewardId].ownerId = _spenderId;
   }
 
-  function deleteReward(uint256 _id) public onlyOwner returns (uint256) {
+  function deleteRewardRecord(uint256 _id) public onlyOwner returns (uint256) {
     delete rewards[_id];
   }
   

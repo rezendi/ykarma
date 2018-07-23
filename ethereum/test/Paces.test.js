@@ -64,18 +64,18 @@ contract('Paces', function(accounts) {
     // create a reward, update it, delete it
     vals = await ykarma.getRewardsCount(2, 2);
     assert.equal(""+vals, 0, "Vendor rewards count 0");
-    await ykarma.addNewReward(2, 10, "alpha", '{"name":"My Doomed Reward"}', '0x00');
+    await ykarma.addNewReward(2, 10, 1, "alpha", '{"name":"My Doomed Reward"}', '0x00');
     vals = await ykarma.rewardForId(1);
     assert.equal(vals[1], 2, "Created reward");
     assert.equal(vals[3], 10);
-    assert.equal(vals[5], 'alpha');
-    assert.equal(vals[6], '{"name":"My Doomed Reward"}');
+    assert.equal(vals[6], 'alpha');
+    assert.equal(vals[7], '{"name":"My Doomed Reward"}');
     vals = await ykarma.getRewardsCount(2, 2);
     assert.equal(""+vals, 1, "Vendor rewards count 1");
-    await ykarma.editExistingReward(1, 5, "alpha?", '{"name":"My Dooomed Reward"}', '0x01');
+    await ykarma.editExistingReward(1, 5, 1, "alpha?", '{"name":"My Dooomed Reward"}', '0x01');
     vals = await ykarma.rewardForId(1);
     assert.equal(vals[3], 5, "Updated reward");
-    assert.equal(vals[5], 'alpha?');
+    assert.equal(vals[6], 'alpha?');
     vals = await ykarma.getRewardsCount(2, 2);
     assert.equal(""+vals, 1, "Vendor rewards count still 1");
     await ykarma.deleteReward(1);
@@ -85,14 +85,14 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals, 0, "Vendor rewards count 0 again");
 
     // create two new ones, fail purchase of wrong tag
-    await ykarma.addNewReward(1, 10, "cool", '{"name":"My Cool Reward"}', '0x00');
-    await ykarma.addNewReward(1, 10, "test", '{"name":"My Test Reward"}', '0x00');
+    await ykarma.addNewReward(1, 10, 1, "cool", '{"name":"My Cool Reward"}', '0x00');
+    await ykarma.addNewReward(1, 10, 1, "test", '{"name":"My Test Reward"}', '0x00');
     vals = await ykarma.getRewardsCount(1, 2);
     assert.equal(vals.toNumber(), 2, "Vendor rewards count 2");
     vals = await ykarma.rewardForId(2);
     assert.equal(vals[2], 0, "No owner");
     vals = await ykarma.rewardForId(3);
-    assert.equal(vals[5], 'test', "Beta tag");
+    assert.equal(vals[6], 'test', "Beta tag");
     var exc = null;
     try { await ykarma.purchase(2, 3); } catch(e){ exc = e; }
     assert.notEqual(exc, null, "Exception generated");

@@ -126,7 +126,7 @@ export function userFetched(user) {
 
 export function loadRewards() {
   return function(dispatch) {
-    return Api.loadRewads().then(rewards => {
+    return Api.loadRewards().then(rewards => {
       dispatch(loadRewardsSuccess(rewards));
     }).catch(error => {
       throw(error);

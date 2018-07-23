@@ -26,11 +26,20 @@ contract YKAccounts is Ownable, YKStructs {
     return accountsByUrl[_url];
   }
   
-  function addAccount(Account account, string _url) public onlyOwner returns (uint256) {
-    account.id = maxAccountId + 1;
+  function addAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOwner returns (uint256) {
     require(urlIsValid(_url));
-    accounts[account.id] = account;
+    Account memory account = Account({
+      id:           maxAccountId + 1,
+      communityId:  _communityId,
+      userAddress:  _address,
+      flags:        0x0,
+      metadata:     _metadata,
+      urls:         _url,
+      rewardIds:    new uint256[](0),
+      offerIds:    new uint256[](0)
+    });
     addUrlToAccount(account.id, _url); // will fail if url invalid, without affecting storage
+    accounts[account.id] = account;
     maxAccountId += 1;
     return maxAccountId;
   }
@@ -104,7 +113,7 @@ contract YKAccounts is Ownable, YKStructs {
     return bytes(_url).length > 0;
   }
 
-  function addReward(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
+  function addRewardToAccount(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
     accounts[_vendorId].offerIds.push(_rewardId);
   }
 
@@ -112,7 +121,7 @@ contract YKAccounts is Ownable, YKStructs {
     accounts[_spenderId].rewardIds.push(_rewardId);
   }
   
-  function deleteReward(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
+  function deleteRewardFromAccount(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
     Account storage vendor = accounts[_vendorId];
     bool found = false;
     for (uint i = 0; i < vendor.offerIds.length; i++) {

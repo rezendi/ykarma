@@ -41,6 +41,10 @@ contract YKarma is Oracular, YKStructs {
     rewardData = _rewards;
   }
 
+  /**
+   * Community methods
+   */
+
   function giveTo(string _url, uint256 _amount, string _message) public {
     uint256 giverId = accountData.accountIdForAddress(msg.sender);
     doGive(giverId, _url, _amount, _message);
@@ -83,10 +87,6 @@ contract YKarma is Oracular, YKStructs {
     return trancheData.lastReplenished(_accountId);
   }
 
-  function replenish(uint256 _accountId) public onlyOracle {
-    trancheData.replenish(_accountId);
-  }
-
   /**
    * Community methods
    */
@@ -100,17 +100,7 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function addNewCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) onlyOracle public {
-    Community memory community = Community({
-      id:           0,
-      adminAddress: _adminAddress,
-      flags:        _flags,
-      domain:       _domain,
-      metadata:     _metadata,
-      tags:         _tags,
-      accountIds:   new uint256[](0),
-      rewardIds:    new uint256[](0)
-    });
-    communityData.addCommunity(community);
+    communityData.addCommunity(_adminAddress, _flags, _domain, _metadata, _tags);
   }
   
   function editExistingCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public {
@@ -137,6 +127,10 @@ contract YKarma is Oracular, YKStructs {
   function getAccountCount(uint256 _communityId) public view returns (uint256) {
     Community memory c = communityData.communityForId(_communityId);
     return c.accountIds.length;
+  }
+
+  function replenish(uint256 _accountId) public onlyOracle {
+    trancheData.replenish(_accountId);
   }
 
   function recalculateBalances(uint256 _id) public onlyOracle {
@@ -166,17 +160,7 @@ contract YKarma is Oracular, YKStructs {
   function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public returns (uint256) {
     Community memory community = communityData.communityForId(_communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
-    Account memory account = Account({
-      id:           0,
-      communityId:  _communityId,
-      userAddress:  _address,
-      flags:        0x0,
-      metadata:     _metadata,
-      urls:         '',
-      rewardIds:    new uint256[](0),
-      offerIds:    new uint256[](0)
-    });
-    uint256 newAccountId = accountData.addAccount(account, _url);
+    uint256 newAccountId = accountData.addAccount(_communityId, _address, _metadata, _url);
     communityData.addAccount(_communityId, newAccountId);
     return newAccountId;
   }
@@ -209,47 +193,38 @@ contract YKarma is Oracular, YKStructs {
   /**
    * Reward methods
    */
-  function addNewReward(uint256 _vendorId, uint256 _cost, string _tag, string _metadata, byte _flags) public {
+  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags) public {
     Account memory vendor = accountData.accountForId(_vendorId);
     require (vendor.userAddress == msg.sender || senderIsOracle());
-    Reward memory reward = Reward({
-      id:0,
-      vendorId:_vendorId,
-      ownerId:0,
-      flags:_flags,
-      cost:_cost,
-      tag:_tag,
-      metadata:_metadata
-    });
-    uint256 rewardId = rewardData.addReward(reward);
-    accountData.addReward(_vendorId, rewardId);
-    communityData.addReward(vendor.communityId, rewardId);
+    uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
+    accountData.addRewardToAccount(_vendorId, rewardId);
+    communityData.addRewardToCommunity(vendor.communityId, rewardId);
   }
   
-  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, byte, string, string) {
+  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, byte, string, string) {
     Reward memory reward = rewardData.rewardForId(_id);
     if (reward.ownerId != 0) {
       Account memory account = accountData.accountForId(reward.ownerId);
       require (account.userAddress == msg.sender || senderIsOracle());
     }
-    return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.flags, reward.tag, reward.metadata);
+    return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.quantity, reward.flags, reward.tag, reward.metadata);
   }
   
-  function editExistingReward(uint256 _id, uint256 _cost, string _tag, string _metadata, byte _flags) public {
+  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags) public {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);
     Account memory account = accountData.accountForId(reward.vendorId);
     require (account.userAddress == msg.sender || senderIsOracle());
-    rewardData.editReward(_id, _cost, _tag, _metadata, _flags);
+    rewardData.editReward(_id, _cost, _quantity, _tag, _metadata, _flags);
   }
 
   function deleteReward(uint256 _id) public {
     Reward memory reward = rewardData.rewardForId(_id);
     Account memory vendor = accountData.accountForId(reward.vendorId);
     require (reward.ownerId == 0 && (vendor.userAddress == msg.sender || senderIsOracle()));
-    accountData.deleteReward(reward.vendorId, reward.id);
-    rewardData.deleteReward(_id);
-    communityData.deleteReward(vendor.communityId, _id);
+    accountData.deleteRewardFromAccount(reward.vendorId, reward.id);
+    rewardData.deleteRewardRecord(_id);
+    communityData.deleteRewardFromCommunity(vendor.communityId, _id);
   }
   
   function getRewardsCount(uint256 _id, uint256 _idType) public view onlyOracle returns (uint256) {
@@ -261,10 +236,9 @@ contract YKarma is Oracular, YKStructs {
     return community.rewardIds.length;
   }
 
-  function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, byte, string, string) {
+  function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, uint256, byte, string, string) {
     if (_idType > 0) {
-      Account memory account = accountData.accountForId(_id);
-      uint256 accountRewardId = _idType == 1 ? account.rewardIds[_idx] : account.offerIds[_idx];
+      uint256 accountRewardId = _idType == 1 ? accountData.accountForId(_id).rewardIds[_idx] : accountData.accountForId(_id).offerIds[_idx];
       return rewardForId(accountRewardId);
     }
     Community memory community = communityData.communityForId(_id);

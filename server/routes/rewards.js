@@ -77,9 +77,11 @@ router.post('/create', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var reward = req.body.reward;
-  //console.log("reward", reward);
+  console.log("reward", reward);
+  console.log("ykid", req.session.ykid);
   var notifying = false;
-  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.tag, reward.metadata, reward.flags);
+  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags);
+  console.log("method", method);
   method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
     console.log('error', error);
     res.json({'success':false, 'error':error});

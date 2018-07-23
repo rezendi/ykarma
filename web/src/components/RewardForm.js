@@ -8,6 +8,19 @@ import { rewardReducer } from '../store/data/reducer'
 class RewardForm extends React.Component {
 
   submitForm = async (values) => {
+    var body = JSON.stringify({
+      reward: {
+        id: values.id,
+        cost: parseInt(values.cost),
+        tag: values.tag,
+        metadata: {
+          name: values.name,
+          description: values.description,
+        },
+      }
+    });
+    console.log("submitting", body);
+
     var res = await fetch(values.id===0 ? '/rewards/create' : '/rewards/update', {
       method: values.id===0 ? 'POST' : 'PUT',
       credentials: 'include',
@@ -15,18 +28,7 @@ class RewardForm extends React.Component {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        account: {
-          id: values.id,
-          cost: values.cost,
-          tag: values.tag,
-          metadata: {
-            name: values.name,
-            description: values.description,
-          },
-          flags: '0x00'
-        }
-      })
+      body: body,
     });
     
     if (!res.ok) {
@@ -81,21 +83,28 @@ class RewardForm extends React.Component {
   }
 }
 
+function mapStateToProps(state, ownProps) {
+  return {
+    initialValues: ownProps.reward ?{
+      id: ownProps.reward.id || 0,
+      name: ownProps.reward.metadata ? ownProps.reward.metadata.name : '',
+      description: ownProps.reward.metadata ? ownProps.reward.metadata.description : '',
+      cost: ownProps.reward.cost,
+      tag: ownProps.reward.tag
+    } : {
+      id: state.reward.id || 0,
+      name: state.reward.metadata ? state.reward.metadata.name : '',
+      description: state.reward.metadata ? state.reward.metadata.description : '',
+      cost: state.reward.cost,
+      tag: state.reward.tag
+    }
+  };
+}
+
 RewardForm = reduxForm({
   form: 'account',
 })(RewardForm);
 
-RewardForm = connect(
-  state => ({
-    initialValues: {
-      id: state.reward.id || 0,
-      cost: state.reward.cost,
-      tag: state.reward.tag,
-      name: state.reward.metadata ? state.reward.metadata.name : '',
-      description: state.reward.metadata ? state.reward.metadata.description : '',
-    }
-  }),
-  {reward: rewardReducer}
-)(RewardForm)
+RewardForm = connect(mapStateToProps, null)(RewardForm);
 
 export default withRouter(RewardForm);
