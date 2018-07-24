@@ -14,11 +14,7 @@ class Community extends React.Component {
   }
 
   toggleEditing = () => {
-    if (this.state.editing) {
-      this.setState({editing: false});
-    } else {
-      this.setState({editing: true});
-    }
+    this.setState({editing: this.state.editing ? false : true});
   }
 
   render() {

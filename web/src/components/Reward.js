@@ -1,22 +1,117 @@
 import React from 'react';
-import { Grid, Row, Col, Panel } from 'react-bootstrap';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import { connect } from 'react-redux'
+import { loadReward } from '../store/data/actions'
+import RewardForm from './RewardForm';
 
-const Reward = (props) => {
-  return (
+class Reward extends React.Component {
+  componentDidMount() {
+    this.setState({editing: false});
+    this.props.loadReward(this.props.match.params.id);
+  }
+  
+  toggleEditing = () => {
+    this.setState({editing: this.state.editing ? false : true});
+  };
+  
+  getSpendable = () => {
+    if (!this.props.user.spendable || !this.props.user.spendable.tags) {
+      return "nada";
+    }
+    var spendable = 0;
+    const tags = this.props.user.spendable.tags;
+    const tag = this.props.reward.tag;
+    for (var i=0; i < tags.length; i++) {
+      if (tags[i].indexOf(tag) >= 0) {
+        spendable += this.props.user.spendable.amounts[i];
+      }
+    }
+    return spendable;
+  };
+
+  doPurchase = async () => {
+    var body = JSON.stringify({rewardId: this.props.reward.id});
+    var res = await fetch('/rewards/purchase', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    });
+    
+    if (!res.ok) {
+      alert("Server error!");
+    } else {
+      var json = await res.json();
+      if (json.success) {
+        this.props.history.push('/user/rewards');
+      } else {
+        alert("Server failure! " + JSON.stringify(json));
+      }
+    }
+  };
+
+  render() {
+    console.log("reward", this.props.reward);
+    if (this.props.reward.id === undefined) {
+      return (
+        <div>Loading...</div>
+      );
+    }
+    if (this.state && this.state.editing) {
+      return (
+        <RewardForm reward = {this.props.reward}/>
+      );
+    }
+    return (
       <Grid>
         <Row>
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                Reward
+                {this.props.reward.metadata.name} { this.props.user.ykid==this.props.reward.vendorId && <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>}
               </Panel.Heading>
               <Panel.Body>
+                <Row>
+                  <div>Description: {this.props.reward.metadata.description}</div>
+                  <div>Quantity: {this.props.reward.quantity} Cost: {this.props.reward.cost} {this.props.reward.tag} karma</div>
+                </Row>
+                { this.props.reward.ownerId == this.props.user.ykid &&
+                <Row>
+                  You own this reward.
+                </Row>
+                }
+                { this.props.reward.ownerId == "0" &&
+                <Row>
+                  You have {this.getSpendable()} "{this.props.reward.tag}" karma to spend
+                </Row>}
+                { this.props.reward.ownerId == "0" && this.getSpendable() != "nada" && this.getSpendable() >0 &&
+                <Row>
+                  <Button type="submit" onClick={this.doPurchase}>Purchase</Button>
+                </Row>
+                }
               </Panel.Body>
             </Panel>
           </Col>
         </Row>
       </Grid>
-  )
+    );
+  }
 }
 
-export default Reward
+function mapStateToProps(state, ownProps) {
+  return {
+    user: state.user,
+    reward: state.reward
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    loadReward: (rewardId) => dispatch(loadReward(rewardId)),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Reward);

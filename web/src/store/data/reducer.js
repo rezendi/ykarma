@@ -73,3 +73,21 @@ export function rewardsReducer(state = initialState.rewards, action) {
       return state
   }
 }
+
+export function rewardReducer(state = initialState.reward, action) {
+  switch (action.type) {
+    case types.LOAD_REWARD_SUCCESS:
+      return action.reward || {};
+    default:
+      return state
+  }
+}
+
+export function myRewardsReducer(state = initialState.myRewards, action) {
+  switch (action.type) {
+    case types.LOAD_MY_REWARDS_SUCCESS:
+      return action.rewards || [];
+    default:
+      return state
+  }
+}

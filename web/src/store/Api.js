@@ -96,6 +96,28 @@ class Api {
     });
   }
 
+  static loadMyRewards() {
+    return fetch('/rewards/my', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
+  static loadReward(rewardId) {
+    return fetch('/rewards/reward/'+rewardId, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
   
 }
 

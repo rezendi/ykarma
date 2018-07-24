@@ -30,6 +30,12 @@ router.get('/available', function(req, res, next) {
 });
 
 /* GET my rewards owned list */
+router.get('/my', function(req, res, next) {
+  console.log("getting rewards owned by", req.session.ykid);
+  return getListOfRewards(1, req.session.ykid, res);
+});
+
+/* GET rewards owned list */
 router.get('/ownedBy/:accountId', function(req, res, next) {
   const ownerId = parseInt(req.params.accountId);
   console.log("getting rewards owned by", ownerId);
@@ -45,8 +51,6 @@ router.get('/vendedBy/:accountId', function(req, res, next) {
 
 function getListOfRewards(idType, id, res) {
   var rewards = [];
-  console.log("idType", idType);
-  console.log("id", id);
   const method = eth.contract.methods.getRewardsCount(id, idType);
   method.call(function(error, totalRewards) {
     if (error) {
@@ -81,21 +85,7 @@ router.post('/create', function(req, res, next) {
   var reward = req.body.reward;
   var notifying = false;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags || '0x00');
-  method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
-    console.log('error', error);
-    res.json({'success':false, 'error':error});
-  })
-  .on('confirmation', (number, receipt) => {
-    if (number >= 1 && !notifying) {
-      notifying = true;
-      //console.log('result', receipt);
-      return res.json({"success":true, "result": receipt});
-    }
-  })
-  .catch(function(error) {
-    console.log('create reward call error ' + error);
-    res.json({"success":false, "error": error});
-  });
+  doSend(method, res);
 });
 
 /* PUT update a reward */
@@ -110,18 +100,8 @@ router.put('/update', function(req, res, next) {
       return res.json({"success":false, "error": "Not authorized"});
     }
     //console.log("existing", existing);
-    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, reward.metadata || existing.metadata, reward.flags || existing.flags);
-    method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
-      console.log('error', error);
-      res.json({'success':false, 'error':error});
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= 1 && !notifying) {
-        notifying = true;
-        //console.log('result', receipt);
-        return res.json({"success":true, "result": receipt});
-      }
-    })
+    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, JSON.stringify(reward.metadata || existing.metadata), reward.flags || existing.flags);
+    doSend(method, res);
   })
 });
 
@@ -136,19 +116,42 @@ router.delete('/:id', function(req, res, next) {
       return res.json({"success":false, "error": "Not authorized"});
     }
     var method = eth.contract.methods.deleteReward(existing.id);
-    method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
-      console.log('error', error);
-      res.json({'success':false, 'error':error});
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= 1 && !notifying) {
-        notifying = true;
-        //console.log('result', receipt);
-        res.json({"success":true, "result": receipt});
-      }
-    })
+    doSend(method, res);
   });
 });
+
+/* POST purchase a reward */
+router.post('/purchase', function(req, res, next) {
+  if (!req.session.ykid) {
+    return res.json({"success":false, "error": "Not logged in"});
+  }
+  var notifying = false;
+  var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
+  doSend(method, res);
+});
+
+
+/**
+ * Ethereum methods
+ */
+function doSend(method, res) {
+  var notifying = false
+  method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
+    console.log('error', error);
+    res.json({'success':false, 'error':error});
+  })
+  .on('confirmation', (number, receipt) => {
+    if (number >= 1 && !notifying) {
+      notifying = true;
+      //console.log('result', receipt);
+      return res.json({"success":true, "result": receipt});
+    }
+  })
+  .catch(function(error) {
+    console.log('send call error ' + error);
+    res.json({"success":false, "error": error});
+  });
+}
 
 function getRewardFor(id, callback) {
   var method = eth.contract.methods.rewardForId(id);
@@ -193,7 +196,7 @@ function getRewardFromResult(result) {
     cost:     result[3],
     quantity: result[4],
     flags:    result[5],
-    tags:     result[6],
+    tag:      result[6],
     metadata: JSON.parse(result[7] || '{}'),
   };
 }

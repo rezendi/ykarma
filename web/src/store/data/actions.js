@@ -142,3 +142,37 @@ export function loadRewardsSuccess(rewards) {
   return { type: types.LOAD_REWARDS_SUCCESS, rewards};
 }
 
+export function loadMyRewards() {
+  return function(dispatch) {
+    return firebase.auth.onAuthStateChanged(user => {
+      return Api.loadMyRewards().then(result => {
+        return result.json().then(json => {
+          dispatch(loadMyRewardsSuccess(json.rewards));
+        });
+      }).catch(error => {
+        throw(error);
+      });
+    });
+  };
+}
+
+export function loadMyRewardsSuccess(rewards) {
+  return { type: types.LOAD_MY_REWARDS_SUCCESS, rewards};
+}
+
+export function loadReward(rewardId) {
+  return function(dispatch) {
+    return Api.loadReward(rewardId).then(result => {
+      return result.json().then(json => {
+        dispatch(loadRewardSuccess(json.reward));
+      });
+    }).catch(error => {
+      throw(error);
+    });
+  };
+}
+
+export function loadRewardSuccess(reward) {
+  return { type: types.LOAD_REWARD_SUCCESS, reward};
+}
+

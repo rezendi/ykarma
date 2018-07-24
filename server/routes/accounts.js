@@ -241,7 +241,7 @@ router.post('/give', function(req, res, next) {
         var docRef = firebase.db.collection('email-preferences').doc(recipient);
         docRef.get().then((doc) => {
           // TODO: query rather than get entire document?
-          var sendEmail = !doc.exists || doc.recipient.data().all || !doc.recipient.data()[sender]; 
+          var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
           if (sendEmail) {
             console.log("sending mail");
             const senderName = req.session.name || req.session.email;

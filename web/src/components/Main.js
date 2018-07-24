@@ -12,7 +12,7 @@ import CommunityForm from './CommunityForm';
 import Account from './Account';
 import Reward from './Reward';
 import RewardForm from './RewardForm';
-import Spend from './Spend';
+import Rewards from './Rewards';
 
 const Main = () => (
   <main>
@@ -30,7 +30,7 @@ const Main = () => (
       <Route exact path='/user' component={Account}/>
       <Route exact path='/reward/new' component={RewardForm}/>
       <Route exact path='/reward/:id' component={Reward}/>
-      <Route exact path='/user/rewards' component={Spend}/>
+      <Route exact path='/user/rewards' component={Rewards}/>
     </Switch>
   </main>
 )

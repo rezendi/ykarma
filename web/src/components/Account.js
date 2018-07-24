@@ -11,11 +11,7 @@ class Account extends React.Component {
   }
   
   toggleEditing = () => {
-    if (this.state.editing) {
-      this.setState({editing: false});
-    } else {
-      this.setState({editing: true});
-    }
+    this.setState({editing: this.state.editing ? false : true});
   }
 
   render() {
@@ -38,14 +34,9 @@ class Account extends React.Component {
                 {this.props.account.metadata.name} <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>
               </Panel.Heading>
               <Panel.Body>
-                <form onSubmit={this.submitForm}>
-                  <Row>
-                    {this.props.account.metadata.description}
-                  </Row>
-                  <Row>
-                    <Button type="submit">Submit</Button>
-                  </Row>
-                </form>
+                <Row>
+                  {this.props.account.metadata.description}
+                </Row>
               </Panel.Body>
             </Panel>
           </Col>

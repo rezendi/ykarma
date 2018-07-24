@@ -4,6 +4,7 @@ export default {
   community: { metadata: {}},
   accounts: [],
   account: { metadata: {}},
+  myRewards: [],
   rewards: [],
   reward: {},
   vendors: [],
