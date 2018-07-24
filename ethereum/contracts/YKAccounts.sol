@@ -58,7 +58,7 @@ contract YKAccounts is Ownable, YKStructs {
     return true;
   }
   
-  function editAccount(uint256 _id, address _newAddress, string _newMetadata, byte _newFlags) public onlyOwner {
+  function editAccount(uint256 _id, address _newAddress, string _newMetadata, bytes32 _newFlags) public onlyOwner {
     if (_newAddress != accounts[_id].userAddress) {
       if (accounts[_id].userAddress != 0) {
         delete accountsByAddress[accounts[_id].userAddress];
@@ -70,10 +70,6 @@ contract YKAccounts is Ownable, YKStructs {
     accounts[_id].userAddress = _newAddress;
     accounts[_id].metadata    = _newMetadata;
     accounts[_id].flags       = _newFlags;
-  }
-
-  function flagAccount(uint256 _id, byte _flags) public onlyOwner {
-    accounts[_id].flags = _flags;
   }
 
   function removeUrlFromAccount(uint256 _id, string _oldUrl) public onlyOwner returns (bool) {

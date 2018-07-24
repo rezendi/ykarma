@@ -12,7 +12,7 @@ contract YKRewards is Ownable, YKStructs {
     return rewards[_id];
   }
   
-  function addReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags)  public onlyOwner returns (uint256) {
+  function addReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags)  public onlyOwner returns (uint256) {
     Reward memory reward = Reward({
       id:       maxRewardId + 1,
       vendorId: _vendorId,
@@ -28,7 +28,7 @@ contract YKRewards is Ownable, YKStructs {
     return reward.id;
   }
   
-  function editReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags) public onlyOwner returns (uint256) {
+  function editReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOwner returns (uint256) {
     rewards[_id].cost     = _cost;
     rewards[_id].quantity = _quantity;
     rewards[_id].tag      = _tag;

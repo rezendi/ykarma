@@ -94,16 +94,16 @@ contract YKarma is Oracular, YKStructs {
     return communityData.maxCommunityId();
   }
   
-  function communityForId(uint256 _id) public view returns (uint256, address, byte, string, string, string, uint256) {
+  function communityForId(uint256 _id) public view returns (uint256, address, bytes32, string, string, string, uint256) {
     Community memory c = communityData.communityForId(_id);
     return (c.id, c.adminAddress, c.flags, c.domain, c.metadata, c.tags, c.accountIds.length);
   }
   
-  function addNewCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) onlyOracle public {
+  function addNewCommunity(address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) onlyOracle public {
     communityData.addCommunity(_adminAddress, _flags, _domain, _metadata, _tags);
   }
   
-  function editExistingCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public {
+  function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public {
     Community memory community = communityData.communityForId(_id);
     require (community.adminAddress == msg.sender || senderIsOracle());
     communityData.editCommunity(_id, _adminAddress, _flags, _domain, _metadata, _tags);
@@ -138,7 +138,7 @@ contract YKarma is Oracular, YKStructs {
   }
 
   //TODO: move JSON data to separate pageable function
-  function accountForId(uint256 _id) public view returns (uint256, uint256, address, byte, string, string, uint256, uint256, string, string) {
+  function accountForId(uint256 _id) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
     Account memory a = accountData.accountForId(_id);
     Community memory community = communityData.communityForId(a.communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
@@ -146,13 +146,13 @@ contract YKarma is Oracular, YKStructs {
             trancheData.availableToGive(a.id), trancheData.givenToJSON(a.id), trancheData.spendingToJSON(a.id));
   }
   
-  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, byte, string, string, uint256, uint256, string, string) {
+  function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
     Community memory community = communityData.communityForId(_communityId);
     uint256 accountId = community.accountIds[_idx];
     return accountForId(accountId);
   }
   
-  function accountForUrl(string _url) public view returns (uint256, uint256, address, byte, string, string, uint256, uint256, string, string) {
+  function accountForUrl(string _url) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
     uint256 id = accountData.accountIdForUrl(_url);
     return accountForId(id);
   }
@@ -165,7 +165,7 @@ contract YKarma is Oracular, YKStructs {
     return newAccountId;
   }
   
-  function editAccount(uint256 _id, address _newAddress, string _metadata, byte _flags) public {
+  function editAccount(uint256 _id, address _newAddress, string _metadata, bytes32 _flags) public {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender || senderIsOracle());
     accountData.editAccount(_id, _newAddress, _metadata, _flags);
@@ -193,7 +193,7 @@ contract YKarma is Oracular, YKStructs {
   /**
    * Reward methods
    */
-  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags) public {
+  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
     Account memory vendor = accountData.accountForId(_vendorId);
     require (vendor.userAddress == msg.sender || senderIsOracle());
     uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
@@ -201,7 +201,7 @@ contract YKarma is Oracular, YKStructs {
     communityData.addRewardToCommunity(vendor.communityId, rewardId);
   }
   
-  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, byte, string, string) {
+  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
     Reward memory reward = rewardData.rewardForId(_id);
     if (reward.ownerId != 0) {
       Account memory account = accountData.accountForId(reward.ownerId);
@@ -210,7 +210,7 @@ contract YKarma is Oracular, YKStructs {
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.quantity, reward.flags, reward.tag, reward.metadata);
   }
   
-  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, byte _flags) public {
+  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);
     Account memory account = accountData.accountForId(reward.vendorId);
@@ -236,7 +236,7 @@ contract YKarma is Oracular, YKStructs {
     return community.rewardIds.length;
   }
 
-  function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, uint256, byte, string, string) {
+  function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
     if (_idType > 0) {
       uint256 accountRewardId = _idType == 1 ? accountData.accountForId(_id).rewardIds[_idx] : accountData.accountForId(_id).offerIds[_idx];
       return rewardForId(accountRewardId);

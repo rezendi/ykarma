@@ -12,7 +12,7 @@ contract YKCommunities is Ownable, YKStructs {
     return communities[_id];
   }
   
-  function addCommunity(address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public onlyOwner returns (uint256) {
+  function addCommunity(address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOwner returns (uint256) {
     Community memory community = Community({
       id:           maxCommunityId + 1,
       adminAddress: _adminAddress,
@@ -32,7 +32,7 @@ contract YKCommunities is Ownable, YKStructs {
     communities[_communityId].accountIds.push(_accountId);
   }
   
-  function editCommunity(uint256 _id, address _adminAddress, byte _flags, string _domain, string _metadata, string _tags) public onlyOwner {
+  function editCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOwner {
     communities[_id].adminAddress  = _adminAddress;
     communities[_id].flags         = _flags;
     communities[_id].domain        = _domain;

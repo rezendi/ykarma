@@ -146,12 +146,13 @@ describe('Reward', function () {
             .end(function (err, res) {
               if (err) done (err);
               var rwds = JSON.parse(res.text).rewards;
+              //console.log("rwds", rwds);
               expect(rwds.length).to.equal(1);
               //expect(rwds.length).to.be.above(0);
-              expect(rwds[0].metadata.name).to.equal("Test Reward One");
+              expect(JSON.parse(rwds[0].metadata).name).to.equal("Test Reward One");
               expect(rwds[0].id).to.not.equal('0');
               expect(rwds[0].cost).to.equal('10');
-              expect(rwds[0].tags).to.equal("test");
+              expect(rwds[0].tag).to.equal("test");
               rewardId = rwds[0].id;
               api.put('/rewards/update')
                 .send({"reward":{"id":rewardId, "tag":"test", "metadata":'{"name":"Updated Test Reward One"}'}})
@@ -160,12 +161,12 @@ describe('Reward', function () {
                   if (err) done (err);
                   // console.log("update res", res.text);
                   expect(JSON.parse(res.text).success).to.equal(true);
-                  api.get('/rewards/'+rewardId)
+                  api.get('/rewards/reward/'+rewardId)
                     .set('Cookie', TestCookies).expect(200)
                     .end(function (err, res) {
                       if (err) done (err);
                       var rwd = JSON.parse(res.text).reward;
-                      expect(rwd.metadata.name).to.equal("Updated Test Reward One");
+                      expect(JSON.parse(rwd.metadata).name).to.equal("Updated Test Reward One");
                       expect(rwd.cost).to.equal('10');
                       api.delete('/rewards/'+rewardId)
                         .set('Cookie', TestCookies).expect(200)
