@@ -26,10 +26,10 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function performGive(uint256 _sender, uint256 _recipient, uint256 _amount, string _tags, string _message) public onlyOwner {
-    require (_recipient > 0);
+  function performGive(Account sender, Account recipient, uint256 _amount, string _tags, string _message) public onlyOwner {
+    require (recipient.id > 0);
     uint256 accumulated;
-    uint256[] storage amounts = giving[_sender].amounts;
+    uint256[] storage amounts = giving[sender.id].amounts;
     for (uint256 i=0; i < amounts.length; i++) {
       if (accumulated.add(amounts[i]) >= _amount) {
         amounts[i] = amounts[i].sub(_amount.sub(accumulated));
@@ -41,15 +41,17 @@ contract YKTranches is Ownable, YKStructs {
       }
     }
     // record for sender
-    given[_sender].recipients.push(_recipient);
-    given[_sender].amounts.push(accumulated);
+    given[sender.id].recipients.push(recipient.id);
+    given[sender.id].amounts.push(accumulated);
     
     // send to recipient
-    Spending storage receiver = spending[_recipient];
-    receiver.senders.push(_sender);
+    Spending storage receiver = spending[recipient.id];
+    receiver.senders.push(sender.id);
     receiver.amounts.push(accumulated);
     receiver.tags.push(_tags);
-    receiver.messages.push(_message);
+    if (sendMessageOk(sender, recipient)) {
+      receiver.messages.push(_message);
+    }
   }
   
   function availableToSpend(uint256 _id, string _tag) public view onlyOwner returns (uint256) {
@@ -220,5 +222,12 @@ contract YKTranches is Ownable, YKStructs {
       i /= 10;
     }
     return string(bstr);
+  }
+  
+  function sendMessageOk(Account sender, Account recipient) internal view returns (bool) {
+    if (sender.communityId == recipient.communityId) {
+      return !(sender.flags & FLAG_NO_MESSAGES == FLAG_NO_MESSAGES);
+    }
+    return !(sender.flags & FLAG_NO_EXTERNAL_MESSAGES == FLAG_NO_EXTERNAL_MESSAGES);
   }
 }

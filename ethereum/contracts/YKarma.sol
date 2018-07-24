@@ -59,11 +59,11 @@ contract YKarma is Oracular, YKStructs {
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
     Community memory community = communityData.communityForId(giver.communityId);
-    uint256 receiverId = accountData.accountIdForUrl(_url);
-    if (receiverId == 0) {
-      receiverId = addNewAccount(community.id, 0, '', _url);
+    Account memory recipient = accountData.accountForId(accountData.accountIdForUrl(_url));
+    if (recipient.id == 0) {
+      recipient = accountData.accountForId(addNewAccount(community.id, 0, '', _url));
     }
-    trancheData.performGive(_giverId, receiverId, _amount, community.tags, _message);
+    trancheData.performGive(giver, recipient, _amount, community.tags, _message);
   }
 
   function buy(uint256 _rewardId) public {
