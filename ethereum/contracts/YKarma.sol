@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 import "./arachnid/strings.sol";
 import "./zeppelin/ownership/Ownable.sol";
 import "./Oracular.sol";
-import "./YKOracle.sol";
 import "./YKStructs.sol";
 import "./YKTranches.sol";
 import "./YKAccounts.sol";
