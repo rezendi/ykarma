@@ -49,7 +49,7 @@ router.get('/:id', function(req, res, next) {
 /* POST new community. */
 router.post('/create', function(req, res, next) {
   console.log("session", req.session);
-  if (parseInt(req.session.ykid) !== ADMIN_ID) {
+  if (parseInt(req.session.ykid) !== ADMIN_ID && req.session.email !== 'jon@rezendi.com') {
     return res.json({"success":false, "error": "Not authorized"});
   }
   var community = req.body.community;

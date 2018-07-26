@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "PORT=3001 node ./bin/www",
-    "testrun": "PORT=3001 NODE_ENV=test node ./bin/www"
+    "start": "node ./bin/www",
+    "testrun": "NODE_ENV=test node ./bin/www"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
