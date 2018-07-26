@@ -19,10 +19,11 @@ app.use(session({
   resave: false,
   httpOnly: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV == "production" }
+  cookie: { secure: process.env.NODE_ENV === "production" && os.hostname() !== 'localhost' }
 }));
 
 if (process.env.NODE_ENV == "production" || true) {
+  app.enable('trust proxy');
   console.log("dirname is", path.normalize(path.join(__dirname+'/../web/build')));
   app.use(express.static(path.normalize(path.join(__dirname+'/../web/build'))));
 }
@@ -47,7 +48,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = process.env.NODE_ENV == "production" ? err : {};
+  res.locals.error = process.env.NODE_ENV == "dev" ? err : {};
 
   // render the error page
   res.status(err.status || 500);

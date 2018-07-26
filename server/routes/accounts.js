@@ -332,13 +332,13 @@ function getAccountForUrl(url, callback) {
     if (error) {
       console.log('getAccountForUrl error', error);
     } else {
-      //console.log('getAccountForUrl result', result);
+      console.log('getAccountForUrl result', result);
       var account = getAccountFromResult(result);
       callback(account);
     }
   })
   .catch(function(error) {
-    console.log('getAccountFor call error ' + id, error);
+    console.log('getAccountFor call error ' + url, error);
   });
 }
 

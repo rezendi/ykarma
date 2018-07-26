@@ -17,11 +17,13 @@ RUN npm install
 
 # Copy the code over
 WORKDIR /usr/src/app
-COPY ./server ./server/
 COPY ./web ./web/
 
 WORKDIR /usr/src/app/web
 RUN npm run build
+
+WORKDIR /usr/src/app
+COPY ./server ./server/
 
 EXPOSE 3000
 EXPOSE 3001
