@@ -24,7 +24,7 @@ class Rewards extends React.Component {
                   Available
                 </Panel.Heading>
                 <Panel.Body>
-                  {rewards.map(reward => reward.ownerId=="0" &&
+                  {rewards.map(reward => reward.ownerId==="0" &&
                     <Row key={reward.id}>
                       <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
                       <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
@@ -37,7 +37,7 @@ class Rewards extends React.Component {
                   Mine (offered)
                 </Panel.Heading>
                 <Panel.Body>
-                  {rewards.map(reward => reward.vendorId==this.props.user.ykid &&
+                  {rewards.map(reward => reward.vendorId===this.props.user.ykid &&
                     <Row key={reward.id}>
                       <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
                       <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>

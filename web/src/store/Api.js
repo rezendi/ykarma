@@ -1,6 +1,6 @@
 class Api {  
   static loadCommunities() {
-    return fetch('/communities', { credentials: 'include'})
+    return fetch('/api/communities', { credentials: 'include'})
       .then(response => {
         return response.json();
     }).catch(error => {
@@ -10,7 +10,7 @@ class Api {
   }
 
   static loadCommunity(communityId) {
-    return fetch(`/communities/${communityId}`, { credentials: 'include'})
+    return fetch(`/api/communities/${communityId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
     }).catch(error => {
@@ -19,7 +19,7 @@ class Api {
   }
 
   static loadAccountsFor(communityId) {
-    return fetch(`/accounts/for/${communityId}`, { credentials: 'include'})
+    return fetch(`/api/accounts/for/${communityId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
     }).catch(error => {
@@ -29,7 +29,7 @@ class Api {
   }
 
   static loadAccount(accountId) {
-    return fetch(`/accounts/${accountId}`, { credentials: 'include'})
+    return fetch(`/api/accounts/${accountId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
     }).catch(error => {
@@ -48,7 +48,7 @@ class Api {
       url = handle;
     }
     // console.log("url", url);
-    return fetch(`/accounts/url/${url}`, { credentials: 'include'})
+    return fetch(`/api/accounts/url/${url}`, { credentials: 'include'})
       .then(response => {
         return response.json().then((json) => {
           const vals = { ...user, yk: json, handle: handle };
@@ -62,7 +62,7 @@ class Api {
   }
 
   static addUrl(url) {
-    return fetch('/accounts/addUrl', {
+    return fetch('/api/accounts/addUrl', {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
@@ -74,7 +74,7 @@ class Api {
   }
 
   static removeUrl(type) {
-    return fetch('/accounts/removeUrl', {
+    return fetch('/api/accounts/removeUrl', {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
@@ -86,7 +86,7 @@ class Api {
   }
 
   static loadAvailableRewards() {
-    return fetch('/rewards/available', {
+    return fetch('/api/rewards/available', {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
@@ -97,7 +97,7 @@ class Api {
   }
 
   static loadMyRewards() {
-    return fetch('/rewards/my', {
+    return fetch('/api/rewards/my', {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
@@ -108,7 +108,7 @@ class Api {
   }
 
   static loadReward(rewardId) {
-    return fetch('/rewards/reward/'+rewardId, {
+    return fetch('/api/rewards/reward/'+rewardId, {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },

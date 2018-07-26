@@ -31,7 +31,7 @@ class Reward extends React.Component {
 
   doPurchase = async () => {
     var body = JSON.stringify({rewardId: this.props.reward.id});
-    var res = await fetch('/rewards/purchase', {
+    var res = await fetch('/api/rewards/purchase', {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -71,23 +71,23 @@ class Reward extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.props.reward.metadata.name} { this.props.user.ykid==this.props.reward.vendorId && <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>}
+                {this.props.reward.metadata.name} { this.props.user.ykid===this.props.reward.vendorId && <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>}
               </Panel.Heading>
               <Panel.Body>
                 <Row>
                   <div>Description: {this.props.reward.metadata.description}</div>
                   <div>Quantity: {this.props.reward.quantity} Cost: {this.props.reward.cost} {this.props.reward.tag} karma</div>
                 </Row>
-                { this.props.reward.ownerId == this.props.user.ykid &&
+                { this.props.reward.ownerId === this.props.user.ykid &&
                 <Row>
                   You own this reward.
                 </Row>
                 }
-                { this.props.reward.ownerId == "0" &&
+                { this.props.reward.ownerId === "0" &&
                 <Row>
                   You have {this.getSpendable()} "{this.props.reward.tag}" karma to spend
                 </Row>}
-                { this.props.reward.ownerId == "0" && this.getSpendable() != "nada" && this.getSpendable() >0 &&
+                { this.props.reward.ownerId === "0" && this.getSpendable() !== "nada" && this.getSpendable() >0 &&
                 <Row>
                   <Button type="submit" onClick={this.doPurchase}>Purchase</Button>
                 </Row>

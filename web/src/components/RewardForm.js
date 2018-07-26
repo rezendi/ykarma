@@ -21,7 +21,7 @@ class RewardForm extends React.Component {
     });
     console.log("submitting", body);
 
-    var res = await fetch(values.id===0 ? '/rewards/create' : '/rewards/update', {
+    var res = await fetch(values.id===0 ? '/api/rewards/create' : '/api/rewards/update', {
       method: values.id===0 ? 'POST' : 'PUT',
       credentials: 'include',
       headers: {

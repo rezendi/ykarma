@@ -83,7 +83,6 @@ router.post('/create', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var reward = req.body.reward;
-  var notifying = false;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags || '0x00');
   doSend(method, res);
 });
@@ -93,7 +92,6 @@ router.put('/update', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
-  var notifying = false;
   var reward = req.body.reward;
   getRewardFor(reward.id, (existing) => {
     if (req.session.ykid !== parseInt(existing.vendorId) && req.session.ykid !== ADMIN_ID) {
@@ -110,7 +108,6 @@ router.delete('/:id', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
-  var notifying = false;
   getRewardFor(req.params.id, (existing) => {
     if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
       return res.json({"success":false, "error": "Not authorized"});
@@ -125,7 +122,6 @@ router.post('/purchase', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": "Not logged in"});
   }
-  var notifying = false;
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
   doSend(method, res);
 });

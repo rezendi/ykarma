@@ -47,7 +47,7 @@ class Profile extends React.Component {
 
   editMetadata = async (values) => {
     console.log("Submitting form", values);
-    fetch('/accounts/update', {
+    fetch('/api/accounts/update', {
       method: 'PUT',
       credentials: 'include',
       headers: {

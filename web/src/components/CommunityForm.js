@@ -7,7 +7,7 @@ class CommunityForm extends React.Component {
 
   submitForm = async (values) => {
     console.log("Submitting form", values);
-    var res = await fetch(values.id===0 ? '/communities/create' : '/communities/update', {
+    var res = await fetch(values.id===0 ? '/api/communities/create' : '/api/communities/update', {
       method: values.id===0 ? 'POST' : 'PUT',
       credentials: 'include',
       headers: {

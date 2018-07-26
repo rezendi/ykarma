@@ -88,7 +88,7 @@ export const setToken = (idToken) => {
     const additionalInfo = JSON.parse(localStorage.getItem("additionalUserInfo") || "{}")
     handle = "@" + additionalInfo.username;
   }
-  return fetch('/accounts/token/set', {
+  return fetch('/api/accounts/token/set', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },

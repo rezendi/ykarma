@@ -7,7 +7,7 @@ class Home extends React.Component {
 
   submitForm = async (values) => {
     console.log("Submitting form", values);
-    fetch('/accounts/give', {
+    fetch('/api/accounts/give', {
       method: 'POST',
       credentials: 'include',
       headers: {

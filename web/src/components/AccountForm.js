@@ -9,7 +9,7 @@ class AccountForm extends React.Component {
 
   submitForm = async (values) => {
     console.log("Submitting form", values);
-    var res = await fetch('/accounts/update', {
+    var res = await fetch('/api/accounts/update', {
       method: 'PUT',
       credentials: 'include',
       headers: {

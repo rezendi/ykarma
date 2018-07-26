@@ -1,0 +1,21 @@
+version: '2'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: ./server/.env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - eth
+  eth:
+    image: foamspace/cliquebait:latest
+    ports:
+      - "8545:8545"
+    environment:
+      EXTERNAL_ALLOCS: 0xC7679A8C55817EFA649961C6d9DF7596e4bd8C51
+      ACCOUNTS_TO_CREATE: 10
+      ALLOC_WEI: 0xFFFFFFFFFFFFFFFFFFFF
+    volumes:
+      - ./cbdata:/cbdata
