@@ -11,9 +11,9 @@ COPY ./web/package*.json ./web/
 
 # Install the dependencies
 WORKDIR /usr/src/app/server
-RUN npm install --only=production
+RUN npm install
 WORKDIR /usr/src/app/web
-RUN npm install --only=production
+RUN npm install
 
 # Copy the code over
 WORKDIR /usr/src/app
@@ -21,7 +21,7 @@ COPY ./server ./server/
 COPY ./web ./web/
 
 WORKDIR /usr/src/app/web
-RUN npm run build --only=production
+RUN npm run build
 
 EXPOSE 3000
 EXPOSE 3001

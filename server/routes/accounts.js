@@ -10,8 +10,8 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // TODO: if it's a community admin, use their address if available
 var communityAdminAddress = null;
-eth.web3.eth.getAccounts().then((ethAccounts) => {
-  communityAdminAddress = ethAccounts[0];
+eth.getFromAccount().then(address => {
+  communityAdminAddress = address;
 });
 
 const ADMIN_ID = 1;
@@ -448,6 +448,5 @@ function getLongUrlFromShort(shortUrl) {
   }
   return url;
 }
-
 
 module.exports = router;

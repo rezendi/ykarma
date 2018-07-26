@@ -7,8 +7,8 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 var fromAccount = null;
-eth.web3.eth.getAccounts().then((accounts) => {
-  fromAccount = accounts[0];
+eth.getFromAccount().then(address => {
+  fromAccount = address;
 });
 
 const ADMIN_ID = 1;
@@ -196,6 +196,5 @@ function getRewardFromResult(result) {
     metadata: JSON.parse(result[7] || '{}'),
   };
 }
-
 
 module.exports = router;

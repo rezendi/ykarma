@@ -22,7 +22,7 @@ app.use(session({
   cookie: { secure: process.env.NODE_ENV == "production" }
 }));
 
-if (process.env.NODE_ENV == "production") {
+if (process.env.NODE_ENV == "production" || true) {
   console.log("dirname is", path.normalize(path.join(__dirname+'/../web/build')));
   app.use(express.static(path.normalize(path.join(__dirname+'/../web/build'))));
 }

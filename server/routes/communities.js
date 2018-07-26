@@ -4,8 +4,8 @@ var router = express.Router();
 var eth = require('./eth');
 
 var fromAccount = null;
-eth.web3.eth.getAccounts().then((accounts) => {
-  fromAccount = accounts[0];
+eth.getFromAccount().then(address => {
+  fromAccount = address;
 });
 
 const ADMIN_ID = 1;
@@ -158,4 +158,5 @@ function getCommunityFor(id, callback) {
     console.log('getCommunityFor call error ' + id, error);
   });
 }
+
 module.exports = router;

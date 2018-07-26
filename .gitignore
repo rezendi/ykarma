@@ -8,6 +8,8 @@ node_modules
 
 # production
 /ethereum/build
+/ethereum/cbdata
+/web/build
 
 # misc
 .DS_Store

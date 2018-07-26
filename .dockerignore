@@ -1,5 +1,12 @@
-.git
 .env
+.git
 .gitignore
-node_modules
+*/.env
+*/.git
+*/.gitignore
+*/build
+*/node_modules
+ethereum
 npm-debug.log
+*/npm-debug.log
+*.komodoproject

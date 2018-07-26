@@ -19,4 +19,4 @@ services:
       ACCOUNTS_TO_CREATE: 10
       ALLOC_WEI: 0xFFFFFFFFFFFFFFFFFFFF
     volumes:
-      - ./cbdata:/cbdata
+      - ./ethereum/cbdata:/cbdata

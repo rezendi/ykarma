@@ -4,8 +4,27 @@ const abi = [{"constant":true,"inputs":[],"name":"senderIsOracle","outputs":[{"n
 const contract = new web3.eth.Contract(abi, process.env.YKARMA_ADDRESS);
 const GAS = "5000000";
 
+function delay(t, v) {
+   return new Promise(function(resolve) { 
+       setTimeout(resolve.bind(null, v), t)
+   });
+}
+
+const getFromAccount = function() {
+  return web3.eth.getAccounts().then((ethAccounts) => {
+    return ethAccounts[0];
+  })
+  .catch(err => {
+    return delay(5000).then(function() {
+        return getFromAccount();
+    });
+  });
+}
+
+
 module.exports = {
     web3: web3,
     contract: contract,
-    GAS: GAS
+    GAS: GAS,
+    getFromAccount: getFromAccount
 };
