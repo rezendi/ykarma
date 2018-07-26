@@ -21,9 +21,10 @@ COPY ./server ./server/
 COPY ./web ./web/
 
 WORKDIR /usr/src/app/web
-RUN npm run-script build --only=production
+RUN npm run build --only=production
 
 EXPOSE 3000
+EXPOSE 3001
 
 WORKDIR /usr/src/app/server
 CMD [ "npm", "start" ]
