@@ -64,18 +64,7 @@ router.post('/create', function(req, res, next) {
     JSON.stringify(community.metadata),
     community.tags || '',
   );
-  method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
-      res.json({"success":true});
-    }
-  })
-  .catch(function(error) {
-    console.log('call error ' + error);
-  });
+  eth.doSend(method, res);
 });
 
 /* PUT edit community */
@@ -96,20 +85,7 @@ router.put('/update', function(req, res, next) {
     JSON.stringify(community.metadata),
     community.tags || '',
   );
-  method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
-    console.log('error', error);
-    res.json({'success':false, 'error':error});
-  })
-  .on('confirmation', (number, receipt) => {
-    if (number==1) {
-      console.log('receipt', receipt);
-      res.json({'success':true, 'receipt':receipt});
-    }
-  })
-  .catch(function(error) {
-    console.log('call error ' + error);
-    res.json({'success':false, 'error':error});
-  });
+  eth.doSend(method, res);
 });
 
 /* DELETE remove community. */
@@ -121,19 +97,12 @@ router.delete('/:id', function(req, res, next) {
     return res.json({"success":false, "error": 'Community not saved'});
   }
   var method = eth.contract.methods.deleteCommunity(req.params.id);
-  method.send({from:fromAccount, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
-      res.json({"success":true});
-    }
-  })
-  .catch(function(error) {
-    console.log('call error ' + error);
-  });
+  eth.doSend(method,res);
 });
+
+/**
+ * Ethereum methods
+ */
 
 function getCommunityFor(id, callback) {
   var method = eth.contract.methods.communityForId(id);

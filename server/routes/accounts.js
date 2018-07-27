@@ -8,10 +8,9 @@ var firebase = require('./firebase');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// TODO: if it's a community admin, use their address if available
-var communityAdminAddress = null;
+var fromAccount = null;
 eth.getFromAccount().then(address => {
-  communityAdminAddress = address;
+  fromAccount = address;
 });
 
 const ADMIN_ID = 1;
@@ -174,19 +173,7 @@ router.put('/update', function(req, res, next) {
     JSON.stringify(account.metadata),
     '0x00'
   );
-  method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('update account error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
-      res.json({"success":true});
-    }
-  })
-  .catch(function(error) {
-    console.log('update account call error ' + error);
-    res.json({"success":false, "error": error});
-  });
+  eth.doSend(method, res);
 });
 
 
@@ -199,18 +186,7 @@ router.delete('/destroy/:id', function(req, res, next) {
     return res.json({"success":false, "error": 'Account not saved'});
   }
   var method = eth.contract.methods.deleteAccount(req.params.id);
-  method.send({from:communityAdminAddress, gas: eth.GAS}, (error, result) => {
-    if (error) {
-      console.log('error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      console.log('result', result);
-      res.json({"success":true});
-    }
-  })
-  .catch(function(error) {
-    console.log('call error ' + error);
-  });
+  eth.doSend(method, res);
 });
 
 
@@ -229,39 +205,44 @@ router.post('/give', function(req, res, next) {
     req.body.amount,
     req.body.message || '',
   );
-  method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
-    console.log('error', error);
-    res.json({'success':false, 'error':error});
-  })
-  .on('confirmation', (number, receipt) => {
-    if (number >= 1 && !notifying) {
-      notifying = true;
-      console.log('got receipt');
-      if (recipient.startsWith("mailto:")) {
-        var docRef = firebase.db.collection('email-preferences').doc(recipient);
-        docRef.get().then((doc) => {
-          // TODO: query rather than get entire document?
-          var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
-          if (sendEmail) {
-            console.log("sending mail");
-            const senderName = req.session.name || req.session.email;
-            sendKarmaSentMail(senderName, recipient, req.body.amount);
-            docRef.update({ [sender]:true }, { create: true } );
-          }
+  method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
+    method.send({from:fromAccount, gas: gasAmount * 2}).on('error', (error) => {
+      console.log('error', error);
+      res.json({'success':false, 'error':error});
+    })
+    .on('confirmation', (number, receipt) => {
+      if (number >= 1 && !notifying) {
+        notifying = true;
+        console.log('got receipt');
+        if (recipient.startsWith("mailto:")) {
+          var docRef = firebase.db.collection('email-preferences').doc(recipient);
+          docRef.get().then((doc) => {
+            // TODO: query rather than get entire document?
+            var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
+            if (sendEmail) {
+              console.log("sending mail");
+              const senderName = req.session.name || req.session.email;
+              sendKarmaSentMail(senderName, recipient, req.body.amount);
+              docRef.update({ [sender]:true }, { create: true } );
+            }
+            return res.json({"success":true});
+          })
+          .catch(err => {
+            console.log('Error getting document', err);
+            return res.json({"success":false, "error":err});
+          });
+        } else {
+          // TODO: Twitter notifications
           return res.json({"success":true});
-        })
-        .catch(err => {
-          console.log('Error getting document', err);
-          return res.json({"success":false, "error":err});
-        });
-      } else {
-        // TODO: Twitter notifications
-        return res.json({"success":true});
+        }
       }
-    }
+    })
+    .catch(function(error) {
+      console.log('call error ' + error);
+    });
   })
   .catch(function(error) {
-    console.log('call error ' + error);
+    console.log('/give gas estimation call error', error);
   });
 });
 
@@ -346,16 +327,18 @@ function addUrlToAccount(id, url, callback) {
   console.log("adding url "+url, id);
   var notifying = false;
   var method = eth.contract.methods.addUrlToExistingAccount(id, url);
-  method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
-    // console.log('addUrlToAccount error', error);
-    callback(false);
-  })
-  .on('confirmation', (number, receipt) => {
-    if (number >= 1 && !notifying) {
-      //console.log('addUrlToAccount result', receipt);
-      notifying = true;
-      callback(true);
-    }
+  method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
+    method.send({from:fromAccount, gas: gasAmount * 2}).on('error', (error) => {
+      console.log('addUrlToAccount error', error);
+      callback(false);
+    })
+    .on('confirmation', (number, receipt) => {
+      if (number >= 1 && !notifying) {
+        //console.log('addUrlToAccount result', receipt);
+        notifying = true;
+        callback(true);
+      }
+    });
   });
 }
 
@@ -363,19 +346,18 @@ function removeUrlFromAccount(id, url, callback) {
   console.log("removing url "+url, id);
   var notifying = false;
   var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
-  method.send({from:communityAdminAddress, gas: eth.GAS}).on('error', (error) => {
-    console.log('removeUrlFromAccount error', error);
-    callback(false);
-  })
-  .on('confirmation', (number, receipt) => {
-    if (number >= 1 && !notifying) {
-      // console.log('removeUrlFromAccount result', receipt);
-      notifying = true;
-      return callback(true);
-    }
-  })
-  .catch(function(error) {
-    console.log('removeUrlFromAccount call error ' + id, error);
+  method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
+    method.send({from:fromAccount, gas: gasAmount * 4}).on('error', (error) => {
+      console.log('removeUrlFromAccount error', error);
+      callback(false);
+    })
+    .on('confirmation', (number, receipt) => {
+      if (number >= 1 && !notifying) {
+        // console.log('removeUrlFromAccount result', receipt);
+        notifying = true;
+        return callback(true);
+      }
+    });
   });
 }
 

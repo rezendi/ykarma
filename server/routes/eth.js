@@ -10,21 +10,53 @@ function delay(t, v) {
    });
 }
 
+var fromAccount;
+
 const getFromAccount = function() {
+   if (fromAccount) {
+      return fromAccount;
+   }
   return web3.eth.getAccounts().then((ethAccounts) => {
-    return ethAccounts[0];
+    fromAccount = ethAccounts[0];
+    return fromAccount;
   })
   .catch(err => {
     return delay(5000).then(function() {
-        return getFromAccount();
+      return getFromAccount();
     });
+  });
+}
+
+const doSend = function(method, res, gasMultiplier = 2) {
+  var notifying = false
+  method.estimateGas({gas: GAS}, function(error, gasAmount) {
+    method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
+      console.log('error', error);
+      res.json({'success':false, 'error':error});
+    })
+    .on('confirmation', (number, receipt) => {
+      if (number >= 1 && !notifying) {
+        notifying = true;
+        //console.log('result', receipt);
+        return res.json({"success":true, "result": receipt});
+      }
+    })
+    .catch(function(error) {
+      console.log('send call error ' + error);
+      res.json({"success":false, "error": error});
+    });
+  })
+  .catch(function(error) {
+    console.log('gas estimation call error', error);
+    res.json({"success":false, "error": error});
   });
 }
 
 
 module.exports = {
-    web3: web3,
-    contract: contract,
-    GAS: GAS,
-    getFromAccount: getFromAccount
+    web3:      web3,
+    contract:  contract,
+    doSend:    doSend,
+    GAS:       GAS,
+    getFromAccount: getFromAccount,
 };

@@ -84,7 +84,7 @@ router.post('/create', function(req, res, next) {
   }
   var reward = req.body.reward;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags || '0x00');
-  doSend(method, res);
+  eth.doSend(method, res);
 });
 
 /* PUT update a reward */
@@ -99,7 +99,7 @@ router.put('/update', function(req, res, next) {
     }
     //console.log("existing", existing);
     var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, JSON.stringify(reward.metadata || existing.metadata), reward.flags || existing.flags);
-    doSend(method, res);
+    eth.doSend(method, res);
   })
 });
 
@@ -113,7 +113,7 @@ router.delete('/:id', function(req, res, next) {
       return res.json({"success":false, "error": "Not authorized"});
     }
     var method = eth.contract.methods.deleteReward(existing.id);
-    doSend(method, res);
+    eth.doSend(method, res, 3);
   });
 });
 
@@ -123,32 +123,13 @@ router.post('/purchase', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
-  doSend(method, res);
+  eth.doSend(method, res);
 });
 
 
 /**
  * Ethereum methods
  */
-function doSend(method, res) {
-  var notifying = false
-  method.send({from:fromAccount, gas: eth.GAS}).on('error', (error) => {
-    console.log('error', error);
-    res.json({'success':false, 'error':error});
-  })
-  .on('confirmation', (number, receipt) => {
-    if (number >= 1 && !notifying) {
-      notifying = true;
-      //console.log('result', receipt);
-      return res.json({"success":true, "result": receipt});
-    }
-  })
-  .catch(function(error) {
-    console.log('send call error ' + error);
-    res.json({"success":false, "error": error});
-  });
-}
-
 function getRewardFor(id, callback) {
   var method = eth.contract.methods.rewardForId(id);
   method.call(function(error, result) {
