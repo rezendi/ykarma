@@ -10,6 +10,17 @@ eth.getFromAccount().then(address => {
 
 const ADMIN_ID = 1;
 
+// GET set up
+router.get('/setup', function(req, res, next) {
+  getCommunityFor(1, (community) => {
+    if (community.id !== '0') {
+      return res.json({"success":true, 'message':'Redundant'});
+    }
+    var method = eth.contract.methods.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
+    doSend(method, 4);
+  });
+});
+
 /* GET community list */
 router.get('/', function(req, res, next) {
   var communities = [];

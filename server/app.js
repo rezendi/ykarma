@@ -6,6 +6,7 @@ var path = require('path');
 var bodyParser = require("body-parser");
 var logger = require('morgan');
 var session = require('express-session');
+var os = require('os');
 
 var indexRouter = require('./routes/index');
 var accountsRouter = require('./routes/accounts');
@@ -19,14 +20,8 @@ app.use(session({
   resave: false,
   httpOnly: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === "production" && os.hostname() !== 'localhost' }
+  cookie: { secure: process.env.NODE_ENV === "production" && os.hostname() !== 'localhost' && false }
 }));
-
-if (process.env.NODE_ENV == "production") {
-  app.enable('trust proxy');
-  //console.log("dirname is", path.normalize(path.join(__dirname+'/../web/build')));
-  app.use(express.static(path.normalize(path.join(__dirname+'/../web/build'))));
-}
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -39,6 +34,14 @@ app.use('/api/accounts', accountsRouter);
 app.use('/api/rewards', rewardsRouter);
 app.use('/api/communities', communitiesRouter);
 
+console.log("hostname", os.hostname());
+
+if (process.env.NODE_ENV == "production") {
+  app.enable('trust proxy');
+  //console.log("dirname is", path.normalize(path.join(__dirname+'/../web/build')));
+  app.use(express.static(path.normalize(path.join(__dirname+'/../web/build'))));
+}
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -48,7 +51,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = process.env.NODE_ENV == "dev" ? err : {};
+  res.locals.error = process.env.NODE_ENV == "development" ? err : {};
 
   // render the error page
   res.status(err.status || 500);

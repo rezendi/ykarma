@@ -34,10 +34,7 @@ class Reward extends React.Component {
     var res = await fetch('/api/rewards/purchase', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: body,
     });
     

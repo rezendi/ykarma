@@ -14,14 +14,25 @@ eth.getFromAccount().then(address => {
 });
 
 const ADMIN_ID = 1;
+const ADMIN_EMAIL = 'jon@rezendi.com';
 
-// GET set up test
+// GET set up
 router.get('/setup', function(req, res, next) {
-  if(process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === 'test') {
+    console.log("setting up test data");
     req.session.email = "test@rezendi.com";
     req.session.ykid = 2;
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
+  } else {
+    console.log("setting up admin account");
+    getAccountForUrl('mailto:'+ADMIN_URL, (account) => {
+      if (account.id !== '0') {
+        return res.json({"success":true, 'message':'Redundant'});
+      }
+      var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');
+      doSend(method, 4);
+    });
   }
   return res.json({"success":true});
 });
@@ -61,7 +72,7 @@ router.get('/for/:communityId', function(req, res, next) {
 });
 
 /* GET account details */
-router.get('/:id', function(req, res, next) {
+router.get('/account/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
     return res.json({"success":false, "error": "Not authorized"});
@@ -76,6 +87,8 @@ router.get('/:id', function(req, res, next) {
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
+  console.log("req.session", req.session);
+  console.log("url", url);
   if (req.session.email !== url && req.session.handle !== url && req.session.ykid !== ADMIN_ID) {
     console.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
@@ -264,7 +277,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
     req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
-    // console.log("session", req.session);
+    console.log("session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});

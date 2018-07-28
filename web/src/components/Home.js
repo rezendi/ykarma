@@ -10,10 +10,7 @@ class Home extends React.Component {
     fetch('/api/accounts/give', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({
         id: this.props.user.ykid,
         recipient: values.recipient,

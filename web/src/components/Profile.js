@@ -50,10 +50,7 @@ class Profile extends React.Component {
     fetch('/api/accounts/update', {
       method: 'PUT',
       credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({
         account: {
           id: this.props.user.ykid,

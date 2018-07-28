@@ -10,10 +10,7 @@ class CommunityForm extends React.Component {
     var res = await fetch(values.id===0 ? '/api/communities/create' : '/api/communities/update', {
       method: values.id===0 ? 'POST' : 'PUT',
       credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({
         community: {
           id: values.id,

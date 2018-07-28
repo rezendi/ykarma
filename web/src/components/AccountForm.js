@@ -12,10 +12,7 @@ class AccountForm extends React.Component {
     var res = await fetch('/api/accounts/update', {
       method: 'PUT',
       credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({
         account: {
           id: values.id,
