@@ -121,7 +121,7 @@ function getCommunityFor(id, callback) {
     if (error) {
       console.log('getCommunityFor error', error);
     } else {
-      console.log('getCommunityFor result', result);
+      //console.log('getCommunityFor result', result);
       var community = {
         id:           result[0],
         adminAddress: result[1],

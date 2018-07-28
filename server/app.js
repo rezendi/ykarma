@@ -15,13 +15,18 @@ var communitiesRouter = require('./routes/communities');
 
 var app = express();
 
-app.use(session({
-  secret:process.env.SESSION_SECRET,
-  resave: false,
-  httpOnly: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === "production" && os.hostname() !== 'localhost' && false }
-}));
+var sessionConfig = {
+    secret:process.env.SESSION_SECRET,
+    resave: false,
+    httpOnly: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === "production" && os.hostname().indexOf('ykarma') >= 0 }
+};
+if (process.env.NODE_ENV === "production") {
+  var RedisStore = require('connect-redis')(session);
+  sessionConfig.store = new RedisStore({url:"redis://redis:6379"});
+}
+app.use(session(sessionConfig));
 
 app.use(logger('dev'));
 app.use(express.json());

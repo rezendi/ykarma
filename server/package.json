@@ -9,6 +9,7 @@
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
     "chai": "^4.1.2",
+    "connect-redis": "^3.3.3",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "dot-env": "0.0.1",

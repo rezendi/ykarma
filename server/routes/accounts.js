@@ -87,8 +87,6 @@ router.get('/account/:id', function(req, res, next) {
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
-  console.log("req.session", req.session);
-  console.log("url", url);
   if (req.session.email !== url && req.session.handle !== url && req.session.ykid !== ADMIN_ID) {
     console.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
@@ -277,7 +275,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
     req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
-    console.log("session", req.session);
+    //console.log("session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});
@@ -292,7 +290,7 @@ function getAccountFor(id, callback) {
     if (error) {
       console.log('getAccountFor error', error);
     } else {
-      console.log('getAccountFor result', result);
+      //console.log('getAccountFor result', result);
       var account = getAccountFromResult(result);
       callback(account);
     }
@@ -326,7 +324,7 @@ function getAccountForUrl(url, callback) {
     if (error) {
       console.log('getAccountForUrl error', error);
     } else {
-      console.log('getAccountForUrl result', result);
+      // console.log('getAccountForUrl result', result);
       var account = getAccountFromResult(result);
       callback(account);
     }

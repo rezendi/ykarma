@@ -4,7 +4,6 @@ services:
     build: .
     ports:
       - "3000:3000"
-      - "3001:3001"
     env_file: ./server/.env.production
     depends_on:
       - eth
@@ -14,7 +13,11 @@ services:
       - "8545:8545"
     environment:
       EXTERNAL_ALLOCS: 0xC7679A8C55817EFA649961C6d9DF7596e4bd8C51
-      ACCOUNTS_TO_CREATE: 10
+      ACCOUNTS_TO_CREATE: 5
       ALLOC_WEI: 0xFFFFFFFFFFFFFFFFFFFF
     volumes:
       - ./ethereum/cbdata:/cbdata
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
