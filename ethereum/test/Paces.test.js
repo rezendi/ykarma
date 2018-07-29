@@ -47,9 +47,9 @@ contract('Paces', function(accounts) {
     await ykarma.give(1, 'mailto:jay@rezendi.com', 20, "Another message");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '40', "Giving happened II");
-    assert.equal(""+vals[8], '{"recipients":[2,2],"amounts":[40,20]}', "Giving recorded");
+    assert.equal(""+vals[8], '{"recipients":[2,2],"amounts":[40,20],"messages":[1,2]}', "Giving recorded");
     vals = await ykarma.accountForId(2);
-    assert.equal(JSON.parse(vals[9])["messages"][1], "Another message", "Giving received II");
+    assert.equal(JSON.parse(vals[9])["messages"][1], "2", "Giving received II");
     vals = await ykarma.accountForUrl("mailto:jay@rezendi.com");
     assert.equal(vals[0], 2, "Getting an account by URL");
     await ykarma.addUrlToExistingAccount(2, "https://twitter.com/jayrezendi");

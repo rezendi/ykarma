@@ -10,13 +10,14 @@ contract YKStructs {
   struct Given {
     uint256[] recipients;
     uint256[] amounts;
+    uint256[] messages;
   }
 
   struct Spending {
     uint256[] senders;
     uint256[] amounts;
+    uint256[] messages;
     string[] tags;
-    string[] messages;
   }
   
   struct Account {

@@ -86,6 +86,10 @@ contract YKarma is Oracular, YKStructs {
     return trancheData.lastReplenished(_accountId);
   }
 
+  function messageForId(uint256 _id) public view returns (string) {
+    return trancheData.messageForId(_id);
+  }
+
   /**
    * Community methods
    */

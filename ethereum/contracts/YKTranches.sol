@@ -14,8 +14,11 @@ contract YKTranches is Ownable, YKStructs {
   mapping(uint256 => Giving) giving;
   mapping(uint256 => Given) given;
   mapping(uint256 => Spending) spending;
-  uint256 EXPIRY_WINDOW = 691200;
-  uint256 REFRESH_WINDOW = 40320;
+  mapping(uint256 => string) messages;
+  uint256 maxMessageId = 1;
+  
+  uint256 EXPIRY_WINDOW = 20 * 60 * 24 * 120;
+  uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
   uint256 GIVING_AMOUNT = 100;
 
   function availableToGive(uint256 _id) public view onlyOwner returns (uint256) {
@@ -40,9 +43,15 @@ contract YKTranches is Ownable, YKStructs {
         amounts[i] = 0;
       }
     }
+    
+    // record message
+    messages[maxMessageId] = _message;
+    maxMessageId += 1;
+
     // record for sender
     given[sender.id].recipients.push(recipient.id);
     given[sender.id].amounts.push(accumulated);
+    given[sender.id].messages.push(maxMessageId-1);
     
     // send to recipient
     Spending storage receiver = spending[recipient.id];
@@ -50,7 +59,7 @@ contract YKTranches is Ownable, YKStructs {
     receiver.amounts.push(accumulated);
     receiver.tags.push(_tags);
     if (sendMessageOk(sender, recipient)) {
-      receiver.messages.push(_message);
+      receiver.messages.push(maxMessageId-1);
     }
   }
   
@@ -133,6 +142,10 @@ contract YKTranches is Ownable, YKStructs {
       delete available.blocks[available.blocks.length-1];
     }
   }
+  
+  function messageForId(uint256 _id) public onlyOwner returns (string) {
+    return messages[_id];
+  }
 
   function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
     strings.slice memory s1 = _tag.toSlice();
@@ -154,6 +167,9 @@ contract YKTranches is Ownable, YKStructs {
     out = out.toSlice().concat(',"amounts":'.toSlice());
     string memory amounts = uintArrayToJSONString(record.amounts, min, max);
     out = out.toSlice().concat(amounts.toSlice());
+    out = out.toSlice().concat(',"messages":'.toSlice());
+    string memory messageIds = uintArrayToJSONString(record.messages, min, max);
+    out = out.toSlice().concat(messageIds.toSlice());
     out = out.toSlice().concat("}".toSlice());
     return out;
   }
@@ -168,12 +184,12 @@ contract YKTranches is Ownable, YKStructs {
     out = out.toSlice().concat(',"amounts":'.toSlice());
     string memory amounts = uintArrayToJSONString(available.amounts, min, max);
     out = out.toSlice().concat(amounts.toSlice());
+    out = out.toSlice().concat(',"messages":'.toSlice());
+    string memory messageIds = uintArrayToJSONString(available.messages, min, max);
+    out = out.toSlice().concat(messageIds.toSlice());
     out = out.toSlice().concat(',"tags":'.toSlice());
     string memory tags = StringArrayToJSONString(available.tags, min, max);
     out = out.toSlice().concat(tags.toSlice());
-    out = out.toSlice().concat(',"messages":'.toSlice());
-    string memory messages = StringArrayToJSONString(available.messages, min, max);
-    out = out.toSlice().concat(messages.toSlice());
     out = out.toSlice().concat("}".toSlice());
     return out;
   }
