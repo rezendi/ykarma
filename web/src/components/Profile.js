@@ -68,12 +68,18 @@ class Profile extends React.Component {
     });
   }
 
-  componentDidMount() {
-    this.props.loadMyRewards();
-    this.props.loadMyGifts();
-  }
-
   render() {
+    if (!this.props.user.uid) {
+      return (<div>Loading...</div>)
+    }
+    if (this.props.myRewards.length === 0 && !this.loadedRewards) {
+      this.props.loadMyRewards();
+      this.loadedRewards = true;
+    }
+    if (this.props.user.given && this.props.myGifts.length === 0 && !this.loadedGifts) {
+      this.props.loadMyGifts(Array.from(new Set(this.props.user.given.recipients)));
+      this.loadedGifts = true;
+    }
     const myRewards = this.props.myRewards || [];
     const myGifts = this.props.myGifts || [];
     return (
@@ -86,22 +92,33 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy { JSON.stringify(this.props.user) }
+                  Howdy <b>{ this.props.user.metadata.name || this.props.user.displayName || "Nameless One" }</b>
+                  <p>
+                  { JSON.stringify(this.props.user) }
+                  </p>
+                  <p>
+                  { localStorage.getItem("additionalUserInfo") }
+                  &nbsp;
+                  { localStorage.getItem("additionalEmailInfo") }
+                  </p>
                 </Row>
                 <Row>
-                  <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button>
-                  <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button>
+                  { !this.props.user.handle && <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
+                  { this.props.user.email && this.props.user.handle &&
+                  <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button> }
                 </Row>
+                { !this.props.user.email &&
                 <form onSubmit={this.props.handleSubmit(this.addEmail)}>
                   <Row>
                     <label htmlFor="email">Email</label>
                     <Field name="email" component="input" type="text"/>
                     <Button type="submit">Submit</Button>
                   </Row>
-                </form>
+                </form> }
+                { this.props.user.email && this.props.user.handle &&
                 <Row>
                   <Button type="submit" onClick={this.removeEmail}>Remove Email</Button>
-                </Row>
+                </Row> }
                 <Row>
                   Edit Metadata
                 </Row>
@@ -112,9 +129,6 @@ class Profile extends React.Component {
                     <Button type="submit">Submit</Button>
                   </Row>
                 </form>
-                <Row>
-                  Also { localStorage.getItem("additionalUserInfo") } and { localStorage.getItem("additionalEmailInfo") }
-                </Row>
               </Panel.Body>
             </Panel>
 
@@ -137,7 +151,8 @@ class Profile extends React.Component {
                 My Giving
               </Panel.Heading>
               <Panel.Body>
-                {myGifts.map(reward =>
+                {JSON.stringify(this.props.user.given)}
+                {myGifts.map(gift =>
                   <Row key={gift.id}>
                     {JSON.stringify(gift)}
                   </Row>

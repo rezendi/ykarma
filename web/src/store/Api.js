@@ -118,7 +118,7 @@ class Api {
     });
   }
 
-  static loadMyGifts() {
+  static loadMyGifts(recipientIds) {
     return fetch('/api/accounts/myGifts', {
       method: 'GET',
       credentials: 'include',

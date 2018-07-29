@@ -7,7 +7,6 @@ export default {
   myRewards: [],
   rewards: [],
   reward: {},
-  vendors: [],
-  vendor: {},
+  myGifts: [],
   editing: false,
 }

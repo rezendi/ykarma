@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux'
-import { loadAvailableRewards, loadMyRewards } from '../store/data/actions'
+import { loadAvailableRewards } from '../store/data/actions'
 import RewardForm from './RewardForm'
 
 class Rewards extends React.Component {

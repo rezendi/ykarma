@@ -144,14 +144,12 @@ export function loadRewardsSuccess(rewards) {
 
 export function loadMyRewards() {
   return function(dispatch) {
-    return firebase.auth.onAuthStateChanged(user => {
-      return Api.loadMyRewards().then(result => {
-        return result.json().then(json => {
-          dispatch(loadMyRewardsSuccess(json.rewards));
-        });
-      }).catch(error => {
-        throw(error);
+    return Api.loadMyRewards().then(result => {
+      return result.json().then(json => {
+        dispatch(loadMyRewardsSuccess(json.rewards));
       });
+    }).catch(error => {
+      throw(error);
     });
   };
 }
@@ -176,16 +174,14 @@ export function loadRewardSuccess(reward) {
   return { type: types.LOAD_REWARD_SUCCESS, reward};
 }
 
-export function loadMyGifts() {
+export function loadMyGifts(recipientIds) {
   return function(dispatch) {
-    return firebase.auth.onAuthStateChanged(user => {
-      return Api.loadMyGifts().then(result => {
-        return result.json().then(json => {
-          dispatch(loadMyGiftsSuccess(json.gifts));
-        });
-      }).catch(error => {
-        throw(error);
+    return Api.loadMyGifts(recipientIds).then(result => {
+      return result.json().then(json => {
+        dispatch(loadMyGiftsSuccess(json.gifts));
       });
+    }).catch(error => {
+      throw(error);
     });
   };
 }
