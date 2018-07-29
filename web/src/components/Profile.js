@@ -102,6 +102,14 @@ class Profile extends React.Component {
                   { localStorage.getItem("additionalEmailInfo") }
                   </p>
                 </Row>
+              </Panel.Body>
+            </Panel>
+
+            <Panel>
+              <Panel.Heading>
+                Edit Profile
+              </Panel.Heading>
+              <Panel.Body>
                 <Row>
                   { !this.props.user.handle && <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
                   { this.props.user.email && this.props.user.handle &&
