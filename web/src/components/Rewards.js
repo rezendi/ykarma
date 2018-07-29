@@ -9,12 +9,10 @@ class Rewards extends React.Component {
 
   componentDidMount() {
     this.props.loadAvailableRewards();
-    this.props.loadMyRewards();
   }
 
   render() {
     const rewards = this.props.rewards || [];
-    const myRewards = this.props.myRewards || [];
     return (
         <Grid>
           <Row>
@@ -45,19 +43,6 @@ class Rewards extends React.Component {
                   )}
                 </Panel.Body>
               </Panel>
-              <Panel>
-                <Panel.Heading>
-                  Mine (owned)
-                </Panel.Heading>
-                <Panel.Body>
-                  {myRewards.map(reward =>
-                    <Row key={reward.id}>
-                      <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
-                      <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
-                    </Row>
-                  )}
-                </Panel.Body>
-              </Panel>
               <RewardForm reward = {{}}/>
             </Col>
           </Row>
@@ -70,14 +55,12 @@ function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
     rewards: state.rewards || [],
-    myRewards: state.myRewards || [],
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     loadAvailableRewards: () => dispatch(loadAvailableRewards()),
-    loadMyRewards: () => dispatch(loadMyRewards()),
   }
 }
 

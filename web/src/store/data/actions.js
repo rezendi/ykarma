@@ -176,3 +176,21 @@ export function loadRewardSuccess(reward) {
   return { type: types.LOAD_REWARD_SUCCESS, reward};
 }
 
+export function loadMyGifts() {
+  return function(dispatch) {
+    return firebase.auth.onAuthStateChanged(user => {
+      return Api.loadMyGifts().then(result => {
+        return result.json().then(json => {
+          dispatch(loadMyGiftsSuccess(json.gifts));
+        });
+      }).catch(error => {
+        throw(error);
+      });
+    });
+  };
+}
+
+export function loadMyGiftsSuccess(gifts) {
+  return { type: types.LOAD_MY_GIFTS_SUCCESS, gifts};
+}
+

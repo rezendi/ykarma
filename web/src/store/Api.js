@@ -118,6 +118,17 @@ class Api {
     });
   }
 
+  static loadMyGifts() {
+    return fetch('/api/accounts/myGifts', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
   
 }
 

@@ -2,10 +2,11 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
-import { auth } from '../firebase';
-import { editMetadata } from '../firebase';
+import { Link } from 'react-router-dom';
 import * as firebase from 'firebase'
+import { auth } from '../firebase';
 import Api from '../store/Api';
+import { loadMyRewards, loadMyGifts } from '../store/data/actions'
 
 class Profile extends React.Component {
 
@@ -67,7 +68,14 @@ class Profile extends React.Component {
     });
   }
 
+  componentDidMount() {
+    this.props.loadMyRewards();
+    this.props.loadMyGifts();
+  }
+
   render() {
+    const myRewards = this.props.myRewards || [];
+    const myGifts = this.props.myGifts || [];
     return (
       <Grid>
         <Row>
@@ -109,16 +117,38 @@ class Profile extends React.Component {
                 </Row>
               </Panel.Body>
             </Panel>
+
+            <Panel>
+              <Panel.Heading>
+                My Rewards
+              </Panel.Heading>
+              <Panel.Body>
+                {myRewards.map(reward =>
+                  <Row key={reward.id}>
+                    <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
+                    <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
+                  </Row>
+                )}
+              </Panel.Body>
+            </Panel>
+
+            <Panel>
+              <Panel.Heading>
+                My Giving
+              </Panel.Heading>
+              <Panel.Body>
+                {myGifts.map(reward =>
+                  <Row key={gift.id}>
+                    {JSON.stringify(gift)}
+                  </Row>
+                )}
+              </Panel.Body>
+            </Panel>
+
           </Col>
         </Row>
       </Grid>
     );
-  }
-}
-
-function mapStateToProps(state, ownProps) {
-  return {
-    user: state.user,
   }
 }
 
@@ -132,4 +162,19 @@ Profile = connect(
   }),
 )(Profile)
 
-export default connect(mapStateToProps, null)(Profile);
+function mapStateToProps(state, ownProps) {
+  return {
+    user: state.user,
+    myRewards: state.myRewards || [],
+    myGifts: state.myGifts || [],
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    loadMyRewards: () => dispatch(loadMyRewards()),
+    loadMyGifts: () => dispatch(loadMyGifts()),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
