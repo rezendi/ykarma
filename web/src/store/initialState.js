@@ -8,5 +8,5 @@ export default {
   rewards: [],
   reward: {},
   myGifts: [],
-  editing: false,
+  loading: false,
 }

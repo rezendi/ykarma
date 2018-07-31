@@ -1,8 +1,9 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form'
-import { communitiesReducer, communityReducer, accountsReducer, accountReducer, userReducer, myGiftsReducer, myRewardsReducer, rewardsReducer, rewardReducer } from './data/reducer';
+import { loadingReducer, communitiesReducer, communityReducer, accountsReducer, accountReducer, userReducer, myGiftsReducer, myRewardsReducer, rewardsReducer, rewardReducer } from './data/reducer';
 
 export const rootReducer = combineReducers({
+  loading: loadingReducer,
   communities: communitiesReducer,
   community: communityReducer,
   accounts: accountsReducer,

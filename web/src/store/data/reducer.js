@@ -1,6 +1,14 @@
 import initialState from '../../store/initialState';
 import * as types from './types';
 
+export function loadingReducer(state = initialState.loading, action) {
+  switch (action.type) {
+    case types.LOADING:
+      return action.active === true;
+    default:
+      return state
+  }
+}
 export function communitiesReducer(state = initialState.communities, action) {
   switch (action.type) {
     case types.LOAD_COMMUNITIES_SUCCESS:

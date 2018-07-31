@@ -101,6 +101,7 @@ export function fetchYkUser(user) {
         sessionStorage.setItem("currentToken", idToken);
         sessionStorage.setItem("currentTokenSet", (new Date()).getTime());
         auth.setToken(idToken).then((result) => {
+          if (!result.ok) { return {}; }
           result.json().then((json) => {
             Api.loadAccountForUser(user).then(loaded => {
               dispatch(userFetched(loaded));
@@ -190,3 +191,12 @@ export function loadMyGiftsSuccess(gifts) {
   return { type: types.LOAD_MY_GIFTS_SUCCESS, gifts};
 }
 
+export function setLoading(active) {
+  return function(dispatch) {
+    dispatch(loadingSet(active));
+  };
+}
+
+export function loadingSet(active) {
+  return { type: types.LOADING, active};
+}

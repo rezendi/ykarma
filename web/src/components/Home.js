@@ -2,10 +2,12 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
+import { setLoading } from '../store/data/actions'
 
 class Home extends React.Component {
 
   submitForm = async (values) => {
+    this.props.setLoading(true);
     console.log("Submitting form", values);
     fetch('/api/accounts/give', {
       method: 'POST',
@@ -19,6 +21,7 @@ class Home extends React.Component {
       })
     })
     .then(res => {
+      this.props.setLoading(false);
       if (!res.ok) {
         alert("Server error!");
       } else {
@@ -28,17 +31,23 @@ class Home extends React.Component {
   }
 
   render() {
-    // console.log("user", this.props.user);
     if (!this.props.user || !this.props.user.uid) {
       return (
-        <div>Welcome to YKarma!</div>
+        <div>Welcome to YKarma!
+          { false &&
+          <form onSubmit={this.props.handleSubmit(this.submitForm)}>
+            <Button type="submit">Submit</Button>
+          </form> }
+        </div>
       );
     }
+
     if (!this.props.user.ykid) {
       return (
         <div>Fetching account for { this.props.user.displayName || this.props.user.email }...</div>
       );
     }
+
     return (
       <Grid>
         <Row>
@@ -93,9 +102,15 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
+function mapDispatchToProps(dispatch) {
+  return {
+    setLoading: (active) => dispatch(setLoading(active)),
+  }
+}
+
 Home = reduxForm({
   form: 'give',
 })(Home);
 
 
-export default connect(mapStateToProps, null)(Home);
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
