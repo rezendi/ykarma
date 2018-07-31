@@ -1,8 +1,9 @@
 import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
-import { loadReward } from '../store/data/actions'
+import { loadReward, setLoading } from '../store/data/actions'
 import RewardForm from './RewardForm';
+import Api from '../store/Api';
 
 class Reward extends React.Component {
   componentDidMount() {
@@ -30,24 +31,20 @@ class Reward extends React.Component {
   };
 
   doPurchase = async () => {
-    var body = JSON.stringify({rewardId: this.props.reward.id});
-    var res = await fetch('/api/rewards/purchase', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: body,
-    });
-    
-    if (!res.ok) {
-      alert("Server error!");
-    } else {
-      var json = await res.json();
-      if (json.success) {
-        this.props.history.push('/user/rewards');
-      } else {
-        alert("Server failure! " + JSON.stringify(json));
+    this.props.setLoading(true);
+    Api.purchaseReward(this.props.reward.id).then((res) => {
+      this.props.setLoading(false);
+      if (!res.ok) {
+        return alert("Server error!");
       }
-    }
+      res.json().then(json => {;
+        if (json.success) {
+          this.props.history.push('/user/rewards');
+        } else {
+          alert("Server failure! " + JSON.stringify(json));
+        }
+      });
+    });
   };
 
   render() {
@@ -108,6 +105,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   return {
     loadReward: (rewardId) => dispatch(loadReward(rewardId)),
+    setLoading: (active) => dispatch(setLoading(active)),
   }
 }
 

@@ -1,4 +1,6 @@
-class Api {  
+class Api {
+  
+  /* Redux actions */
   static loadCommunities() {
     return fetch('/api/communities', { credentials: 'include'})
       .then(response => {
@@ -129,7 +131,84 @@ class Api {
     });
   }
 
+  /* Internal to components */
+  static giveKarma(ykid, values) {
+    return fetch('/api/accounts/give', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({
+        id:         ykid,
+        recipient:  values.recipient,
+        amount:     values.coins,
+        message:    values.message,
+      })
+    });
+  }
   
+  static updateAccount(values) {
+    return fetch('/api/accounts/update', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({
+        account: {
+          id: values.id,
+          metadata: {
+            name: values.name,
+          }
+        }
+      })
+    });
+  }
+  
+  static upsertCommunity(values) {
+    return fetch(values.id===0 ? '/api/communities/create' : '/api/communities/update', {
+      method: values.id===0 ? 'POST' : 'PUT',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({
+        community: {
+          id: values.id,
+          metadata: {
+            name: values.name,
+            description: values.description
+          }
+        }
+      })
+    });
+  }
+
+  static upsertReward(values) {
+    var body = JSON.stringify({
+      reward: {
+        id: values.id,
+        cost: parseInt(values.cost, 10),
+        quantity: parseInt(values.quantity, 10 ),
+        tag: values.tag,
+        metadata: {
+          name: values.name,
+          description: values.description,
+        },
+      }
+    });
+    return fetch(values.id===0 ? '/api/rewards/create' : '/api/rewards/update', {
+      method: values.id===0 ? 'POST' : 'PUT',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: body,
+    })
+  };
+  
+  static purchaseReward(rewardId) {
+    var body = JSON.stringify({rewardId: rewardId});
+    return fetch('/api/rewards/purchase', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: body,
+    });
+  }
 }
 
 export default Api;

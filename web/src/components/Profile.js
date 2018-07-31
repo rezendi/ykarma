@@ -5,8 +5,8 @@ import { Field, reduxForm } from 'redux-form';
 import { Link } from 'react-router-dom';
 import * as firebase from 'firebase'
 import { auth } from '../firebase';
+import { loadMyRewards, loadMyGifts, setLoading } from '../store/data/actions'
 import Api from '../store/Api';
-import { loadMyRewards, loadMyGifts } from '../store/data/actions'
 
 class Profile extends React.Component {
 
@@ -48,23 +48,10 @@ class Profile extends React.Component {
 
   editMetadata = async (values) => {
     console.log("Submitting form", values);
-    fetch('/api/accounts/update', {
-      method: 'PUT',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({
-        account: {
-          id: this.props.user.ykid,
-          metadata: { name: values.name},
-        }
-      })
-    })
-    .then(res => {
-      if (!res.ok) {
-        alert("Server error!");
-      } else {
-        window.location.reload();
-      }
+    this.props.setLoading(true);
+    Api.updateAccount(values).then((res) => {
+      this.props.setLoading(false);
+      !res.ok ? alert("Server error!") : window.location.reload();
     });
   }
 
@@ -197,6 +184,7 @@ function mapDispatchToProps(dispatch) {
   return {
     loadMyRewards: () => dispatch(loadMyRewards()),
     loadMyGifts: () => dispatch(loadMyGifts()),
+    setLoading: (active) => dispatch(setLoading(active)),
   }
 }
 

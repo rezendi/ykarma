@@ -3,30 +3,16 @@ import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
 import { setLoading } from '../store/data/actions'
+import Api from '../store/Api';
 
 class Home extends React.Component {
 
   submitForm = async (values) => {
+    // console.log("Submitting form", values);
     this.props.setLoading(true);
-    console.log("Submitting form", values);
-    fetch('/api/accounts/give', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({
-        id: this.props.user.ykid,
-        recipient: values.recipient,
-        amount: values.coins,
-        message: values.message,
-      })
-    })
-    .then(res => {
+    Api.giveKarma(this.props.user.ykid, values).then((res) => {
       this.props.setLoading(false);
-      if (!res.ok) {
-        alert("Server error!");
-      } else {
-        window.location.reload();
-      }
+      res.ok ? window.location.reload() : alert("Server error!");
     });
   }
 

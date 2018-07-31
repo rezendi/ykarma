@@ -4,44 +4,31 @@ import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
 import { accountReducer } from '../store/data/reducer'
+import { setLoading } from '../store/data/actions'
+import Api from '../store/Api';
 
 class AccountForm extends React.Component {
 
-  submitForm = async (values) => {
-    console.log("Submitting form", values);
-    var res = await fetch('/api/accounts/update', {
-      method: 'PUT',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({
-        account: {
-          id: values.id,
-          communityId: this.props.match.params.communityId,
-          urls: values.url,
-          metadata: {
-            name: values.name,
-          }
-        }
-      })
-    })
-    if (!res.ok) {
-      alert("Server error!");
-    } else {
-      var json = await res.json();
-      if (json.success) {
-        window.location.reload();
-      } else {
-        alert("Server failure! " + JSON.stringify(json));
+  submitForm = (values) => {
+    //console.log("Submitting form", values);
+    this.props.setLoading(true);
+    Api.updateAccount(values).then((res) => {
+      if (!res.ok) {
+       this.props.setLoading(false);
+       return alert("Server error!");
       }
-    }
+      res.json().then((json) => {
+        this.props.setLoading(false);
+        if (json.success) {
+          window.location.reload();
+        } else {
+          alert("Server failure! " + JSON.stringify(json));
+        }
+      });
+    });
   }
 
   render() {
-    let secondRow;
-    if (this.props.initialValues.id === 0) {
-      secondRow =  <Row><label htmlFor="url">URL</label><Field name="url" component="input" type="text"/></Row>;
-    }
-
     return (
       <Grid>
         <Row>
@@ -56,7 +43,6 @@ class AccountForm extends React.Component {
                     <label htmlFor="name">Name</label>
                     <Field name="name" component="input" type="text"/>
                   </Row>
-                  {secondRow}
                   <Row>
                     <Button type="submit">Submit</Button>
                   </Row>
@@ -74,15 +60,25 @@ AccountForm = reduxForm({
   form: 'account',
 })(AccountForm);
 
-AccountForm = connect(
-  state => ({
-    initialValues: {
+function mapStateToProps(state, ownProps) {
+  return { initialValues: {
       id: state.account.id || 0,
       url: state.account.urls,
       name: state.account.metadata.name,
     }
-  }),
-  {account: accountReducer}
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    account: accountReducer,
+    setLoading: (active) => dispatch(setLoading(active)),
+  }
+}
+
+AccountForm = connect(
+  mapStateToProps,
+  mapDispatchToProps
 )(AccountForm)
 
 export default withRouter(AccountForm);

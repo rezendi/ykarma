@@ -33,7 +33,8 @@ class Community extends React.Component {
         <CommunityForm community = {this.props.community} />
       );
     }
- 
+
+    // probably unnecessary now, but wait before deleting 
     if (parseInt(this.props.community.id, 10)===1 && parseInt(this.props.accounts.length, 10)===0) {
       fetch('/api/communities/setup', {
         method: 'GET',

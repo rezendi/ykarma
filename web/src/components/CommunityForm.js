@@ -2,35 +2,24 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
+import { setLoading } from '../store/data/actions'
+import Api from '../store/Api';
 
 class CommunityForm extends React.Component {
 
   submitForm = async (values) => {
-    console.log("Submitting form", values);
-    var res = await fetch(values.id===0 ? '/api/communities/create' : '/api/communities/update', {
-      method: values.id===0 ? 'POST' : 'PUT',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify({
-        community: {
-          id: values.id,
-          metadata: {
-            name: values.name,
-            description: values.description
-          }
-        }
-      })
-    })
-    if (!res.ok) {
-      alert("Server error!");
-    } else {
-      var json = await res.json();
-      if (json.success) {
-        this.props.history.push('/admin');
+    //console.log("Submitting form", values);
+    this.props.setLoading(true);
+    Api.upsertCommunity(values).then((res) => {
+      this.props.setLoading(false);
+      if (!res.ok) {
+        alert("Server error!");
       } else {
-        alert("Server failure! " + JSON.stringify(json));
+        res.json().then(json => {
+          json.success ? this.props.history.push('/admin') : alert("Server failure! " + JSON.stringify(json));
+        });
       }
-    }
+    });
   }
 
   render() {
@@ -79,4 +68,10 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
-export default connect(mapStateToProps, null)(CommunityForm);
+function mapDispatchToProps(dispatch) {
+  return {
+    setLoading: (active) => dispatch(setLoading(active)),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CommunityForm);

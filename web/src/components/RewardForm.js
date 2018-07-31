@@ -3,41 +3,27 @@ import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
+import { setLoading } from '../store/data/actions'
+import Api from '../store/Api';
 
 class RewardForm extends React.Component {
 
   submitForm = async (values) => {
-    var body = JSON.stringify({
-      reward: {
-        id: values.id,
-        cost: parseInt(values.cost, 10),
-        quantity: parseInt(values.quantity, 10 ),
-        tag: values.tag,
-        metadata: {
-          name: values.name,
-          description: values.description,
-        },
+    //console.log("submitting", body);
+    this.props.setLoading(true);
+    Api.upsertReward(values).then((res) => {
+      this.props.setLoading(false);
+      if (!res.ok) {
+        return alert("Server error!");
       }
+      res.json().then(json => {;
+        if (json.success) {
+          values.id===0 ? window.location.reload() : this.props.history.push('/user/rewards');
+        } else {
+          alert("Server failure! " + JSON.stringify(json));
+        }
+      });
     });
-    console.log("submitting", body);
-
-    var res = await fetch(values.id===0 ? '/api/rewards/create' : '/api/rewards/update', {
-      method: values.id===0 ? 'POST' : 'PUT',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: body,
-    });
-    
-    if (!res.ok) {
-      alert("Server error!");
-    } else {
-      var json = await res.json();
-      if (json.success) {
-        values.id===0 ? window.location.reload() : this.props.history.push('/user/rewards');
-      } else {
-        alert("Server failure! " + JSON.stringify(json));
-      }
-    }
   }
 
   render() {
@@ -104,10 +90,16 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
+function mapDispatchToProps(dispatch) {
+  return {
+    setLoading: (active) => dispatch(setLoading(active)),
+  }
+}
+
 RewardForm = reduxForm({
   form: 'account',
 })(RewardForm);
 
-RewardForm = connect(mapStateToProps, null)(RewardForm);
+RewardForm = connect(mapStateToProps, mapDispatchToProps)(RewardForm);
 
 export default withRouter(RewardForm);
