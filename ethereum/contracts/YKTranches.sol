@@ -3,11 +3,11 @@ pragma experimental ABIEncoderV2;
 
 import "./math/SafeMath.sol";
 import "./arachnid/strings.sol";
-import "./zeppelin/ownership/Ownable.sol";
+import "./Oracular.sol";
 import "./YKStructs.sol";
 
 //TODO SafeMath
-contract YKTranches is Ownable, YKStructs {
+contract YKTranches is Oracular, YKStructs {
   using strings for *;
   using SafeMath for uint256;
 
@@ -21,7 +21,7 @@ contract YKTranches is Ownable, YKStructs {
   uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
   uint256 GIVING_AMOUNT = 100;
 
-  function availableToGive(uint256 _id) public view onlyOwner returns (uint256) {
+  function availableToGive(uint256 _id) public view onlyOracle returns (uint256) {
     uint256 total = 0;
     for (uint256 i=0 ; i<giving[_id].amounts.length; i++) {
       total = total.add(giving[_id].amounts[i]);
@@ -29,7 +29,7 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function performGive(Account sender, Account recipient, uint256 _amount, string _tags, string _message) public onlyOwner {
+  function performGive(Account sender, Account recipient, uint256 _amount, string _tags, string _message) public onlyOracle {
     require (recipient.id > 0);
     uint256 accumulated;
     uint256[] storage amounts = giving[sender.id].amounts;
@@ -58,7 +58,7 @@ contract YKTranches is Ownable, YKStructs {
     maxTrancheId += 1;
   }
   
-  function availableToSpend(uint256 _id, string _tag) public view onlyOwner returns (uint256) {
+  function availableToSpend(uint256 _id, string _tag) public view onlyOracle returns (uint256) {
     uint256 total = 0;
     uint256[] storage trancheIds = received[_id];
     for (uint256 i=0; i < trancheIds.length; i++) {
@@ -70,7 +70,7 @@ contract YKTranches is Ownable, YKStructs {
     return total;
   }
   
-  function spend(uint256 _spenderId, uint256 _amount, string _tag) public onlyOwner {
+  function spend(uint256 _spenderId, uint256 _amount, string _tag) public onlyOracle {
     require (availableToSpend(_spenderId, _tag) >= _amount);
     uint256 accumulated;
     uint256[] storage trancheIds = received[_spenderId];
@@ -98,13 +98,13 @@ contract YKTranches is Ownable, YKStructs {
     return recipient.blocks[recipient.blocks.length-1];
   }
   
-  function replenish(uint256 _id) public onlyOwner {
+  function replenish(uint256 _id) public onlyOracle {
     Giving storage recipient = giving[_id];
     recipient.blocks.push(block.number);
     recipient.amounts.push(GIVING_AMOUNT);
   }
   
-  function recalculateBalances(uint256 _id) public onlyOwner {
+  function recalculateBalances(uint256 _id) public onlyOracle {
     Giving storage available = giving[_id];
     if (available.blocks.length == 0 || block.number < EXPIRY_WINDOW) {
       return;
@@ -135,11 +135,11 @@ contract YKTranches is Ownable, YKStructs {
     return !s3.empty();
   }
   
-  function givenToJSON(uint256 _id) public view onlyOwner returns (string) {
+  function givenToJSON(uint256 _id) public view onlyOracle returns (string) {
     return tranchesToJSON(_id, true);
   }
 
-  function receivedToJSON(uint256 _id) public view onlyOwner returns (string) {
+  function receivedToJSON(uint256 _id) public view onlyOracle returns (string) {
     return tranchesToJSON(_id, false);
   }
 

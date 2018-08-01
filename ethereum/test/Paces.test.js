@@ -14,10 +14,10 @@ contract('Paces', function(accounts) {
     let rewardData = await YKRewards.new();
     let ykarma = await YKarma.new(trancheData.address, accountData.address, communityData.address, rewardData.address);
     assert.notEqual(ykarma.address, 0, "Contract created");
-    await trancheData.transferOwnership(ykarma.address);
-    await accountData.transferOwnership(ykarma.address);
-    await communityData.transferOwnership(ykarma.address);
-    await rewardData.transferOwnership(ykarma.address);
+    await trancheData.addOracle(ykarma.address);
+    await accountData.addOracle(ykarma.address);
+    await communityData.addOracle(ykarma.address);
+    await rewardData.addOracle(ykarma.address);
 
     // add a little data
     await ykarma.addNewCommunity(accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');

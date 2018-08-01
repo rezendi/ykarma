@@ -2,10 +2,10 @@ pragma solidity 0.4.24;
 pragma experimental ABIEncoderV2;
 
 import "./arachnid/strings.sol";
-import "./zeppelin/ownership/Ownable.sol";
+import "./Oracular.sol";
 import "./YKStructs.sol";
 
-contract YKAccounts is Ownable, YKStructs {
+contract YKAccounts is Oracular, YKStructs {
   using strings for *;
 
   string DELIM = "||";
@@ -14,19 +14,19 @@ contract YKAccounts is Ownable, YKStructs {
   mapping(string => uint256) accountsByUrl;
   mapping(address => uint256) accountsByAddress;
   
-  function accountForId(uint256 _id) public onlyOwner view returns (Account) {
+  function accountForId(uint256 _id) public onlyOracle view returns (Account) {
     return accounts[_id];
   }
 
-  function accountIdForAddress(address _address) public onlyOwner view returns (uint256) {
+  function accountIdForAddress(address _address) public onlyOracle view returns (uint256) {
     return accountsByAddress[_address];
   }
 
-  function accountIdForUrl(string _url) public onlyOwner view returns (uint256) {
+  function accountIdForUrl(string _url) public onlyOracle view returns (uint256) {
     return accountsByUrl[_url];
   }
   
-  function addAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOwner returns (uint256) {
+  function addAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOracle returns (uint256) {
     require(urlIsValid(_url));
     Account memory account = Account({
       id:           maxAccountId + 1,
@@ -44,7 +44,7 @@ contract YKAccounts is Ownable, YKStructs {
     return maxAccountId;
   }
   
-  function addUrlToAccount(uint256 _accountId, string _url) public onlyOwner returns (bool) {
+  function addUrlToAccount(uint256 _accountId, string _url) public onlyOracle returns (bool) {
     require(urlIsValid(_url));
     require(accountIdForUrl(_url)==0);
     string memory urls = accounts[_accountId].urls;
@@ -58,7 +58,7 @@ contract YKAccounts is Ownable, YKStructs {
     return true;
   }
   
-  function editAccount(uint256 _id, address _newAddress, string _newMetadata, bytes32 _newFlags) public onlyOwner {
+  function editAccount(uint256 _id, address _newAddress, string _newMetadata, bytes32 _newFlags) public onlyOracle {
     if (_newAddress != accounts[_id].userAddress) {
       if (accounts[_id].userAddress != 0) {
         delete accountsByAddress[accounts[_id].userAddress];
@@ -72,7 +72,7 @@ contract YKAccounts is Ownable, YKStructs {
     accounts[_id].flags       = _newFlags;
   }
 
-  function removeUrlFromAccount(uint256 _id, string _oldUrl) public onlyOwner returns (bool) {
+  function removeUrlFromAccount(uint256 _id, string _oldUrl) public onlyOracle returns (bool) {
     strings.slice memory urls = accounts[_id].urls.toSlice();
     string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
     for(uint i = 0; i < separated.length; i++) {
@@ -92,7 +92,7 @@ contract YKAccounts is Ownable, YKStructs {
     return true;
   }
 
-  function deleteAccount(uint256 _id) public onlyOwner {
+  function deleteAccount(uint256 _id) public onlyOracle {
     strings.slice memory urls = accounts[_id].urls.toSlice();
     string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
     for(uint i = 0; i < separated.length; i++) {
@@ -109,15 +109,15 @@ contract YKAccounts is Ownable, YKStructs {
     return bytes(_url).length > 0;
   }
 
-  function addRewardToAccount(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
+  function addRewardToAccount(uint256 _vendorId, uint256 _rewardId) public onlyOracle {
     accounts[_vendorId].offerIds.push(_rewardId);
   }
 
-  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOwner {
+  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOracle {
     accounts[_spenderId].rewardIds.push(_rewardId);
   }
   
-  function deleteRewardFromAccount(uint256 _vendorId, uint256 _rewardId) public onlyOwner {
+  function deleteRewardFromAccount(uint256 _vendorId, uint256 _rewardId) public onlyOracle {
     Account storage vendor = accounts[_vendorId];
     bool found = false;
     for (uint i = 0; i < vendor.offerIds.length; i++) {

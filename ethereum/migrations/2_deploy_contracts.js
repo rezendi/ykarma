@@ -21,13 +21,13 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(YKRewards, {from : owner});
     await deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
     const ykt = await YKTranches.deployed();
-    await ykt.transferOwnership(YKarma.address, {from: owner});
+    await ykt.addOracle(YKarma.address, {from: owner});
     const yka = await YKAccounts.deployed();
-    await yka.transferOwnership(YKarma.address, {from : owner});
+    await yka.addOracle(YKarma.address, {from : owner});
     const ykc = await YKCommunities.deployed();
-    await ykc.transferOwnership(YKarma.address, {from : owner});
+    await ykc.addOracle(YKarma.address, {from : owner});
     const ykv = await YKRewards.deployed();
-    await ykv.transferOwnership(YKarma.address, {from : owner});
+    await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');

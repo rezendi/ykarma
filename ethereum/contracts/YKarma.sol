@@ -2,7 +2,6 @@ pragma solidity 0.4.24;
 pragma experimental ABIEncoderV2;
 
 import "./arachnid/strings.sol";
-import "./zeppelin/ownership/Ownable.sol";
 import "./Oracular.sol";
 import "./YKStructs.sol";
 import "./YKTranches.sol";
