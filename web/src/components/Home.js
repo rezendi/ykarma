@@ -16,7 +16,13 @@ class Home extends React.Component {
     });
   }
 
-  componentDidMount() {
+  totalSpendable() {
+    var total = 0;
+    const spendable = this.props.user.received || [];
+    for (var i=0; i < spendable.length; i++) {
+      total += parseInt(spendable[i].available, 10);
+    }
+    return total;
   }
 
   render() {
@@ -40,29 +46,32 @@ class Home extends React.Component {
     return (
       <Grid>
         <Row>
-          <Col md={6}>
+          <Col md={12}>
             <Panel>
               <Panel.Heading>
-                Home
+                Welcome
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy { this.props.user.email } you have { this.props.user.givable } karma available to give
-                </Row>
-                <Row>
-                  Spendable: { JSON.stringify(this.props.user.received) }
+                  Howdy { this.props.user.email }
                 </Row>
               </Panel.Body>
             </Panel>
           </Col>
+        </Row>
+        <Row>
           <Col md={6}>
             <Panel>
               <Panel.Heading>
                 Give
               </Panel.Heading>
               <Panel.Body>
+                <Row>
+                  You have { this.props.user.givable } karma available to give
+                </Row>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                   <Row>
+                    Give
                     <Field name="coins" component="input" type="text" size="7" placeholder="Number"/>
                     <label htmlFor="coins">coins</label>
                     &nbsp;
@@ -70,7 +79,7 @@ class Home extends React.Component {
                     <Field name="recipient" component="input" type="text" placeholder="Email or Twitter handle"/>
                     &nbsp;
                     <label htmlFor="message">saying</label>
-                    <Field name="message" component="input" type="text" size="28" maxLength="128" placeholder="Add an optional message here"/>
+                    <Field name="message" component="input" type="text" size="20" maxLength="128" placeholder="Optional message here"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
@@ -78,6 +87,59 @@ class Home extends React.Component {
                 </form>
               </Panel.Body>
             </Panel>
+          </Col>
+          <Col md={6}>
+            <Panel>
+              <Panel.Heading>
+                Spend
+              </Panel.Heading>
+              <Panel.Body>
+                <Row>
+                  You have { this.totalSpendable() } karma available to give
+                </Row>
+                <Row>
+                  By tag if relevant
+                </Row>
+                <Row>
+                  Top affordable reward
+                </Row>
+                <Row>
+                  Create a reward
+                </Row>
+              </Panel.Body>
+            </Panel>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={6}>
+            {this.props.user.given.length > 0 &&
+            <Panel>
+              <Panel.Heading>
+                Given
+              </Panel.Heading>
+              <Panel.Body>
+                {this.props.user.given.map((tranche, idx) =>
+                  <Row key={"sen"+idx}>
+                    <li>{JSON.stringify(tranche)}</li>
+                  </Row>
+                )}
+              </Panel.Body>
+            </Panel> }
+          </Col>
+          <Col md={6}>
+            {this.props.user.received.length > 0 &&
+            <Panel>
+              <Panel.Heading>
+                Received
+              </Panel.Heading>
+              <Panel.Body>
+                {this.props.user.received.map((tranche, idx) =>
+                  <Row key={"rec"+idx}>
+                    <li>{JSON.stringify(tranche)}</li>
+                  </Row>
+                )}
+              </Panel.Body>
+            </Panel> }
           </Col>
         </Row>
       </Grid>

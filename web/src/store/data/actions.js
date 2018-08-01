@@ -88,6 +88,9 @@ function getWebTestUser() {
 }
 
 export function fetchUser() {
+  if (true) {
+    return userFetched(getWebTestUser());
+  }
   if (auth.currentUser) {
     return fetchYkUser(auth.currentUser);
   }

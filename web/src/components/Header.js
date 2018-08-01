@@ -22,9 +22,9 @@ class Header extends React.Component {
           { !this.props.user || !this.props.user.uid ?
               <NavItem key='login' href='/login'> Login</NavItem>
           : [
-              <NavItem key='signout' href='/signOut'>Sign Out</NavItem>,
               <NavItem key='profile' href='/profile'>Profile</NavItem>,
-              <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>
+              <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>,
+              <NavItem key='signout' href='/signOut'>Sign Out</NavItem>,
           ]}
           { this.props.user && this.props.user.isAdmin ?
             [
