@@ -11,16 +11,16 @@ contract YKTranches is Oracular, YKStructs {
   using strings for *;
   using SafeMath for uint256;
 
+  uint256 EXPIRY_WINDOW = 20 * 60 * 24 * 120;
+  uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
+  uint256 GIVING_AMOUNT = 100;
+
   mapping(uint256 => Giving) giving;
   mapping(uint256 => Tranche) tranches;
   mapping(uint256 => uint256[]) given;
   mapping(uint256 => uint256[]) received;
   uint256 maxTrancheId = 1;
   
-  uint256 EXPIRY_WINDOW = 20 * 60 * 24 * 120;
-  uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
-  uint256 GIVING_AMOUNT = 100;
-
   function availableToGive(uint256 _id) public view onlyOracle returns (uint256) {
     uint256 total = 0;
     for (uint256 i=0 ; i<giving[_id].amounts.length; i++) {

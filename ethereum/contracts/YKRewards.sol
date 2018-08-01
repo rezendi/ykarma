@@ -8,6 +8,10 @@ contract YKRewards is Oracular, YKStructs {
   mapping(uint256 => Reward) rewards;
   uint256 maxRewardId;
 
+  function getMaxRewardId() public view returns (uint256) {
+    return maxRewardId;
+  }
+
   function rewardForId(uint256 _id) public onlyOracle view returns (Reward) {
     return rewards[_id];
   }

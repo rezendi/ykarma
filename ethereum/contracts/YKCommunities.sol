@@ -8,6 +8,10 @@ contract YKCommunities is Oracular, YKStructs {
   mapping(uint256 => Community) communities;
   uint256 public maxCommunityId;
   
+  function getMaxCommunityId() public view returns (uint256) {
+    return maxCommunityId;
+  }
+
   function communityForId(uint256 _id) public onlyOracle view returns (Community) {
     return communities[_id];
   }

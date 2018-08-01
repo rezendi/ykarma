@@ -9,11 +9,16 @@ contract YKAccounts is Oracular, YKStructs {
   using strings for *;
 
   string DELIM = "||";
+
   uint256 maxAccountId;
   mapping(uint256 => Account) accounts;
   mapping(string => uint256) accountsByUrl;
   mapping(address => uint256) accountsByAddress;
   
+  function getMaxAccountId() public view returns (uint256) {
+    return maxAccountId;
+  }
+
   function accountForId(uint256 _id) public onlyOracle view returns (Account) {
     return accounts[_id];
   }
