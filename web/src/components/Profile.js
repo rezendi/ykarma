@@ -67,7 +67,7 @@ class Profile extends React.Component {
     return (
       <Grid>
         <Row>
-          <Col md={12}>
+          <Col md={6}>
             <Panel>
               <Panel.Heading>
                 Home
@@ -75,23 +75,29 @@ class Profile extends React.Component {
               <Panel.Body>
                 <Row>
                   Howdy <b>{ this.props.user.metadata.name || this.props.user.displayName || "Nameless One" }</b>
-                  <p>
-                  { JSON.stringify(this.props.user) }
-                  </p>
-                  <p>
-                  { localStorage.getItem("additionalUserInfo") }
-                  &nbsp;
-                  { localStorage.getItem("additionalEmailInfo") }
-                  </p>
+                </Row>
+                <Row>
+                  { this.props.user.email}
+                </Row>
+                <Row>
+                  @{ this.props.user.handle}
                 </Row>
               </Panel.Body>
             </Panel>
-
             <Panel>
               <Panel.Heading>
                 Edit Profile
               </Panel.Heading>
               <Panel.Body>
+                <Row>
+                  <p>
+                  { JSON.stringify(this.props.user).length }
+                  &nbsp;
+                  { (localStorage.getItem("additionalUserInfo") || '').length }
+                  &nbsp;
+                  { (localStorage.getItem("additionalEmailInfo") || '').length }
+                  </p>
+                </Row>
                 <Row>
                   { !this.props.user.handle && <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
                   { this.props.user.email && this.props.user.handle &&
@@ -121,7 +127,8 @@ class Profile extends React.Component {
                 </form>
               </Panel.Body>
             </Panel>
-
+          </Col>
+          <Col md={6}>
             <Panel>
               <Panel.Heading>
                 My Rewards
@@ -135,20 +142,37 @@ class Profile extends React.Component {
                 )}
               </Panel.Body>
             </Panel>
+          </Col>
+        </Row>
 
+        <Row>
+          <Col md={6}>
             <Panel>
               <Panel.Heading>
                 My Giving
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.given.map((tranche, idx) =>
-                  <Row key={"gift"+idx}>
+                  <Row key={"sen"+idx}>
                     {JSON.stringify(tranche)}
                   </Row>
                 )}
               </Panel.Body>
             </Panel>
-
+          </Col>
+          <Col md={6}>
+            <Panel>
+              <Panel.Heading>
+                My Received
+              </Panel.Heading>
+              <Panel.Body>
+                {this.props.user.received.map((tranche, idx) =>
+                  <Row key={"rec"+idx}>
+                    {JSON.stringify(tranche)}
+                  </Row>
+                )}
+              </Panel.Body>
+            </Panel>
           </Col>
         </Row>
       </Grid>
