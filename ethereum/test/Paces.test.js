@@ -43,13 +43,13 @@ contract('Paces', function(accounts) {
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '60', "Giving happened");
     vals = await ykarma.accountForId(2);
-    assert.equal(JSON.parse(vals[9])["amounts"][0], 40, "Giving received");
+    assert.equal(JSON.parse(vals[9])[0]["amount"], 40, "Giving received");
     await ykarma.give(1, 'mailto:jay@rezendi.com', 20, "Another message");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '40', "Giving happened II");
-    assert.equal(""+vals[8], '{"recipients":[2,2],"amounts":[40,20],"messages":[1,2]}', "Giving recorded");
+    assert.equal(""+vals[8], '[{"sender":1,"receiver":2,"amount":40,"available":40,"message":"Just a message","tags":"cool"},{"sender":1,"receiver":2,"amount":20,"available":20,"message":"Another message","tags":"cool"}]', "Giving recorded");
     vals = await ykarma.accountForId(2);
-    assert.equal(JSON.parse(vals[9])["messages"][1], "2", "Giving received II");
+    assert.equal(JSON.parse(vals[9])[1]["message"], "Another message", "Giving received II");
     vals = await ykarma.accountForUrl("mailto:jay@rezendi.com");
     assert.equal(vals[0], 2, "Getting an account by URL");
     await ykarma.addUrlToExistingAccount(2, "https://twitter.com/jayrezendi");
@@ -99,12 +99,12 @@ contract('Paces', function(accounts) {
     
     // A successful purchase
     vals = await ykarma.accountForId(2);
-    assert.equal(JSON.parse(vals[9]).amounts[0], 40, "Karma ready to spend");
+    assert.equal(JSON.parse(vals[9])[0].available, 40, "Karma ready to spend");
     await ykarma.purchase(2, 2);
     vals = await ykarma.rewardForId(2);
     assert.equal(vals[2], 2, "Reward successfully transferred");
     vals = await ykarma.accountForId(2);
-    assert.equal(JSON.parse(vals[9]).amounts[0], 30, "Karma spent");
+    assert.equal(JSON.parse(vals[9])[0].available, 30, "Karma spent");
     
     await ykarma.deleteAccount(2);
     vals = await ykarma.accountForId(2);

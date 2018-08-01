@@ -12,10 +12,10 @@ contract YKTranches is Ownable, YKStructs {
   using SafeMath for uint256;
 
   mapping(uint256 => Giving) giving;
-  mapping(uint256 => Given) given;
-  mapping(uint256 => Spending) spending;
-  mapping(uint256 => string) messages;
-  uint256 maxMessageId = 1;
+  mapping(uint256 => Tranche) tranches;
+  mapping(uint256 => uint256[]) given;
+  mapping(uint256 => uint256[]) received;
+  uint256 maxTrancheId = 1;
   
   uint256 EXPIRY_WINDOW = 20 * 60 * 24 * 120;
   uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
@@ -44,31 +44,27 @@ contract YKTranches is Ownable, YKStructs {
       }
     }
     
-    // record message
-    messages[maxMessageId] = _message;
-    maxMessageId += 1;
-
-    // record for sender
-    given[sender.id].recipients.push(recipient.id);
-    given[sender.id].amounts.push(accumulated);
-    given[sender.id].messages.push(maxMessageId-1);
-    
-    // send to recipient
-    Spending storage receiver = spending[recipient.id];
-    receiver.senders.push(sender.id);
-    receiver.amounts.push(accumulated);
-    receiver.tags.push(_tags);
-    if (sendMessageOk(sender, recipient)) {
-      receiver.messages.push(maxMessageId-1);
-    }
+    Tranche memory tranche = Tranche({
+      sender: sender.id,
+      recipient: recipient.id,
+      amount: _amount,
+      available: _amount,
+      tags: _tags,
+      message: _message
+    });
+    tranches[maxTrancheId] = tranche;
+    given[sender.id].push(maxTrancheId);
+    received[recipient.id].push(maxTrancheId);
+    maxTrancheId += 1;
   }
   
   function availableToSpend(uint256 _id, string _tag) public view onlyOwner returns (uint256) {
     uint256 total = 0;
-    Spending storage available = spending[_id];
-    for (uint256 i=0; i < available.amounts.length; i++) {
-      if (tagsIncludesTag(available.tags[i], _tag)) {
-        total = total.add(available.amounts[i]);
+    uint256[] storage trancheIds = received[_id];
+    for (uint256 i=0; i < trancheIds.length; i++) {
+      Tranche storage tranche = tranches[trancheIds[i]];
+      if (tagsIncludesTag(tranche.tags, _tag)) {
+        total = total.add(tranche.available);
       }
     }
     return total;
@@ -77,19 +73,19 @@ contract YKTranches is Ownable, YKStructs {
   function spend(uint256 _spenderId, uint256 _amount, string _tag) public onlyOwner {
     require (availableToSpend(_spenderId, _tag) >= _amount);
     uint256 accumulated;
-    Spending storage available = spending[_spenderId];
-    uint256[] storage amounts = available.amounts;
-    for (uint i = 0; i < amounts.length; i++) {
-      if (!tagsIncludesTag(available.tags[i], _tag)) {
+    uint256[] storage trancheIds = received[_spenderId];
+    for (uint256 i=0; i < trancheIds.length; i++) {
+      Tranche storage tranche = tranches[trancheIds[i]];
+      if (!tagsIncludesTag(tranche.tags, _tag)) {
         continue;
       }
-      if (accumulated.add(amounts[i]) >= _amount) {
-        amounts[i] = amounts[i].sub(_amount.sub(accumulated));
+      if (accumulated.add(tranche.available) >= _amount) {
+        tranche.available = tranche.available.sub(_amount.sub(accumulated));
         accumulated = _amount;
         break;
       } else {
-        accumulated = accumulated.add(amounts[i]);
-        amounts[i] = 0;
+        accumulated = accumulated.add(tranche.available);
+        tranche.available = 0;
       }
     }
   }
@@ -129,10 +125,6 @@ contract YKTranches is Ownable, YKStructs {
     }
   }
   
-  function messageForId(uint256 _id) public onlyOwner returns (string) {
-    return messages[_id];
-  }
-
   function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
     strings.slice memory s1 = _tag.toSlice();
     if (s1.empty()) {
@@ -143,72 +135,51 @@ contract YKTranches is Ownable, YKStructs {
     return !s3.empty();
   }
   
-  function givenToJSON(uint256 _senderId) public view onlyOwner returns (string) {
-    Given storage record = given[_senderId];
-    uint256 min = 0;
-    uint256 max = record.recipients.length;
-    string memory recipients = uintArrayToJSONString(record.recipients, min, max);
-    string memory out = '{"recipients":';
-    out = out.toSlice().concat(recipients.toSlice());
-    out = out.toSlice().concat(',"amounts":'.toSlice());
-    string memory amounts = uintArrayToJSONString(record.amounts, min, max);
-    out = out.toSlice().concat(amounts.toSlice());
-    out = out.toSlice().concat(',"messages":'.toSlice());
-    string memory messageIds = uintArrayToJSONString(record.messages, min, max);
-    out = out.toSlice().concat(messageIds.toSlice());
-    out = out.toSlice().concat("}".toSlice());
+  function givenToJSON(uint256 _id) public view onlyOwner returns (string) {
+    return tranchesToJSON(_id, true);
+  }
+
+  function receivedToJSON(uint256 _id) public view onlyOwner returns (string) {
+    return tranchesToJSON(_id, false);
+  }
+
+  function tranchesToJSON(uint256 _id, bool sender) internal view returns (string) {
+    uint256[] memory trancheIds = sender ? given[_id] : received[_id];
+    string memory json = "[";
+    for (uint i = 0; i < trancheIds.length; i++) {
+      string memory trancheString = trancheToJSON(trancheIds[i]);
+      json = json.toSlice().concat(trancheString.toSlice());
+      if (i < trancheIds.length - 1) {
+        json = json.toSlice().concat(",".toSlice());
+      }
+    }
+    json = json.toSlice().concat("]".toSlice());
+    return json;
+  }
+
+  function trancheToJSON(uint256 _trancheId) internal view returns (string) {
+    Tranche memory tranche = tranches[_trancheId];
+    string memory out = '{"sender":';
+    string memory s = uint2str(tranche.sender);
+    out = out.toSlice().concat(s.toSlice());
+    out = out.toSlice().concat(',"receiver":'.toSlice());
+    s = uint2str(tranche.recipient);
+    out = out.toSlice().concat(s.toSlice());
+    out = out.toSlice().concat(',"amount":'.toSlice());
+    s = uint2str(tranche.amount);
+    out = out.toSlice().concat(s.toSlice());
+    out = out.toSlice().concat(',"available":'.toSlice());
+    s = uint2str(tranche.available);
+    out = out.toSlice().concat(s.toSlice());
+    //TODO handle quotes obv.
+    out = out.toSlice().concat(',"message":"'.toSlice());
+    out = out.toSlice().concat(tranche.message.toSlice());
+    out = out.toSlice().concat('","tags":"'.toSlice());
+    out = out.toSlice().concat(tranche.tags.toSlice());
+    out = out.toSlice().concat('"}'.toSlice());
     return out;
   }
 
-  function spendingToJSON(uint256 _spenderId) public view onlyOwner returns (string) {
-    Spending storage available = spending[_spenderId];
-    uint256 min = 0;
-    uint256 max = available.amounts.length;
-    string memory senders = uintArrayToJSONString(available.senders, min, max);
-    string memory out = '{"senders":';
-    out = out.toSlice().concat(senders.toSlice());
-    out = out.toSlice().concat(',"amounts":'.toSlice());
-    string memory amounts = uintArrayToJSONString(available.amounts, min, max);
-    out = out.toSlice().concat(amounts.toSlice());
-    out = out.toSlice().concat(',"messages":'.toSlice());
-    string memory messageIds = uintArrayToJSONString(available.messages, min, max);
-    out = out.toSlice().concat(messageIds.toSlice());
-    out = out.toSlice().concat(',"tags":'.toSlice());
-    string memory tags = StringArrayToJSONString(available.tags, min, max);
-    out = out.toSlice().concat(tags.toSlice());
-    out = out.toSlice().concat("}".toSlice());
-    return out;
-  }
-
-  function uintArrayToJSONString(uint256[] _in, uint256 _min, uint256 _max) public pure returns (string) {
-    string memory out = "[";
-    for (uint i = _min; i < _max; i++) {
-      string memory s = uint2str(_in[i]);
-      out = out.toSlice().concat(s.toSlice());
-      if (i < _max - 1) {
-        out = out.toSlice().concat(",".toSlice());
-      }
-    }
-    out = out.toSlice().concat("]".toSlice());
-    return out;
-  }
-  
-  //TODO handle quotes obv.
-  function StringArrayToJSONString(string[] _in, uint256 _min, uint256 _max) public pure returns (string) {
-    string memory out = "[";
-    for (uint i = _min; i < _max; i++) {
-      out = out.toSlice().concat('"'.toSlice());
-      out = out.toSlice().concat(_in[i].toSlice());
-      if (i < _max - 1) {
-        out = out.toSlice().concat('",'.toSlice());
-      } else {
-        out = out.toSlice().concat('"'.toSlice());
-      }
-    }
-    out = out.toSlice().concat("]".toSlice());
-    return out;
-  }
-  
   function uint2str(uint i) internal pure returns (string) {
     if (i == 0) return "0";
     uint j = i;

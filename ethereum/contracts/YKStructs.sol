@@ -7,19 +7,15 @@ contract YKStructs {
     uint256[] blocks;
   }
 
-  struct Given {
-    uint256[] recipients;
-    uint256[] amounts;
-    uint256[] messages;
+  struct Tranche {
+    uint256 sender;
+    uint256 recipient;
+    uint256 amount;
+    uint256 available;
+    string message;
+    string tags;
   }
 
-  struct Spending {
-    uint256[] senders;
-    uint256[] amounts;
-    uint256[] messages;
-    string[] tags;
-  }
-  
   struct Account {
     uint256 id;
     uint256 communityId;

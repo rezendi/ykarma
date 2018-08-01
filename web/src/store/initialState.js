@@ -9,5 +9,4 @@ export default {
   reward: {},
   myGifts: [],
   loading: false,
-  messages: {},
 }

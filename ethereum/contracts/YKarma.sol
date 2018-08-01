@@ -86,10 +86,6 @@ contract YKarma is Oracular, YKStructs {
     return trancheData.lastReplenished(_accountId);
   }
 
-  function messageForId(uint256 _id) public view returns (string) {
-    return trancheData.messageForId(_id);
-  }
-
   /**
    * Community methods
    */
@@ -146,7 +142,7 @@ contract YKarma is Oracular, YKStructs {
     Community memory community = communityData.communityForId(a.communityId);
     require (community.adminAddress == msg.sender || senderIsOracle());
     return (a.id, a.communityId, a.userAddress, a.flags, a.metadata, a.urls, a.rewardIds.length,
-            trancheData.availableToGive(a.id), trancheData.givenToJSON(a.id), trancheData.spendingToJSON(a.id));
+            trancheData.availableToGive(a.id), trancheData.givenToJSON(a.id), trancheData.receivedToJSON(a.id));
   }
   
   function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {

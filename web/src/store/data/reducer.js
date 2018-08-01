@@ -108,12 +108,3 @@ export function myGiftsReducer(state = initialState.myGifts, action) {
       return state
   }
 }
-
-export function messagesReducer(state = initialState.messages, action) {
-  switch (action.type) {
-    case types.FETCH_MESSAGES:
-      return action.messages || {};
-    default:
-      return state
-  }
-}

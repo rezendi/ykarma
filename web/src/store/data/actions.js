@@ -81,8 +81,8 @@ function getWebTestUser() {
       id: 99,
       metadata: { name: "Tester User" },
       givable: 100,
-      given: { "amounts": ["10"], "recipients": ["77"], "messages": ["1"] },
-      received: { "amounts": ["10", "20"], "senders": ["77","88"], "messages": ["2","3"], "tags":["alpha","alpha"] },
+      given: [{"sender":99,"receiver":2,"amount":40,"available":10,"message":"OK howdy","tags":"cool"}],
+      received: [{"sender":1,"receiver":99,"amount":40,"available":40,"message":"Just a message","tags":"cool"},{"sender":1,"receiver":99,"amount":20,"available":20,"message":"Another message","tags":"cool"}],
     }
   }  
 }
@@ -99,7 +99,7 @@ export function fetchUser() {
 }
 
 export function fetchYkUser(user) {
-  if (false) {
+  if (true) {
     return userFetched(getWebTestUser());
   }
   if (user === null) {
@@ -221,20 +221,3 @@ export function setLoading(active) {
 export function loadingSet(active) {
   return { type: types.LOADING, active};
 }
-
-export function fetchMessages(messageIds) {  
-  return function(dispatch) {
-    return Api.fetchMessages(messageIds).then(result => {
-      return result.json().then(json => {
-        dispatch(fetchMessagesSuccess(json.messages));
-      });
-    }).catch(error => {
-      throw(error);
-    });
-  };
-}
-
-export function fetchMessagesSuccess(gifts) {
-  return { type: types.FETCH_MESSAGES, gifts};
-}
-
