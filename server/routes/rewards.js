@@ -35,6 +35,12 @@ router.get('/my', function(req, res, next) {
   return getListOfRewards(1, req.session.ykid, res);
 });
 
+/* GET my rewards vended list */
+router.get('/vended', function(req, res, next) {
+  console.log("getting rewards vended by", req.session.ykid);
+  return getListOfRewards(2, req.session.ykid, res);
+});
+
 /* GET rewards owned list */
 router.get('/ownedBy/:accountId', function(req, res, next) {
   const ownerId = parseInt(req.params.accountId);
@@ -42,11 +48,11 @@ router.get('/ownedBy/:accountId', function(req, res, next) {
   return getListOfRewards(1, ownerId, res);
 });
 
-/* GET my rewards vended list */
+/* GET rewards vended list */
 router.get('/vendedBy/:accountId', function(req, res, next) {
-  const vendorId = parseInt(req.params.accountId);
-  console.log("getting rewards vended by", vendorId);
-  return getListOfRewards(2, vendorId, res);
+  const ownerId = parseInt(req.params.accountId);
+  console.log("getting rewards vended by", ownerId);
+  return getListOfRewards(2, ownerId, res);
 });
 
 function getListOfRewards(idType, id, res) {

@@ -98,8 +98,19 @@ class Api {
     });
   }
 
-  static loadMyRewards() {
+  static loadOwnedRewards() {
     return fetch('/api/rewards/my', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
+  static loadVendedRewards() {
+    return fetch('/api/rewards/vended', {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },

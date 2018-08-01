@@ -153,8 +153,11 @@ export function loadAvailableRewards() {
   return function(dispatch) {
     return firebase.auth.onAuthStateChanged(user => {
       return Api.loadAvailableRewards().then(result => {
+          if (!result.ok) {
+            return loadAvailableRewardsSuccess([]);
+          }
         return result.json().then(json => {
-          dispatch(loadRewardsSuccess(json.rewards));
+          dispatch(loadAvailableRewardsSuccess(json.rewards));
         });
       }).catch(error => {
         throw(error);
@@ -163,18 +166,18 @@ export function loadAvailableRewards() {
   };
 }
 
-export function loadRewardsSuccess(rewards) {
-  return { type: types.LOAD_REWARDS_SUCCESS, rewards};
+export function loadAvailableRewardsSuccess(rewards) {
+  return { type: types.LOAD_AVAILABLE_REWARDS_SUCCESS, rewards};
 }
 
-export function loadMyRewards() {
+export function loadOwnedRewards() {
   return function(dispatch) {
-    return Api.loadMyRewards().then(result => {
+    return Api.loadOwnedRewards().then(result => {
       if (!result.ok) {
-        return loadMyRewardsSuccess([]);
+        return loadOwnedRewardsSuccess([]);
       }
       return result.json().then(json => {
-        dispatch(loadMyRewardsSuccess(json.rewards));
+        dispatch(loadOwnedRewardsSuccess(json.rewards));
       });
     }).catch(error => {
       throw(error);
@@ -182,8 +185,27 @@ export function loadMyRewards() {
   };
 }
 
-export function loadMyRewardsSuccess(rewards) {
-  return { type: types.LOAD_MY_REWARDS_SUCCESS, rewards};
+export function loadOwnedRewardsSuccess(rewards) {
+  return { type: types.LOAD_OWNED_REWARDS_SUCCESS, rewards};
+}
+
+export function loadVendedRewards() {
+  return function(dispatch) {
+    return Api.loadVendedRewards().then(result => {
+      if (!result.ok) {
+        return loadVendedRewardsSuccess([]);
+      }
+      return result.json().then(json => {
+        dispatch(loadVendedRewardsSuccess(json.rewards));
+      });
+    }).catch(error => {
+      throw(error);
+    });
+  };
+}
+
+export function loadVendedRewardsSuccess(rewards) {
+  return { type: types.LOAD_VENDED_REWARDS_SUCCESS, rewards};
 }
 
 export function loadReward(rewardId) {

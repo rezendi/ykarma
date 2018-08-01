@@ -5,8 +5,11 @@ export default {
   accounts: [],
   account: { metadata: {}},
   myRewards: [],
-  rewards: [],
-  reward: {},
-  myGifts: [],
+  rewards: {
+    available: [],
+    owned: [],
+    vended: [],
+    reward: {}
+  },
   loading: false,
 }

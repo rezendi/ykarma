@@ -75,26 +75,14 @@ export function userReducer(state = initialState.user, action) {
 
 export function rewardsReducer(state = initialState.rewards, action) {
   switch (action.type) {
-    case types.LOAD_REWARDS_SUCCESS:
-      return action.rewards || [];
-    default:
-      return state
-  }
-}
-
-export function rewardReducer(state = initialState.reward, action) {
-  switch (action.type) {
+    case types.LOAD_AVAILABLE_REWARDS_SUCCESS:
+      return { ...state, available: action.rewards };
+    case types.LOAD_OWNED_REWARDS_SUCCESS:
+      return { ...state, owned: action.rewards };
+    case types.LOAD_VENDED_REWARDS_SUCCESS:
+      return { ...state, vended: action.rewards };
     case types.LOAD_REWARD_SUCCESS:
-      return action.reward || {};
-    default:
-      return state
-  }
-}
-
-export function myRewardsReducer(state = initialState.myRewards, action) {
-  switch (action.type) {
-    case types.LOAD_MY_REWARDS_SUCCESS:
-      return action.rewards || [];
+      return { ...state, reward: action.reward };
     default:
       return state
   }

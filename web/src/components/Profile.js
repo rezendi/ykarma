@@ -5,10 +5,15 @@ import { Field, reduxForm } from 'redux-form';
 import { Link } from 'react-router-dom';
 import * as firebase from 'firebase'
 import { auth } from '../firebase';
-import { loadMyRewards, setLoading } from '../store/data/actions'
+import { loadOwnedRewards, loadVendedRewards, setLoading } from '../store/data/actions'
 import Api from '../store/Api';
 
 class Profile extends React.Component {
+
+  componentDidMount() {
+    this.props.loadOwnedRewards();
+    this.props.loadVendedRewards();
+  }
 
   addTwitter = () => {
     var provider = new firebase.auth.TwitterAuthProvider();
@@ -59,11 +64,6 @@ class Profile extends React.Component {
     if (!this.props.user.uid) {
       return (<div>Loading...</div>)
     }
-    if (this.props.myRewards.length === 0 && !this.loadedRewards) {
-      this.props.loadMyRewards();
-      this.loadedRewards = true;
-    }
-    const myRewards = this.props.myRewards || [];
     return (
       <Grid>
         <Row>
@@ -84,6 +84,8 @@ class Profile extends React.Component {
                 </Row>
               </Panel.Body>
             </Panel>
+          </Col>
+          <Col md={6}>
             <Panel>
               <Panel.Heading>
                 Edit Profile
@@ -128,13 +130,31 @@ class Profile extends React.Component {
               </Panel.Body>
             </Panel>
           </Col>
+        </Row>
+
+        <Row>
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Rewards
+                Offered Rewards
               </Panel.Heading>
               <Panel.Body>
-                {myRewards.map(reward =>
+                {this.props.vendedRewards.map(reward =>
+                  <Row key={reward.id}>
+                    <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
+                    <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
+                  </Row>
+                )}
+              </Panel.Body>
+            </Panel>
+          </Col>
+          <Col md={6}>
+            <Panel>
+              <Panel.Heading>
+                Owned Rewards
+              </Panel.Heading>
+              <Panel.Body>
+                {this.props.ownedRewards.map(reward =>
                   <Row key={reward.id}>
                     <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
                     <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
@@ -149,11 +169,11 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Giving
+                My Received
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given.map((tranche, idx) =>
-                  <Row key={"sen"+idx}>
+                {this.props.user.received.map((tranche, idx) =>
+                  <Row key={"rec"+idx}>
                     {JSON.stringify(tranche)}
                   </Row>
                 )}
@@ -163,11 +183,11 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Received
+                My Giving
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received.map((tranche, idx) =>
-                  <Row key={"rec"+idx}>
+                {this.props.user.given.map((tranche, idx) =>
+                  <Row key={"sen"+idx}>
                     {JSON.stringify(tranche)}
                   </Row>
                 )}
@@ -193,14 +213,15 @@ Profile = connect(
 function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
-    myRewards: state.myRewards || [],
-    myGifts: state.myGifts || [],
+    ownedRewards: state.rewards.owned || [],
+    vendedRewards: state.rewards.vended || [],
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    loadMyRewards: () => dispatch(loadMyRewards()),
+    loadVendedRewards: () => dispatch(loadVendedRewards()),
+    loadOwnedRewards: () => dispatch(loadOwnedRewards()),
     setLoading: (active) => dispatch(setLoading(active)),
   }
 }
