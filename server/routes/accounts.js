@@ -402,7 +402,7 @@ function getAccountFromResult(result) {
     rewards:      result[6],
     givable:      result[7],
     given:        JSON.parse(result[8] || '{}'),
-    spendable:    JSON.parse(result[9] || '{}'),
+    received:     JSON.parse(result[9] || '{}'),
   };
 }
 

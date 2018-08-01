@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
-import { setLoading } from '../store/data/actions'
+import { setLoading, fetchMessages } from '../store/data/actions'
 import Api from '../store/Api';
 
 class Home extends React.Component {
@@ -14,6 +14,9 @@ class Home extends React.Component {
       this.props.setLoading(false);
       res.ok ? window.location.reload() : alert("Server error!");
     });
+  }
+
+  componentDidMount() {
   }
 
   render() {
@@ -34,6 +37,8 @@ class Home extends React.Component {
       );
     }
 
+    if (this.props.user.givable && this.props.user.sent)
+    this.props.fetchMessages(this.props.user.givable.messages.concat);
     return (
       <Grid>
         <Row>
@@ -47,7 +52,7 @@ class Home extends React.Component {
                   Howdy { this.props.user.email } you have { this.props.user.givable } karma available to give
                 </Row>
                 <Row>
-                  Spendable: { JSON.stringify(this.props.user.spendable) }
+                  Spendable: { JSON.stringify(this.props.user.received) }
                 </Row>
               </Panel.Body>
             </Panel>
@@ -91,6 +96,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   return {
     setLoading: (active) => dispatch(setLoading(active)),
+    fetchMessages: () => dispatch(fetchMessages()),
   }
 }
 

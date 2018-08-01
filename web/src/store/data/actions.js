@@ -69,6 +69,24 @@ export function loadAccountSuccess(account) {
 
 // User
 
+function getWebTestUser() {
+  return {
+    displayName: "Test User",
+    email: "test@rezendi.com",
+    emailVerified: true,
+    uid: "test",
+    handle: "testuser",
+    providerData: "password",
+    yk: {
+      id: 99,
+      metadata: { name: "Tester User" },
+      givable: 100,
+      given: { "amounts": ["10"], "recipients": ["77"], "messages": ["1"] },
+      received: { "amounts": ["10", "20"], "senders": ["77","88"], "messages": ["2","3"], "tags":["alpha","alpha"] },
+    }
+  }  
+}
+
 export function fetchUser() {
   if (auth.currentUser) {
     return fetchYkUser(auth.currentUser);
@@ -81,6 +99,9 @@ export function fetchUser() {
 }
 
 export function fetchYkUser(user) {
+  if (false) {
+    return userFetched(getWebTestUser());
+  }
   if (user === null) {
     return userFetched(user);
   }
@@ -200,3 +221,20 @@ export function setLoading(active) {
 export function loadingSet(active) {
   return { type: types.LOADING, active};
 }
+
+export function fetchMessages(messageIds) {  
+  return function(dispatch) {
+    return Api.fetchMessages(messageIds).then(result => {
+      return result.json().then(json => {
+        dispatch(fetchMessagesSuccess(json.messages));
+      });
+    }).catch(error => {
+      throw(error);
+    });
+  };
+}
+
+export function fetchMessagesSuccess(gifts) {
+  return { type: types.FETCH_MESSAGES, gifts};
+}
+

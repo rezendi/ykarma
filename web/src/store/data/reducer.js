@@ -62,7 +62,7 @@ export function userReducer(state = initialState.user, action) {
         metadata: action.user.yk ? action.user.yk.metadata : null,
         givable: action.user.yk ? action.user.yk.givable : 0,
         given: action.user.yk ? action.user.yk.given : {},
-        spendable: action.user.yk ? action.user.yk.spendable : {},
+        received: action.user.yk ? action.user.yk.received : {},
       }
     case types.TWITTER_ADDED:
       return { ...state, handle: action.handle }
@@ -104,6 +104,15 @@ export function myGiftsReducer(state = initialState.myGifts, action) {
   switch (action.type) {
     case types.LOAD_MY_GIFTS_SUCCESS:
       return action.gifts || [];
+    default:
+      return state
+  }
+}
+
+export function messagesReducer(state = initialState.messages, action) {
+  switch (action.type) {
+    case types.FETCH_MESSAGES:
+      return action.messages || {};
     default:
       return state
   }

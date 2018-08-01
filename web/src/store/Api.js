@@ -131,6 +131,18 @@ class Api {
     });
   }
 
+  static fetchMessages(messageIds) {
+    return fetch('/api/accounts/translateMessageIds', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({ messageIds: messageIds })
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
   /* Internal to components */
   static giveKarma(ykid, values) {
     return fetch('/api/accounts/give', {

@@ -127,20 +127,6 @@ contract YKTranches is Ownable, YKStructs {
       available.amounts.push(GIVING_AMOUNT);
       lastBlock = lastBlock.add(REFRESH_WINDOW);
     }
-    uint256 tranchesToDelete = 0;
-    for (uint256 j=0; j < available.amounts.length; j++) {
-      if (available.amounts[j] == 0) {
-        tranchesToDelete++;
-      } else {
-        break;
-      }
-    }
-    for (uint256 k=0; k < tranchesToDelete; k++) {
-      available.amounts[k] = available.amounts[k+tranchesToDelete];
-      delete available.amounts[available.amounts.length-1];
-      available.blocks[k] = available.blocks[k+tranchesToDelete];
-      delete available.blocks[available.blocks.length-1];
-    }
   }
   
   function messageForId(uint256 _id) public onlyOwner returns (string) {

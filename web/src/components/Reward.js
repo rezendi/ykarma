@@ -16,15 +16,15 @@ class Reward extends React.Component {
   };
   
   getSpendable = () => {
-    if (!this.props.user.spendable || !this.props.user.spendable.tags) {
+    if (!this.props.user.received || !this.props.user.received.tags) {
       return "nada";
     }
     var spendable = 0;
-    const tags = this.props.user.spendable.tags;
+    const tags = this.props.user.received.tags;
     const tag = this.props.reward.tag;
     for (var i=0; i < tags.length; i++) {
       if (tags[i].indexOf(tag) >= 0) {
-        spendable += this.props.user.spendable.amounts[i];
+        spendable += this.props.user.received.amounts[i];
       }
     }
     return spendable;
