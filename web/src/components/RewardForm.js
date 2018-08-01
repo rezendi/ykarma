@@ -28,44 +28,38 @@ class RewardForm extends React.Component {
 
   render() {
     return (
-      <Grid>
-        <Row>
-          <Col md={12}>
-            <Panel>
-              <Panel.Heading>
-                New Reward
-              </Panel.Heading>
-              <Panel.Body>
-                <form onSubmit={this.props.handleSubmit(this.submitForm)}>
-                  <Row>
-                    <label htmlFor="name">Name</label>
-                    <Field name="name" component="input" type="text"/>
-                  </Row>
-                  <Row>
-                    <label htmlFor="description">Description</label>
-                    <Field name="description" component="input" type="textarea"/>
-                  </Row>
-                  <Row>
-                    <label htmlFor="cost">Cost</label>
-                    <Field name="cost" component="input" type="text"/>
-                  </Row>
-                  <Row>
-                    <label htmlFor="quantity">Quantity</label>
-                    <Field name="quantity" component="input" type="text"/>
-                  </Row>
-                  <Row>
-                    <label htmlFor="tag">Tag</label>
-                    <Field name="tag" component="input" type="text"/>
-                  </Row>
-                  <Row>
-                    <Button type="submit">Submit</Button>
-                  </Row>
-                </form>
-              </Panel.Body>
-            </Panel>
-          </Col>
-        </Row>
-      </Grid>
+      <Panel>
+        <Panel.Heading>
+          New Reward
+        </Panel.Heading>
+        <Panel.Body>
+          <form onSubmit={this.props.handleSubmit(this.submitForm)}>
+            <Row>
+              <label htmlFor="name">Name</label>
+              <Field name="name" component="input" type="text"/>
+            </Row>
+            <Row>
+              <label htmlFor="description">Description</label>
+              <Field name="description" component="input" type="textarea"/>
+            </Row>
+            <Row>
+              <label htmlFor="cost">Cost</label>
+              <Field name="cost" component="input" type="text"/>
+            </Row>
+            <Row>
+              <label htmlFor="quantity">Quantity</label>
+              <Field name="quantity" component="input" type="text"/>
+            </Row>
+            <Row>
+              <label htmlFor="tag">Tag</label>
+              <Field name="tag" component="input" type="text"/>
+            </Row>
+            <Row>
+              <Button type="submit">Submit</Button>
+            </Row>
+          </form>
+        </Panel.Body>
+      </Panel>
     );
   }
 }

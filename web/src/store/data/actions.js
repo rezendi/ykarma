@@ -170,6 +170,9 @@ export function loadRewardsSuccess(rewards) {
 export function loadMyRewards() {
   return function(dispatch) {
     return Api.loadMyRewards().then(result => {
+      if (!result.ok) {
+        return loadMyRewardsSuccess([]);
+      }
       return result.json().then(json => {
         dispatch(loadMyRewardsSuccess(json.rewards));
       });
@@ -197,22 +200,6 @@ export function loadReward(rewardId) {
 
 export function loadRewardSuccess(reward) {
   return { type: types.LOAD_REWARD_SUCCESS, reward};
-}
-
-export function loadMyGifts(recipientIds) {
-  return function(dispatch) {
-    return Api.loadMyGifts(recipientIds).then(result => {
-      return result.json().then(json => {
-        dispatch(loadMyGiftsSuccess(json.gifts));
-      });
-    }).catch(error => {
-      throw(error);
-    });
-  };
-}
-
-export function loadMyGiftsSuccess(gifts) {
-  return { type: types.LOAD_MY_GIFTS_SUCCESS, gifts};
 }
 
 export function setLoading(active) {

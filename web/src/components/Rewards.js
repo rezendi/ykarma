@@ -19,7 +19,7 @@ class Rewards extends React.Component {
             <Col md={12}>
               <Panel>
                 <Panel.Heading>
-                  Available
+                  Available Rewards
                 </Panel.Heading>
                 <Panel.Body>
                   {rewards.map(reward => parseInt(reward.ownerId, 10) === 0 && parseInt(reward.vendorId, 10) !== this.props.user.ykid &&
@@ -30,9 +30,13 @@ class Rewards extends React.Component {
                   )}
                 </Panel.Body>
               </Panel>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
               <Panel>
                 <Panel.Heading>
-                  Mine (offered)
+                  Rewards you have offered
                 </Panel.Heading>
                 <Panel.Body>
                   {rewards.map(reward => parseInt(reward.vendorId, 10) !== this.props.user.ykid &&
@@ -43,6 +47,8 @@ class Rewards extends React.Component {
                   )}
                 </Panel.Body>
               </Panel>
+            </Col>
+            <Col md={6}>
               <RewardForm reward = {{}}/>
             </Col>
           </Row>

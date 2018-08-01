@@ -99,12 +99,3 @@ export function myRewardsReducer(state = initialState.myRewards, action) {
       return state
   }
 }
-
-export function myGiftsReducer(state = initialState.myGifts, action) {
-  switch (action.type) {
-    case types.LOAD_MY_GIFTS_SUCCESS:
-      return action.gifts || [];
-    default:
-      return state
-  }
-}

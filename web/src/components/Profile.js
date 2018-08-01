@@ -5,7 +5,7 @@ import { Field, reduxForm } from 'redux-form';
 import { Link } from 'react-router-dom';
 import * as firebase from 'firebase'
 import { auth } from '../firebase';
-import { loadMyRewards, loadMyGifts, setLoading } from '../store/data/actions'
+import { loadMyRewards, setLoading } from '../store/data/actions'
 import Api from '../store/Api';
 
 class Profile extends React.Component {
@@ -63,12 +63,7 @@ class Profile extends React.Component {
       this.props.loadMyRewards();
       this.loadedRewards = true;
     }
-    if (this.props.user.given && this.props.myGifts.length === 0 && !this.loadedGifts) {
-      this.props.loadMyGifts(Array.from(new Set(this.props.user.given.recipients)));
-      this.loadedGifts = true;
-    }
     const myRewards = this.props.myRewards || [];
-    const myGifts = this.props.myGifts || [];
     return (
       <Grid>
         <Row>
@@ -146,10 +141,9 @@ class Profile extends React.Component {
                 My Giving
               </Panel.Heading>
               <Panel.Body>
-                {JSON.stringify(this.props.user.given)}
-                {myGifts.map(gift =>
-                  <Row key={gift.id}>
-                    {JSON.stringify(gift)}
+                {this.props.user.given.map((tranche, idx) =>
+                  <Row key={"gift"+idx}>
+                    {JSON.stringify(tranche)}
                   </Row>
                 )}
               </Panel.Body>
@@ -183,7 +177,6 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   return {
     loadMyRewards: () => dispatch(loadMyRewards()),
-    loadMyGifts: () => dispatch(loadMyGifts()),
     setLoading: (active) => dispatch(setLoading(active)),
   }
 }
