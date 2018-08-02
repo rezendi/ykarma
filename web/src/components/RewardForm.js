@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import { Row, Panel, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';

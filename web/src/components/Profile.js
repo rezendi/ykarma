@@ -79,9 +79,18 @@ class Profile extends React.Component {
                 <Row>
                   { this.props.user.email}
                 </Row>
+                { this.props.user.handle &&
                 <Row>
                   @{ this.props.user.handle}
-                </Row>
+                </Row> }
+                { this.props.user.handle &&
+                <Row>
+                  @{this.props.user.photoURL}
+                </Row> }
+                { this.props.user.photoURL &&
+                <Row>
+                  <img src={this.props.user.photoURL}/>
+                </Row> }
               </Panel.Body>
             </Panel>
           </Col>
@@ -92,13 +101,11 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  <p>
-                  { JSON.stringify(this.props.user).length }
-                  &nbsp;
-                  { (localStorage.getItem("additionalUserInfo") || '').length }
-                  &nbsp;
-                  { (localStorage.getItem("additionalEmailInfo") || '').length }
-                  </p>
+                <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
+                    <label htmlFor="name">Name</label>
+                    <Field name="name" component="input" type="text"/>
+                    <Button type="submit">Submit</Button>
+                </form>
                 </Row>
                 <Row>
                   { !this.props.user.handle && <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
@@ -118,15 +125,14 @@ class Profile extends React.Component {
                   <Button type="submit" onClick={this.removeEmail}>Remove Email</Button>
                 </Row> }
                 <Row>
-                  Edit Metadata
+                  <p>
+                  { JSON.stringify(this.props.user).length }
+                  &nbsp;
+                  { (localStorage.getItem("additionalUserInfo") || '').length }
+                  &nbsp;
+                  { (localStorage.getItem("additionalEmailInfo") || '').length }
+                  </p>
                 </Row>
-                <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
-                  <Row>
-                    <label htmlFor="name">Name</label>
-                    <Field name="name" component="input" type="text"/>
-                    <Button type="submit">Submit</Button>
-                  </Row>
-                </form>
               </Panel.Body>
             </Panel>
           </Col>

@@ -95,7 +95,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  You have { this.totalSpendable() } karma available to give
+                  You have { this.totalSpendable() } karma available to spend
                 </Row>
                 <Row>
                   By tag if relevant
