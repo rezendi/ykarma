@@ -173,11 +173,11 @@ function getRewardByIndex(idType, accountId, idx, callback) {
 function getRewardFromResult(result) {
   // console.log("result",result);
   return {
-    id:       result[0],
-    vendorId: result[1],
-    ownerId:  result[2],
-    cost:     result[3],
-    quantity: result[4],
+    id:       parseInt(result[0], 10),
+    vendorId: parseInt(result[1], 10),
+    ownerId:  parseInt(result[2], 10),
+    cost:     parseInt(result[3], 10),
+    quantity: parseInt(result[4], 10),
     flags:    result[5],
     tag:      result[6],
     metadata: JSON.parse(result[7] || '{}'),

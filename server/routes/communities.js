@@ -123,13 +123,13 @@ function getCommunityFor(id, callback) {
     } else {
       //console.log('getCommunityFor result', result);
       var community = {
-        id:           result[0],
+        id:           parseInt(result[0], 10),
         adminAddress: result[1],
         isClosed:     result[2],
         domain:       result[3],
         metadata:     JSON.parse(result[4] || '{}'),
         tags:         result[5],
-        accounts:     result[6]
+        accounts:     parseInt(result[6], 10)
       };
       callback(community);
     }

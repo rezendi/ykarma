@@ -393,14 +393,14 @@ function getSessionFromAccount(req, account) {
 function getAccountFromResult(result) {
   // console.log("result",result);
   return {
-    id:           result[0],
-    communityId:  result[1],
+    id:           parseInt(result[0], 10),
+    communityId:  parseInt(result[1], 10),
     userAddress:  result[2],
     flags:        result[3],
     metadata:     JSON.parse(result[4] || '{}'),
     urls:         result[5],
     rewards:      result[6],
-    givable:      result[7],
+    givable:      parseInt(result[7], 10),
     given:        JSON.parse(result[8] || '{}'),
     received:     JSON.parse(result[9] || '{}'),
   };

@@ -48,7 +48,6 @@ class Reward extends React.Component {
   };
 
   render() {
-    console.log("reward", this.props.reward);
     if (this.props.reward.id === undefined) {
       return (
         <div>Loading...</div>
@@ -77,11 +76,11 @@ class Reward extends React.Component {
                   You own this reward.
                 </Row>
                 }
-                { this.props.reward.ownerId === "0" &&
+                { this.props.reward.ownerId === 0 &&
                 <Row>
                   You have {this.getSpendable()} "{this.props.reward.tag}" karma to spend
                 </Row>}
-                { this.props.reward.ownerId === "0" && this.getSpendable() !== "nada" && this.getSpendable() >0 &&
+                { this.props.reward.ownerId === 0 && this.getSpendable() !== "nada" && this.getSpendable() > 0 &&
                 <Row>
                   <Button type="submit" onClick={this.doPurchase}>Purchase</Button>
                 </Row>
@@ -98,7 +97,7 @@ class Reward extends React.Component {
 function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
-    reward: state.reward
+    reward: state.rewards.reward
   }
 }
 

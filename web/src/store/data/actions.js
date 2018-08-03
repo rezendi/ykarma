@@ -198,6 +198,7 @@ export function loadReward(rewardId) {
         dispatch(loadRewardSuccess(json.reward));
       });
     }).catch(error => {
+      console.log("error", error);
       throw(error);
     });
   };
