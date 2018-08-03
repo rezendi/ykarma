@@ -42,13 +42,9 @@ class Api {
 
   static loadAccountForUser(user) {
     const authProvider = localStorage.getItem("authProvider");
-    const additionalInfo = JSON.parse(localStorage.getItem("additionalUserInfo") || "{}")
-    var handle = null;
-    var url = user.email;
-    if (authProvider === "twitter") {
-      handle = "@" + additionalInfo.username;
-      url = handle;
-    }
+    const additionalTwitterInfo = JSON.parse(localStorage.getItem("additionalTwitterInfo") || "{}")
+    var handle = additionalTwitterInfo.username ? "@" + additionalTwitterInfo.username : null;
+    var url = authProvider === "twitter" ? handle : user.email;
     // console.log("url", url);
     return fetch(`/api/accounts/url/${url}`, { credentials: 'include'})
       .then(response => {
@@ -158,14 +154,14 @@ class Api {
     });
   }
   
-  static updateAccount(values) {
+  static updateAccount(id, values) {
     return fetch('/api/accounts/update', {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
       body: JSON.stringify({
         account: {
-          id: values.id,
+          id: id,
           metadata: {
             name: values.name,
           }

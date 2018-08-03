@@ -52,8 +52,6 @@ export function userReducer(state = initialState.user, action) {
         displayName: action.user.displayName,
         email: action.user.email,
         emailVerified: action.user.emailVerified,
-        phoneNumber: action.user.phoneNumber,
-        photoURL: action.user.photoURL,
         uid: action.user.uid,
         handle: action.user.handle,
         providerData: action.user.providerData,

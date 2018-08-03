@@ -18,19 +18,21 @@ class Profile extends React.Component {
   addTwitter = () => {
     var provider = new firebase.auth.TwitterAuthProvider();
     firebase.auth().currentUser.linkWithPopup(provider).then(function(result) {
-      localStorage.setItem("additionalUserInfo", JSON.stringify(result.additionalUserInfo));
+      console.log("result", result);
+      localStorage.setItem("additionalTwitterInfo", JSON.stringify(result.additionalUserInfo));
       Api.addUrl(result.additionalUserInfo.username).then(() => {
         window.location.reload();
       });
     }).catch(function(error) {
       var errorMessage = error.message;
       console.log("twitter error", errorMessage);
+      alert("Error: " + errorMessage);
     });
   }
 
   removeTwitter = () => {
     firebase.auth().currentUser.unlink("twitter.com").then(function(result) {
-      localStorage.setItem("additionalUserInfo", "{}");
+      localStorage.setItem("additionalTwitterInfo", "{}");
       Api.removeUrl("twitter").then(() => {
         window.location.reload();
       });
@@ -54,7 +56,7 @@ class Profile extends React.Component {
   editMetadata = async (values) => {
     console.log("Submitting form", values);
     this.props.setLoading(true);
-    Api.updateAccount(values).then((res) => {
+    Api.updateAccount(this.props.user.ykid, values).then((res) => {
       this.props.setLoading(false);
       !res.ok ? alert("Server error!") : window.location.reload();
     });
@@ -126,11 +128,11 @@ class Profile extends React.Component {
                 </Row> }
                 <Row>
                   <p>
-                  { JSON.stringify(this.props.user).length }
+                  { JSON.stringify(this.props.user) }
                   &nbsp;
-                  { (localStorage.getItem("additionalUserInfo") || '').length }
+                  { (localStorage.getItem("additionalTwitterInfo") || '') }
                   &nbsp;
-                  { (localStorage.getItem("additionalEmailInfo") || '').length }
+                  { (localStorage.getItem("additionalEmailInfo") || '') }
                   </p>
                 </Row>
               </Panel.Body>

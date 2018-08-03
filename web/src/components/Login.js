@@ -20,7 +20,7 @@ class Login extends React.Component {
       // var secret = result.credential.secret;
       // var user = result.user;
       localStorage.setItem("authProvider", "twitter");
-      localStorage.setItem("additionalUserInfo", JSON.stringify(result.additionalUserInfo));
+      localStorage.setItem("additionalTwitterInfo", JSON.stringify(result.additionalUserInfo));
       window.location = "/";
     }).catch(function(error) {
       // var errorCode = error.code;
