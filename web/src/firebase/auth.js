@@ -82,12 +82,8 @@ export const doSignOut = () =>
 // Current user
 
 export const setToken = (idToken) => {
-  const authProvider = localStorage.getItem("authProvider");
-  var handle = null;
-  if (authProvider === "twitter") {
-    const additionalInfo = JSON.parse(localStorage.getItem("additionalTwitterInfo") || "{}")
-    handle = "@" + additionalInfo.username;
-  }
+  const additionaTwitterlInfo = JSON.parse(localStorage.getItem("additionalTwitterInfo") || "{}")
+  const handle = additionaTwitterlInfo.username ? "@" + additionaTwitterlInfo.username : null;
   return fetch('/api/accounts/token/set', {
     method: 'POST',
     credentials: 'include',

@@ -86,11 +86,24 @@ router.get('/account/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/me', function(req, res, next) {
-  getAccountFor(req.session.ykid, (account) => {
-    getSessionFromAccount(req, account);
-    // console.log("account", account);
-    res.json(account);
-  });
+  //console.log("session", req.session);
+  if (req.session.ykid) {
+    getAccountFor(req.session.ykid, (account) => {
+      getSessionFromAccount(req, account);
+      // console.log("account", account);
+      res.json(account);
+    });
+  } else {
+  var url = req.session.email || req.session.handle;
+    url = getLongUrlFromShort(url);
+    if (url.startsWith('error')) {
+      return res.json({"success":false, "error": url});
+    }
+    getAccountForUrl(url, (account) => {
+      getSessionFromAccount(req, account);
+      res.json(account);
+    });
+  }
 });
 
 /* GET account details */
@@ -121,6 +134,7 @@ router.put('/replenish/:id', function(req, res, next) {
 });
 
 /* PUT add URL */
+// TODO: connect to Twitter to verify the twitter_id and handle match
 router.put('/addUrl', function(req, res, next) {
   var url = getLongUrlFromShort(req.body.url);
   if (url.startsWith('error')) {
@@ -267,13 +281,20 @@ router.post('/token/set', function(req, res, next) {
     req.session.ykid = null;
     req.session.ykcid = null;
     req.session.handle = null;
+    req.session.twitter_id = null;
     return res.json({"success":true});
   }
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
     req.session.uid = decodedToken.uid;
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
-    req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
+    req.session.handle = null;
+    //console.log("decoded", JSON.stringify(decodedToken.firebase.identities));
+    const twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
+    if (twitterIdentities.length > 0) {
+      req.session.twitter_id = twitterIdentities[0];
+      req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
+    }
     //console.log("session", req.session);
     res.json({"success":true});
   }).catch(function(error) {

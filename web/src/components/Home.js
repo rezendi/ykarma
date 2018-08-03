@@ -16,6 +16,13 @@ class Home extends React.Component {
     });
   }
 
+  componentDidMount() {
+    if (this.props.match.params.first) {
+      console.log("First");
+      //Api.replenish();
+    }
+  }
+  
   totalSpendable() {
     var total = 0;
     const spendable = this.props.user.received || [];

@@ -44,9 +44,7 @@ class Api {
     return fetch('/api/accounts/me', { credentials: 'include'})
     .then(response => {
       return response.json().then((json) => {
-        const vals = { ...user, yk: json };
-        // console.log("vals", vals);
-        return vals;
+        return json;
       });
     }).catch(error => {
       console.log("error", error);

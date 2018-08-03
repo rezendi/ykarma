@@ -96,22 +96,24 @@ export function fetchYkUser(user) {
     if ( (new Date()).getTime() - (sessionStorage.getItem("currentTokenSet") || 0) > 60000) {
       forceRefresh = true;
     }
+
     // console.log("getting id token", forceRefresh);
     return user.getIdToken(forceRefresh).then((idToken) => {
       if (!forceRefresh) {
         Api.loadMyYKAccount().then(loaded => {
-          dispatch(userFetched(loaded));
+          dispatch(userFetched({ ...user, yk:loaded}));
         }).catch(error => {
           throw(error);
         });
       } else {
+        //reset the token first
         sessionStorage.setItem("currentToken", idToken);
         sessionStorage.setItem("currentTokenSet", (new Date()).getTime());
         auth.setToken(idToken).then((result) => {
           if (!result.ok) { return {}; }
           result.json().then((json) => {
             Api.loadMyYKAccount().then(loaded => {
-              dispatch(userFetched(loaded));
+              dispatch(userFetched({ ...user, yk:loaded}));
             }).catch(error => {
               throw(error);
             });
@@ -121,7 +123,7 @@ export function fetchYkUser(user) {
         }).catch(error => {
           throw(error);
         });
-      }        
+      }
     }).catch(error => {
       throw(error);
     });
@@ -155,15 +157,17 @@ export function loadAvailableRewardsSuccess(rewards) {
 
 export function loadOwnedRewards() {
   return function(dispatch) {
-    return Api.loadOwnedRewards().then(result => {
-      if (!result.ok) {
-        return loadOwnedRewardsSuccess([]);
-      }
-      return result.json().then(json => {
-        dispatch(loadOwnedRewardsSuccess(json.rewards));
+    return firebase.auth.onAuthStateChanged(user => {
+      return Api.loadOwnedRewards().then(result => {
+        if (!result.ok) {
+          return loadOwnedRewardsSuccess([]);
+        }
+        return result.json().then(json => {
+          dispatch(loadOwnedRewardsSuccess(json.rewards));
+        });
+      }).catch(error => {
+        throw(error);
       });
-    }).catch(error => {
-      throw(error);
     });
   };
 }
@@ -174,15 +178,17 @@ export function loadOwnedRewardsSuccess(rewards) {
 
 export function loadVendedRewards() {
   return function(dispatch) {
-    return Api.loadVendedRewards().then(result => {
-      if (!result.ok) {
-        return loadVendedRewardsSuccess([]);
-      }
-      return result.json().then(json => {
-        dispatch(loadVendedRewardsSuccess(json.rewards));
+    return firebase.auth.onAuthStateChanged(user => {
+      return Api.loadVendedRewards().then(result => {
+        if (!result.ok) {
+          return loadVendedRewardsSuccess([]);
+        }
+        return result.json().then(json => {
+          dispatch(loadVendedRewardsSuccess(json.rewards));
+        });
+      }).catch(error => {
+        throw(error);
       });
-    }).catch(error => {
-      throw(error);
     });
   };
 }
