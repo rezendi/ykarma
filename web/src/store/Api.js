@@ -40,19 +40,14 @@ class Api {
     });
   }
 
-  static loadAccountForUser(user) {
-    const authProvider = localStorage.getItem("authProvider");
-    const additionalTwitterInfo = JSON.parse(localStorage.getItem("additionalTwitterInfo") || "{}")
-    var handle = additionalTwitterInfo.username ? "@" + additionalTwitterInfo.username : null;
-    var url = authProvider === "twitter" ? handle : user.email;
-    // console.log("url", url);
-    return fetch(`/api/accounts/url/${url}`, { credentials: 'include'})
-      .then(response => {
-        return response.json().then((json) => {
-          const vals = { ...user, yk: json, handle: handle };
-          // console.log("vals", vals);
-          return vals;
-        });
+  static loadMyYKAccount() {
+    return fetch('/api/accounts/me', { credentials: 'include'})
+    .then(response => {
+      return response.json().then((json) => {
+        const vals = { ...user, yk: json };
+        // console.log("vals", vals);
+        return vals;
+      });
     }).catch(error => {
       console.log("error", error);
       return error;

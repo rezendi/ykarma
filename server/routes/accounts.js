@@ -85,6 +85,20 @@ router.get('/account/:id', function(req, res, next) {
 
 
 /* GET account details */
+router.get('/me', function(req, res, next) {
+  var url = req.session.email || req.session.handle;
+  url = getLongUrlFromShort(url);
+  if (url.startsWith('error')) {
+    return res.json({"success":false, "error": url});
+  }
+  getAccountForUrl(url, (account) => {
+    getSessionFromAccount(req, account);
+    // console.log("account", account);
+    res.json(account);
+  });
+});
+
+/* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
   if (req.session.email !== url && req.session.handle !== url && req.session.ykid !== ADMIN_ID) {
@@ -96,8 +110,6 @@ router.get('/url/:url', function(req, res, next) {
     return res.json({"success":false, "error": url});
   }
   getAccountForUrl(url, (account) => {
-    getSessionFromAccount(req, account);
-    // console.log("account", account);
     res.json(account);
   });
 });

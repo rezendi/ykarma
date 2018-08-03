@@ -99,7 +99,7 @@ export function fetchYkUser(user) {
     // console.log("getting id token", forceRefresh);
     return user.getIdToken(forceRefresh).then((idToken) => {
       if (!forceRefresh) {
-        Api.loadAccountForUser(user).then(loaded => {
+        Api.loadMyYKAccount().then(loaded => {
           dispatch(userFetched(loaded));
         }).catch(error => {
           throw(error);
@@ -110,7 +110,7 @@ export function fetchYkUser(user) {
         auth.setToken(idToken).then((result) => {
           if (!result.ok) { return {}; }
           result.json().then((json) => {
-            Api.loadAccountForUser(user).then(loaded => {
+            Api.loadMyYKAccount().then(loaded => {
               dispatch(userFetched(loaded));
             }).catch(error => {
               throw(error);
