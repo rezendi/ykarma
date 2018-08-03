@@ -33,6 +33,7 @@ contract YKAccounts is Oracular, YKStructs {
   
   function addAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOracle returns (uint256) {
     require(urlIsValid(_url));
+    require (_metadata.toSlice()._len < 2048);
     Account memory account = Account({
       id:           maxAccountId + 1,
       communityId:  _communityId,
@@ -109,9 +110,9 @@ contract YKAccounts is Oracular, YKStructs {
     delete accounts[_id];
   }
 
-  // TODO
   function urlIsValid(string _url) public pure returns (bool) {
-    return bytes(_url).length > 0;
+    // TODO more than this
+    return bytes(_url).length > 0 && _url.toSlice()._len < 256 && _url.toSlice().copy().find(":".toSlice())._len != 0;
   }
 
   function addRewardToAccount(uint256 _vendorId, uint256 _rewardId) public onlyOracle {

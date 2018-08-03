@@ -1,10 +1,13 @@
 pragma solidity 0.4.24;
 pragma experimental ABIEncoderV2;
 
+import "./arachnid/strings.sol";
 import "./Oracular.sol";
 import "./YKStructs.sol";
 
 contract YKCommunities is Oracular, YKStructs {
+  using strings for *;
+
   mapping(uint256 => Community) communities;
   uint256 public maxCommunityId;
   
@@ -17,6 +20,9 @@ contract YKCommunities is Oracular, YKStructs {
   }
   
   function addCommunity(address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle returns (uint256) {
+    require (_metadata.toSlice()._len < 2048);
+    require (_domain.toSlice()._len < 256);
+    require (_tags.toSlice()._len < 256);
     Community memory community = Community({
       id:           maxCommunityId + 1,
       adminAddress: _adminAddress,

@@ -6,7 +6,6 @@ import "./arachnid/strings.sol";
 import "./Oracular.sol";
 import "./YKStructs.sol";
 
-//TODO SafeMath
 contract YKTranches is Oracular, YKStructs {
   using strings for *;
   using SafeMath for uint256;
@@ -44,6 +43,8 @@ contract YKTranches is Oracular, YKStructs {
       }
     }
     
+    require (_message.toSlice()._len < 256);
+    require (_tags.toSlice()._len < 256);
     Tranche memory tranche = Tranche({
       sender: sender.id,
       recipient: recipient.id,
@@ -175,13 +176,18 @@ contract YKTranches is Oracular, YKStructs {
     out = out.toSlice().concat(',"available":'.toSlice());
     s = uint2str(tranche.available);
     out = out.toSlice().concat(s.toSlice());
-    //TODO handle quotes obv.
     out = out.toSlice().concat(',"message":"'.toSlice());
-    out = out.toSlice().concat(tranche.message.toSlice());
+    s = getMessageJSONFrom(tranche.message);
+    out = out.toSlice().concat(s.toSlice());
     out = out.toSlice().concat('","tags":"'.toSlice());
     out = out.toSlice().concat(tranche.tags.toSlice());
     out = out.toSlice().concat('"}'.toSlice());
     return out;
+  }
+
+  //handle quotes in messages
+  function getMessageJSONFrom(string s) internal pure returns (string) {
+    return s;
   }
 
   function uint2str(uint i) internal pure returns (string) {
