@@ -119,7 +119,7 @@ router.delete('/:id', function(req, res, next) {
       return res.json({"success":false, "error": "Not authorized"});
     }
     var method = eth.contract.methods.deleteReward(existing.id);
-    eth.doSend(method, res, 3);
+    eth.doSend(method, res, 1, 3);
   });
 });
 

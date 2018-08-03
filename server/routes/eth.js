@@ -27,18 +27,21 @@ const getFromAccount = function() {
   });
 }
 
-const doSend = function(method, res, gasMultiplier = 2), callback = null {
-  var notifying = false
+const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
+  var notifying = false;
   method.estimateGas({gas: GAS}, function(error, gasAmount) {
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
       console.log('error', error);
       res.json({'success':false, 'error':error});
     })
     .on('confirmation', (number, receipt) => {
-      if (number >= 1 && !notifying) {
+      if (number >= minConfirmations && !notifying) {
         notifying = true;
         //console.log('result', receipt);
-        callback ? return callback(receipt) : return res.json({"success":true, "result": receipt});
+        if (callback) {
+          return callback();
+        }
+        return res.json({"success":true, "result": receipt});
       }
     })
     .catch(function(error) {

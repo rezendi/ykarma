@@ -31,7 +31,7 @@ router.get('/setup', function(req, res, next) {
         return res.json({"success":true, 'message':'Redundant'});
       }
       var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');
-      doSend(method, 4);
+      doSend(method, res, 1, 2);
     });
   }
   return res.json({"success":true});
@@ -105,18 +105,24 @@ router.get('/url/:url', function(req, res, next) {
     return res.json({"success":false, "error": url});
   }
   getAccountForUrl(url, (account) => {
-    var method = eth.contract.methods.replenish(account.id);
-    eth.doSend(method, res, 2, function() {
-      res.json(account);
-    });
+    res.json(account);
   });
 });
 
 
+/* PUT replenish */
+router.put('/replenish/:id', function(req, res, next) {
+  const id = parseInt(req.params.id);
+  if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
+  var method = eth.contract.methods.replenish(id);
+  eth.doSend(method, res);
+});
+
 /* PUT add URL */
 router.put('/addUrl', function(req, res, next) {
   var url = getLongUrlFromShort(req.body.url);
-  console.log("trying to add url", url);
   if (url.startsWith('error')) {
     return res.json({"success":false, "error": url});
   }
@@ -225,9 +231,8 @@ router.post('/give', function(req, res, next) {
     req.body.amount,
     req.body.message || '',
   );
-  eth.doSend(method, res, 2, function() {
-    res.json(account);
-    if (recipient.startsWith("mailto:")) {
+  eth.doSend(method, res, 1, 2, function() {
+    if (process.env.NODE_ENV!="test" && recipient.startsWith("mailto:")) {
       var docRef = firebase.db.collection('email-preferences').doc(recipient);
       docRef.get().then((doc) => {
         // TODO: query rather than get entire document?
