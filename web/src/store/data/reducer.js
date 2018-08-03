@@ -45,22 +45,35 @@ export function accountReducer(state = initialState.account, action) {
   }
 }
 
+function getTwitterHandleFromUrls(urlsString) {
+  const urls = urlsString.split("||");
+  for (var i in urls) {
+    if (urls[i].indexOf("https://twitter.com/") === 0) {
+      return urls[i].replace("https://twitter.com/","");
+    }
+  }
+  return '';
+}
+
 export function userReducer(state = initialState.user, action) {
   switch (action.type) {
     case types.USER:
+      const firebase = action.user.firebase;
+      const yk = action.user.yk;
       return {
-        displayName: action.user.displayName,
-        email: action.user.email,
-        emailVerified: action.user.emailVerified,
-        uid: action.user.uid,
-        handle: action.user.handle,
-        providerData: action.user.providerData,
-        isAdmin: action.user.email === "jon@rezendi.com",
-        ykid: action.user.yk ? action.user.yk.id : null,
-        metadata: action.user.yk ? action.user.yk.metadata : null,
-        givable: action.user.yk ? action.user.yk.givable : 0,
-        given: action.user.yk ? action.user.yk.given : {},
-        received: action.user.yk ? action.user.yk.received : {},
+        displayName: firebase.displayName || '',
+        email: firebase.email || '',
+        emailVerified: firebase.emailVerified || false,
+        uid: firebase.uid || '',
+        providerData: firebase.providerData,
+        isAdmin: firebase.email === "jon@rezendi.com",
+        ykid: yk.id || 0,
+        metadata: yk.metadata || {},
+        urls: yk.urls || '',
+        handle: getTwitterHandleFromUrls(yk.urls || ''),
+        givable: yk.givable  || 0,
+        given: yk.given || {},
+        received: yk.received || {},
       }
     case types.TWITTER_ADDED:
       return { ...state, handle: action.handle }

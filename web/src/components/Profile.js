@@ -63,7 +63,7 @@ class Profile extends React.Component {
   }
 
   render() {
-    if (!this.props.user.uid) {
+    if (!this.props.user.uid || !this.props.user.metadata) {
       return (<div>Loading...</div>)
     }
     return (
@@ -77,6 +77,7 @@ class Profile extends React.Component {
               <Panel.Body>
                 <Row>
                   Howdy <b>{ this.props.user.metadata.name || this.props.user.displayName || "Nameless One" }</b>
+                  { JSON.stringify(this.props.user)}
                 </Row>
                 <Row>
                   { this.props.user.email}
@@ -85,13 +86,9 @@ class Profile extends React.Component {
                 <Row>
                   @{ this.props.user.handle}
                 </Row> }
-                { this.props.user.handle &&
+                { this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                 <Row>
-                  @{this.props.user.photoURL}
-                </Row> }
-                { this.props.user.photoURL &&
-                <Row>
-                  <img src={this.props.user.photoURL}/>
+                  <img src={this.props.user.providerData[0].photoURL}/>
                 </Row> }
               </Panel.Body>
             </Panel>
@@ -111,7 +108,8 @@ class Profile extends React.Component {
                 </Row>
                 <Row>
                   { !this.props.user.handle && <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
-                  { this.props.user.email && this.props.user.handle &&
+                  { this.props.user.email &&
+                  (this.props.user.handle || JSON.parse(localStorage.getItem("additionalTwitterInfo") || '{}').username) &&
                   <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button> }
                 </Row>
                 { !this.props.user.email &&

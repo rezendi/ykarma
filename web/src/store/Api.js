@@ -210,6 +210,14 @@ class Api {
       body: body,
     });
   }
+
+  static replenish() {
+    return fetch('/api/accounts/replenish', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    });
+  }
 }
 
 export default Api;

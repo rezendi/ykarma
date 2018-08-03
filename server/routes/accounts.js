@@ -124,8 +124,8 @@ router.get('/url/:url', function(req, res, next) {
 
 
 /* PUT replenish */
-router.put('/replenish/:id', function(req, res, next) {
-  const id = parseInt(req.params.id);
+router.put('/replenish', function(req, res, next) {
+  const id = parseInt(req.body.id || req.session.ykid);
   if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
     return res.json({"success":false, "error": "Not authorized"});
   }

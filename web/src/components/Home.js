@@ -16,13 +16,6 @@ class Home extends React.Component {
     });
   }
 
-  componentDidMount() {
-    if (this.props.match.params.first) {
-      console.log("First");
-      //Api.replenish();
-    }
-  }
-  
   totalSpendable() {
     var total = 0;
     const spendable = this.props.user.received || [];
@@ -48,6 +41,13 @@ class Home extends React.Component {
       return (
         <div>Fetching account for { this.props.user.displayName || this.props.user.email }...</div>
       );
+    }
+
+    if (this.props.location.search.indexOf("?first=true")===0) {
+      Api.replenish().then(result => {
+        console.log('replenish result', result);
+        window.location="/";
+      });
     }
 
     return (

@@ -5,12 +5,14 @@ class util {
 
   static getWebTestUser() {
     return {
-      displayName: "Test User",
-      email: "test@rezendi.com",
-      emailVerified: true,
-      uid: "test",
-      handle: "testuser",
-      providerData: "password",
+      firebase: {
+        displayName: "Test User",
+        email: "test@rezendi.com",
+        emailVerified: true,
+        uid: "test",
+        handle: "testuser",
+        providerData: "password",
+      },
       yk: {
         id: 99,
         metadata: { name: "Tester User" },

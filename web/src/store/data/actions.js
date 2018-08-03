@@ -89,7 +89,7 @@ export function fetchYkUser(user) {
     return userFetched(util.getWebTestUser());
   }
   if (user === null) {
-    return userFetched(user);
+    return userFetched({firebase:{}, yk:{}});
   }
   return function(dispatch, getState) {
     var forceRefresh = sessionStorage.getItem("currentToken") == null;
@@ -101,7 +101,7 @@ export function fetchYkUser(user) {
     return user.getIdToken(forceRefresh).then((idToken) => {
       if (!forceRefresh) {
         Api.loadMyYKAccount().then(loaded => {
-          dispatch(userFetched({ ...user, yk:loaded}));
+          dispatch(userFetched({ firebase:user, yk:loaded}));
         }).catch(error => {
           throw(error);
         });
@@ -113,7 +113,7 @@ export function fetchYkUser(user) {
           if (!result.ok) { return {}; }
           result.json().then((json) => {
             Api.loadMyYKAccount().then(loaded => {
-              dispatch(userFetched({ ...user, yk:loaded}));
+              dispatch(userFetched({ firebase:user, yk:loaded}));
             }).catch(error => {
               throw(error);
             });
