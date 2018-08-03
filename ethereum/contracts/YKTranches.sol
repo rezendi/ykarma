@@ -99,6 +99,10 @@ contract YKTranches is Oracular, YKStructs {
   }
   
   function replenish(uint256 _id) public onlyOracle {
+    uint256 mostRecent = lastReplenished(_id);
+    if (mostRecent > 0 && block.number - mostRecent < REFRESH_WINDOW) {
+      return;
+    }
     Giving storage recipient = giving[_id];
     recipient.blocks.push(block.number);
     recipient.amounts.push(GIVING_AMOUNT);

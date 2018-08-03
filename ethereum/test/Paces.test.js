@@ -37,6 +37,10 @@ contract('Paces', function(accounts) {
     await ykarma.recalculateBalances(1);
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '100', "Account replenished");
+    await ykarma.replenish(1);
+    await ykarma.recalculateBalances(1);
+    vals = await ykarma.accountForId(1);
+    assert.equal(""+vals[7], '100', "Account replenished only once");
     
     // try giving to a new account, adding URLs to it
     await ykarma.give(1, 'mailto:jay@rezendi.com', 40, "Just a message");

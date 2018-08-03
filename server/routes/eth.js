@@ -27,7 +27,7 @@ const getFromAccount = function() {
   });
 }
 
-const doSend = function(method, res, gasMultiplier = 2) {
+const doSend = function(method, res, gasMultiplier = 2), callback = null {
   var notifying = false
   method.estimateGas({gas: GAS}, function(error, gasAmount) {
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
@@ -38,7 +38,7 @@ const doSend = function(method, res, gasMultiplier = 2) {
       if (number >= 1 && !notifying) {
         notifying = true;
         //console.log('result', receipt);
-        return res.json({"success":true, "result": receipt});
+        callback ? return callback(receipt) : return res.json({"success":true, "result": receipt});
       }
     })
     .catch(function(error) {

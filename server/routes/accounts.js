@@ -86,12 +86,7 @@ router.get('/account/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/me', function(req, res, next) {
-  var url = req.session.email || req.session.handle;
-  url = getLongUrlFromShort(url);
-  if (url.startsWith('error')) {
-    return res.json({"success":false, "error": url});
-  }
-  getAccountForUrl(url, (account) => {
+  getAccountFor(req.session.ykid, (account) => {
     getSessionFromAccount(req, account);
     // console.log("account", account);
     res.json(account);
@@ -110,7 +105,10 @@ router.get('/url/:url', function(req, res, next) {
     return res.json({"success":false, "error": url});
   }
   getAccountForUrl(url, (account) => {
-    res.json(account);
+    var method = eth.contract.methods.replenish(account.id);
+    eth.doSend(method, res, 2, function() {
+      res.json(account);
+    });
   });
 });
 
@@ -221,51 +219,35 @@ router.post('/give', function(req, res, next) {
     return res.json({"success":false, "error": recipient});
   }
   console.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
-  var notifying = false;
   var method = eth.contract.methods.give(
     sender,
     recipient,
     req.body.amount,
     req.body.message || '',
   );
-  method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
-    method.send({from:fromAccount, gas: gasAmount * 2}).on('error', (error) => {
-      console.log('error', error);
-      res.json({'success':false, 'error':error});
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= 1 && !notifying) {
-        notifying = true;
-        console.log('got receipt');
-        if (recipient.startsWith("mailto:")) {
-          var docRef = firebase.db.collection('email-preferences').doc(recipient);
-          docRef.get().then((doc) => {
-            // TODO: query rather than get entire document?
-            var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
-            if (sendEmail) {
-              console.log("sending mail");
-              const senderName = req.session.name || req.session.email;
-              sendKarmaSentMail(senderName, recipient, req.body.amount);
-              docRef.update({ [sender]:true }, { create: true } );
-            }
-            return res.json({"success":true});
-          })
-          .catch(err => {
-            console.log('Error getting document', err);
-            return res.json({"success":false, "error":err});
-          });
-        } else {
-          // TODO: Twitter notifications
-          return res.json({"success":true});
+  eth.doSend(method, res, 2, function() {
+    res.json(account);
+    if (recipient.startsWith("mailto:")) {
+      var docRef = firebase.db.collection('email-preferences').doc(recipient);
+      docRef.get().then((doc) => {
+        // TODO: query rather than get entire document?
+        var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
+        if (sendEmail) {
+          console.log("sending mail");
+          const senderName = req.session.name || req.session.email;
+          sendKarmaSentMail(senderName, recipient, req.body.amount);
+          docRef.update({ [sender]:true }, { create: true } );
         }
-      }
-    })
-    .catch(function(error) {
-      console.log('call error ' + error);
-    });
-  })
-  .catch(function(error) {
-    console.log('/give gas estimation call error', error);
+        return res.json({"success":true});
+      })
+      .catch(err => {
+        console.log('Error getting document', err);
+        return res.json({"success":false, "error":err});
+      });
+    } else {
+      // TODO: Twitter notifications
+      return res.json({"success":true});
+    }
   });
 });
 
@@ -343,6 +325,24 @@ function getAccountForUrl(url, callback) {
   })
   .catch(function(error) {
     console.log('getAccountFor call error ' + url, error);
+  });
+}
+
+function getAccountWithinCommunity(communityId, idx, callback) {
+  var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
+  // console.log("accountWithinCommunity idx "+idx, communityId);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('accountWithinCommunity error', error);
+    } else {
+      // console.log('accountWithinCommunity result', result);
+      var account = getAccountFromResult(result);
+      callback(account);
+    }
+  })
+  .catch(function(error) {
+    console.log('accountWithinCommunity call error ' + id, error);
+    callback({});
   });
 }
 
