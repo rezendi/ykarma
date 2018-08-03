@@ -19,6 +19,7 @@ contract YKRewards is Oracular, YKStructs {
   function addReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags)  public onlyOracle returns (uint256) {
     Reward memory reward = Reward({
       id:       maxRewardId + 1,
+      parentId: 0,
       vendorId: _vendorId,
       ownerId:  0,
       flags:    _flags,
@@ -40,8 +41,30 @@ contract YKRewards is Oracular, YKStructs {
     rewards[_id].flags    = _flags;
   }
   
-  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOracle {
-    rewards[_rewardId].ownerId = _spenderId;
+  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOracle returns (uint256) {
+    Reward storage reward = rewards[_rewardId];
+    require (reward.quantity > 0);
+    if (reward.quantity == 1) {
+      reward.ownerId = _spenderId;
+      return _rewardId;
+    }
+    
+    // create a new reward, allocate it, decrement quantity
+    Reward memory newReward = Reward({
+      id:       maxRewardId + 1,
+      parentId: reward.id,
+      vendorId: reward.vendorId,
+      ownerId:  _spenderId,
+      flags:    reward.flags,
+      cost:     reward.cost,
+      quantity: 1,
+      tag:      reward.tag,
+      metadata: reward.metadata
+    });
+    rewards[newReward.id] = newReward;
+    reward.quantity -= 1;
+    maxRewardId += 1;
+    return newReward.id;
   }
 
   function deleteRewardRecord(uint256 _id) public onlyOracle returns (uint256) {

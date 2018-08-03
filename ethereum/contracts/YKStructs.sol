@@ -40,6 +40,7 @@ contract YKStructs {
   
   struct Reward {
     uint256 id;
+    uint256 parentId;
     uint256 vendorId;
     uint256 ownerId;
     uint256 cost;

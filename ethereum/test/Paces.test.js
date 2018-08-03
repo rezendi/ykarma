@@ -89,12 +89,13 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals, 0, "Vendor rewards count 0 again");
 
     // create two new ones, fail purchase of wrong tag
-    await ykarma.addNewReward(1, 10, 1, "cool", '{"name":"My Cool Reward"}', '0x00');
+    await ykarma.addNewReward(1, 10, 2, "cool", '{"name":"My Cool Reward"}', '0x00');
     await ykarma.addNewReward(1, 10, 1, "test", '{"name":"My Test Reward"}', '0x00');
     vals = await ykarma.getRewardsCount(1, 2);
     assert.equal(vals.toNumber(), 2, "Vendor rewards count 2");
     vals = await ykarma.rewardForId(2);
     assert.equal(vals[2], 0, "No owner");
+    assert.equal(vals[4], 2, "Reward quantity");
     vals = await ykarma.rewardForId(3);
     assert.equal(vals[6], 'test', "Beta tag");
     var exc = null;
@@ -106,7 +107,11 @@ contract('Paces', function(accounts) {
     assert.equal(JSON.parse(vals[9])[0].available, 40, "Karma ready to spend");
     await ykarma.purchase(2, 2);
     vals = await ykarma.rewardForId(2);
-    assert.equal(vals[2], 2, "Reward successfully transferred");
+    assert.equal(vals[2], 0, "No owner");
+    assert.equal(vals[4], 1, "Reward quantity diminished");
+    vals = await ykarma.rewardForId(4);
+    assert.equal(vals[2], 2, "Newly created reward successfully transferred");
+    assert.equal(vals[4], 1, "Reward quantity correct");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[0].available, 30, "Karma spent");
     
