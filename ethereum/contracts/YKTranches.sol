@@ -13,6 +13,7 @@ contract YKTranches is Oracular, YKStructs {
   uint256 EXPIRY_WINDOW = 20 * 60 * 24 * 120;
   uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
   uint256 GIVING_AMOUNT = 100;
+  uint256 REWARD_AMOUNT = 10;
 
   mapping(uint256 => Giving) giving;
   mapping(uint256 => Tranche) tranches;
@@ -32,14 +33,17 @@ contract YKTranches is Oracular, YKStructs {
     require (recipient.id > 0);
     uint256 accumulated;
     uint256[] storage amounts = giving[sender.id].amounts;
+    bool doReward = false;
     for (uint256 i=0; i < amounts.length; i++) {
       if (accumulated.add(amounts[i]) >= _amount) {
         amounts[i] = amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
+        doReward = doReward || amounts[i] == 0;
         break;
       } else {
         accumulated = accumulated.add(amounts[i]);
         amounts[i] = 0;
+        doReward = true;
       }
     }
     
@@ -56,6 +60,23 @@ contract YKTranches is Oracular, YKStructs {
     tranches[maxTrancheId] = tranche;
     given[sender.id].push(maxTrancheId);
     received[recipient.id].push(maxTrancheId);
+    maxTrancheId += 1;
+    if (doReward) {
+      giveReward(sender.id, _tags);
+    }
+  }
+  
+  function giveReward(uint256 _id, string _tags) internal {
+    Tranche memory tranche = Tranche({
+      sender:     _id,
+      recipient:  _id,
+      amount:     REWARD_AMOUNT,
+      available:  REWARD_AMOUNT,
+      tags:       _tags,
+      message:    ''
+    });
+    tranches[maxTrancheId] = tranche;
+    received[_id].push(maxTrancheId);
     maxTrancheId += 1;
   }
   
@@ -185,9 +206,25 @@ contract YKTranches is Oracular, YKStructs {
     return out;
   }
 
-  //handle quotes in messages
-  function getMessageJSONFrom(string s) internal pure returns (string) {
-    return s;
+  /**
+   * Handle quotes in messages, very clumsily, by stripping them out
+   *
+   * TODO don't just strip them out, replace them with something
+   */
+  function getMessageJSONFrom(string _s) internal pure returns (string) {
+    strings.slice memory s = _s.toSlice();
+    strings.slice memory part;
+    s.split('"'.toSlice(), part);
+    if (part._len == 0 || s._len == 0) {
+      return _s;
+    }
+    string memory s2 = '';
+    while (part._len > 0 && s._len > 0) {
+      s2 = s2.toSlice().concat(part);
+      s.split('"'.toSlice(), part);
+    }
+    s2 = s2.toSlice().concat(part);
+    return s2;
   }
 
   function uint2str(uint i) internal pure returns (string) {
