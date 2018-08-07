@@ -35,24 +35,33 @@ class Login extends React.Component {
     return (
         <Grid>
           <Row>
-            <Col md={12}>
+            <Col md={6}>
               <Panel>
                 <Panel.Heading>
-                  Login
+                  Log In with Email
+                </Panel.Heading>
+                <Panel.Body>
+                  <form onSubmit={this.props.handleSubmit(this.doLogin)}>
+                    <Row>
+                      &nbsp;
+                      <label htmlFor="email">Email</label>
+                      <Field name="email" component="input" type="text"/>
+                      <Button bsStyle="info" type="submit">Log In</Button>
+                    </Row>
+                  </form>
+                </Panel.Body>
+              </Panel>
+            </Col>
+            <Col md={6}>
+              <Panel>
+                <Panel.Heading>
+                  Log In with Twitter
                 </Panel.Heading>
                 <Panel.Body>
                   <Row>
-                    <Button type="submit" onClick={this.doTwitter}>Log In with Twitter</Button>
+                    &nbsp;
+                    <Button bsStyle="info" type="submit" onClick={this.doTwitter}>Log In</Button>
                   </Row>
-                  <form onSubmit={this.props.handleSubmit(this.doLogin)}>
-                    <Row>
-                      <label htmlFor="email">Email</label>
-                      <Field name="email" component="input" type="text"/>
-                    </Row>
-                    <Row>
-                      <Button type="submit">Submit</Button>
-                    </Row>
-                  </form>
                 </Panel.Body>
               </Panel>
             </Col>

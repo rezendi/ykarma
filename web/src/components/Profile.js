@@ -76,20 +76,22 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy <b>{ this.props.user.metadata.name || this.props.user.displayName || "Nameless One" }</b>
-                  { JSON.stringify(this.props.user)}
+                  <Col md={8}>
+                    Howdy, <b>{ this.props.user.metadata.name || this.props.user.displayName || "Nameless One" }</b>
+                    { false && JSON.stringify(this.props.user)}
+                    <div>
+                      { this.props.user.email}
+                    </div>
+                    { this.props.user.handle &&
+                    <div>
+                      @{ this.props.user.handle}
+                    </div> }
+                  </Col>
+                  { this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
+                  <Col md={4}>
+                    <img style={{float:"right"}} src={this.props.user.providerData[0].photoURL}/>
+                  </Col> }
                 </Row>
-                <Row>
-                  { this.props.user.email}
-                </Row>
-                { this.props.user.handle &&
-                <Row>
-                  @{ this.props.user.handle}
-                </Row> }
-                { this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
-                <Row>
-                  <img src={this.props.user.providerData[0].photoURL}/>
-                </Row> }
               </Panel.Body>
             </Panel>
           </Col>
@@ -103,11 +105,11 @@ class Profile extends React.Component {
                 <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
                     <label htmlFor="name">Name</label>
                     <Field name="name" component="input" type="text"/>
-                    <Button type="submit">Submit</Button>
+                    <Button bsStyle="info" type="submit">Edit</Button>
                 </form>
                 </Row>
                 <Row>
-                  { !this.props.user.handle && <Button type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
+                  { !this.props.user.handle && <Button bsStyle="info" type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
                   { this.props.user.email &&
                   (this.props.user.handle || JSON.parse(localStorage.getItem("additionalTwitterInfo") || '{}').username) &&
                   <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button> }
@@ -117,13 +119,14 @@ class Profile extends React.Component {
                   <Row>
                     <label htmlFor="email">Email</label>
                     <Field name="email" component="input" type="text"/>
-                    <Button type="submit">Submit</Button>
+                    <Button bsStyle="info" type="submit">Add Email</Button>
                   </Row>
                 </form> }
                 { this.props.user.email && this.props.user.handle &&
                 <Row>
-                  <Button type="submit" onClick={this.removeEmail}>Remove Email</Button>
+                  <Button bsStyle="info" type="submit" onClick={this.removeEmail}>Remove Email</Button>
                 </Row> }
+                { false &&
                 <Row>
                   <p>
                   { JSON.stringify(this.props.user) }
@@ -132,7 +135,7 @@ class Profile extends React.Component {
                   &nbsp;
                   { (localStorage.getItem("additionalEmailInfo") || '') }
                   </p>
-                </Row>
+                </Row> }
               </Panel.Body>
             </Panel>
           </Col>

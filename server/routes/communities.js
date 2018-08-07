@@ -13,7 +13,7 @@ const ADMIN_ID = 1;
 // GET set up
 router.get('/setup', function(req, res, next) {
   getCommunityFor(1, (community) => {
-    if (community.id !== '0') {
+    if (community.id !== 0) {
       return res.json({"success":true, 'message':'Redundant'});
     }
     var method = eth.contract.methods.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
@@ -34,7 +34,7 @@ router.get('/', function(req, res, next) {
       for (var i = 0; i < result; i++) {
         getCommunityFor(i+1, (community) => {
           communities.push(community);
-          console.log('callback', communities);
+          //console.log('callback', communities);
           if (communities.length >= result) {
             res.json(communities);
           }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Row, Col, Panel } from 'react-bootstrap';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux'
 import { loadOwnedRewards, loadVendedRewards, loadAvailableRewards } from '../store/data/actions'
@@ -28,8 +28,10 @@ class Rewards extends React.Component {
                 <Panel.Body>
                   {this.props.availableRewards.map(reward => reward.ownerId === 0 && reward.vendorId !== this.props.user.ykid &&
                     <Row key={reward.id}>
-                      <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
-                      <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
+                      <Button bsStyle="link" href={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Button>
+                      <span>costs {reward.cost} {reward.tag} karma</span>,
+                      &nbsp;
+                      <span>{reward.quantity} available</span>
                     </Row>
                   )}
                 </Panel.Body>
@@ -45,7 +47,7 @@ class Rewards extends React.Component {
                 <Panel.Body>
                   {this.props.vendedRewards.map(reward => reward.vendorId === this.props.user.ykid &&
                     <Row key={reward.id}>
-                      <Link to={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Link>
+                      <Button bsStyle="link" href={`/reward/${reward.id}`}>{reward.metadata.name || 'n/a'}</Button>
                       <span> {reward.metadata.description} {reward.cost} {reward.quantity}</span>
                     </Row>
                   )}

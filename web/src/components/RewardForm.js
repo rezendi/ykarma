@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Panel, Button } from 'react-bootstrap';
+import { Row, Col, Panel, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
@@ -35,27 +35,52 @@ class RewardForm extends React.Component {
         <Panel.Body>
           <form onSubmit={this.props.handleSubmit(this.submitForm)}>
             <Row>
-              <label htmlFor="name">Name</label>
-              <Field name="name" component="input" type="text"/>
+              <Col md={3}>
+                <label htmlFor="name">Name</label>
+              </Col>
+              <Col md={6}>
+                <Field name="name" component="input" type="text"/>
+              </Col>
             </Row>
             <Row>
-              <label htmlFor="description">Description</label>
-              <Field name="description" component="input" type="textarea"/>
+              <Col md={3}>
+                <label htmlFor="description">Description</label>
+              </Col>
+              <Col md={6}>
+                <Field name="description" component="input" type="textarea"/>
+              </Col>
             </Row>
             <Row>
-              <label htmlFor="cost">Cost</label>
-              <Field name="cost" component="input" type="text"/>
+              <Col md={3}>
+                <label htmlFor="cost">Cost</label>
+              </Col>
+              <Col md={6}>
+                <Field name="cost" component="input" type="text"/>
+              </Col>
             </Row>
             <Row>
-              <label htmlFor="quantity">Quantity</label>
-              <Field name="quantity" component="input" type="text"/>
+              <Col md={3}>
+                <label htmlFor="quantity">Quantity</label>
+              </Col>
+              <Col md={6}>
+                <Field name="quantity" component="input" type="text"/>
+              </Col>
             </Row>
             <Row>
-              <label htmlFor="tag">Tag</label>
-              <Field name="tag" component="input" type="text"/>
+              <Col md={3}>
+                <label htmlFor="tag">Tag</label>
+              </Col>
+              <Col md={6}>
+                <Field name="tag" component="input" type="text"/>
+              </Col>
             </Row>
             <Row>
-              <Button type="submit">Submit</Button>
+              <Col md={3}>
+                &nbsp;
+              </Col>
+              <Col md={6}>
+                <Button bsStyle="info" type="submit">Offer</Button>
+              </Col>
             </Row>
           </form>
         </Panel.Body>

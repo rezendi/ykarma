@@ -16,15 +16,15 @@ class Reward extends React.Component {
   };
   
   getSpendable = () => {
-    if (!this.props.user.received || !this.props.user.received.tags) {
+    const received = this.props.user.received;
+    if (!received) {
       return "nada";
     }
     var spendable = 0;
-    const tags = this.props.user.received.tags;
     const tag = this.props.reward.tag;
-    for (var i=0; i < tags.length; i++) {
-      if (tags[i].indexOf(tag) >= 0) {
-        spendable += this.props.user.received.amounts[i];
+    for (var i=0; i < received.length; i++) {
+      if (received[i].tags.indexOf(tag) >= 0) {
+        spendable += received[i].available;
       }
     }
     return spendable;
@@ -69,20 +69,17 @@ class Reward extends React.Component {
               <Panel.Body>
                 <Row>
                   <div>Description: {this.props.reward.metadata.description}</div>
-                  <div>Quantity: {this.props.reward.quantity} Cost: {this.props.reward.cost} {this.props.reward.tag} karma</div>
+                  <div>Cost: {this.props.reward.cost} {this.props.reward.tag} karma</div>
+                  <div>Available: {this.props.reward.quantity}</div>
                 </Row>
                 { this.props.reward.ownerId === this.props.user.ykid &&
                 <Row>
                   You own this reward.
                 </Row>
                 }
-                { this.props.reward.ownerId === 0 &&
-                <Row>
-                  You have {this.getSpendable()} "{this.props.reward.tag}" karma to spend
-                </Row>}
                 { this.props.reward.ownerId === 0 && this.getSpendable() !== "nada" && this.getSpendable() > 0 &&
                 <Row>
-                  <Button type="submit" onClick={this.doPurchase}>Purchase</Button>
+                  <Button bsStyle="info" type="submit" onClick={this.doPurchase}>Purchase</Button>
                 </Row>
                 }
               </Panel.Body>

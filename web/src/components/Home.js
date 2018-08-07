@@ -28,18 +28,18 @@ class Home extends React.Component {
   render() {
     if (!this.props.user || !this.props.user.uid) {
       return (
-        <div>Welcome to YKarma!
+        <Grid><Row>Welcome to YKarma!
           { false &&
           <form onSubmit={this.props.handleSubmit(this.submitForm)}>
             <Button type="submit">Submit</Button>
           </form> }
-        </div>
+        </Row></Grid>
       );
     }
 
     if (!this.props.user.ykid) {
       return (
-        <div>Fetching account for { this.props.user.displayName || this.props.user.email }...</div>
+        <Grid><Row>Fetching account for { this.props.user.displayName || this.props.user.email }...</Row></Grid>
       );
     }
 
@@ -60,7 +60,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy { this.props.user.email }
+                  Howdy, { this.props.user.email || this.props.user.handle }!
                 </Row>
               </Panel.Body>
             </Panel>
@@ -74,22 +74,22 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  You have { this.props.user.givable } karma available to give
+                  You have { this.props.user.givable } karma available to give.
                 </Row>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                   <Row>
-                    Give
+                    <b>Give</b>
                     <Field name="coins" component="input" type="text" size="7" placeholder="Number"/>
                     <label htmlFor="coins">coins</label>
                     &nbsp;
                     <label htmlFor="recipient">to</label>
-                    <Field name="recipient" component="input" type="text" placeholder="Email or Twitter handle"/>
+                    <Field name="recipient" component="input" type="text" size="18" placeholder="Email / Twitter name"/>
                     &nbsp;
                     <label htmlFor="message">saying</label>
                     <Field name="message" component="input" type="text" size="20" maxLength="128" placeholder="Optional message here"/>
                   </Row>
                   <Row>
-                    <Button type="submit">Submit</Button>
+                    <Button bsStyle="info" type="submit">Submit</Button>
                   </Row>
                 </form>
               </Panel.Body>
@@ -102,7 +102,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  You have { this.totalSpendable() } karma available to spend
+                  You have { this.totalSpendable() } karma available to spend.
                 </Row>
                 <Row>
                   By tag if relevant

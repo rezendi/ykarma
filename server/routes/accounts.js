@@ -135,6 +135,8 @@ router.put('/replenish', function(req, res, next) {
 
 /* PUT add URL */
 // TODO: connect to Twitter to verify the twitter_id and handle match
+// Low priority since the on-chain contract ensures you can't spoof a handle that has ever been sent any YK,
+// and if one of those _is_ spoofed, that just means they they get the ability to hijack the spoofer's YK account
 router.put('/addUrl', function(req, res, next) {
   var url = getLongUrlFromShort(req.body.url);
   if (url.startsWith('error')) {
