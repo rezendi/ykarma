@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
 import { setLoading } from '../store/data/actions'
 import Api from '../store/Api';
+import Tranche from './Tranche';
 
 class Home extends React.Component {
 
@@ -141,9 +142,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.received.map((tranche, idx) =>
-                  <Row key={"rec"+idx}>
-                    <li>{JSON.stringify(tranche)}</li>
-                  </Row>
+                  <Tranche idx={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel> }

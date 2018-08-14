@@ -7,6 +7,7 @@ import * as firebase from 'firebase'
 import { auth } from '../firebase';
 import { loadOwnedRewards, loadVendedRewards, setLoading } from '../store/data/actions'
 import Api from '../store/Api';
+import Tranche from './Tranche';
 
 class Profile extends React.Component {
 
@@ -182,9 +183,7 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.received.map((tranche, idx) =>
-                  <Row key={"rec"+idx}>
-                    {JSON.stringify(tranche)}
-                  </Row>
+                  <Tranche idx={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel>
@@ -196,9 +195,7 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.given.map((tranche, idx) =>
-                  <Row key={"sen"+idx}>
-                    {JSON.stringify(tranche)}
-                  </Row>
+                  <Tranche idx={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel>
