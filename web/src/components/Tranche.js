@@ -1,11 +1,13 @@
 import React from 'react';
-import { Row } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 
 class Tranche extends React.Component {
   render() {
     return (
       <Row>
-        <li>{JSON.stringify(this.props.json)}</li>
+        <Col md={12}>
+          {JSON.stringify(this.props.json)}
+        </Col>
       </Row>
     );
   }

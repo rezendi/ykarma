@@ -61,7 +61,9 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  Howdy, { this.props.user.email || this.props.user.handle }!
+                  <Col md={12}>
+                    Howdy, { this.props.user.email || this.props.user.handle }!
+                  </Col>
                 </Row>
               </Panel.Body>
             </Panel>
@@ -74,25 +76,31 @@ class Home extends React.Component {
                 Give
               </Panel.Heading>
               <Panel.Body>
-                <Row>
-                  You have { this.props.user.givable } karma available to give.
-                </Row>
-                <form onSubmit={this.props.handleSubmit(this.submitForm)}>
+                <Col md={12}>
                   <Row>
-                    <b>Give</b>
-                    <Field name="coins" component="input" type="text" size="7" placeholder="Number"/>
-                    <label htmlFor="coins">coins</label>
-                    &nbsp;
-                    <label htmlFor="recipient">to</label>
-                    <Field name="recipient" component="input" type="text" size="18" placeholder="Email / Twitter name"/>
-                    &nbsp;
-                    <label htmlFor="message">saying</label>
-                    <Field name="message" component="input" type="text" size="20" maxLength="128" placeholder="Optional message here"/>
+                    You have { this.props.user.givable } karma available to give.
+                    <hr/>
                   </Row>
-                  <Row>
-                    <Button bsStyle="info" type="submit">Submit</Button>
-                  </Row>
-                </form>
+                  <form onSubmit={this.props.handleSubmit(this.submitForm)}>
+                    <Row>
+                      <b>Give</b>
+                      &nbsp;
+                      <Field name="coins" component="input" type="text" size="3" placeholder="?"/>
+                      &nbsp;
+                      <label htmlFor="coins">coins</label>
+                      &nbsp;
+                      <label htmlFor="recipient">to</label>
+                      &nbsp;
+                      <Field name="recipient" component="input" type="text" size="12" placeholder="Email / Twitter"/>
+                      &nbsp;
+                      <label htmlFor="message">saying</label>
+                      &nbsp;
+                      <Field name="message" component="input" type="text" size="16" maxLength="128" placeholder="Optional message"/>
+                      &nbsp;
+                      <Button bsStyle="info" type="submit">Give</Button>
+                    </Row>
+                  </form>
+                </Col>
               </Panel.Body>
             </Panel>
           </Col>
@@ -102,18 +110,21 @@ class Home extends React.Component {
                 Spend
               </Panel.Heading>
               <Panel.Body>
-                <Row>
-                  You have { this.totalSpendable() } karma available to spend.
-                </Row>
-                <Row>
-                  By tag if relevant
-                </Row>
-                <Row>
-                  Top affordable reward
-                </Row>
-                <Row>
-                  Create a reward
-                </Row>
+                <Col md={12}>
+                  <Row>
+                    You have { this.totalSpendable() } total karma available to spend.
+                    <hr/>
+                  </Row>
+                  <Row>
+                    By tag if relevant
+                  </Row>
+                  <Row>
+                    Top affordable reward
+                  </Row>
+                  <Row>
+                    Create a reward
+                  </Row>
+                </Col>
               </Panel.Body>
             </Panel>
           </Col>
@@ -127,9 +138,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.given.map((tranche, idx) =>
-                  <Row key={"sen"+idx}>
-                    <li>{JSON.stringify(tranche)}</li>
-                  </Row>
+                  <Tranche idx={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel> }

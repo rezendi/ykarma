@@ -34,11 +34,9 @@ module.exports = (deployer, network, accounts) => {
     await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com');
     await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@rezendi.com');
     await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
+    await yk.replenish(1);
     await yk.replenish(2);
     await yk.give(2, 'mailto:jon@rezendi.com', 80, "Just a message");
-    await yk.accountForId(1);
-    await yk.replenish(1);
-    await yk.accountForId(2);
-    await yk.replenish(2);
+    await yk.give(1, 'mailto:test@rezendi.com', 20, "Another message");
   });
 };

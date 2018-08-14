@@ -51,7 +51,17 @@ contract('Paces', function(accounts) {
     await ykarma.give(1, 'mailto:jay@rezendi.com', 20, 'Another "quote-unquote" message');
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '40', "Giving happened II");
-    assert.equal(""+vals[8], '[{"sender":1,"receiver":2,"amount":40,"available":40,"message":"Just a message","tags":"cool"},{"sender":1,"receiver":2,"amount":20,"available":20,"message":"Another quote-unquote message","tags":"cool"}]', "Giving recorded");
+    dict = JSON.parse(vals[8]);
+    assert.equal(dict[0].sender, 1, "Giving");
+    assert.equal(dict[0].receiver, 2, "Giving");
+    assert.equal(dict[0].message, "Just a message", "Giving");
+    assert.equal(dict[1].sender, 1, "Giving");
+    assert.equal(dict[1].receiver, 2, "Giving");
+    assert.equal(dict[1].available, 20, "Giving");
+    assert.equal(dict[1].amount, 20, "Giving");
+    assert.equal(dict[1].message, "Another quote-unquote message", "Giving");
+    assert.equal(dict[1].tags, "cool", "Giving");
+    assert.equal(dict[1].block-1, dict[0].block, "Giving");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[1]["message"], "Another quote-unquote message", "Giving received II");
     await ykarma.give(1, 'mailto:jay@rezendi.com', 40, 'Message Three');

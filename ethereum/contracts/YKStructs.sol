@@ -10,6 +10,7 @@ contract YKStructs {
   struct Tranche {
     uint256 sender;
     uint256 recipient;
+    uint256 block;
     uint256 amount;
     uint256 available;
     string message;

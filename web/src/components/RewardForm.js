@@ -75,6 +75,9 @@ class RewardForm extends React.Component {
               </Col>
             </Row>
             <Row>
+              &nbsp;
+            </Row>
+            <Row>
               <Col md={3}>
                 &nbsp;
               </Col>

@@ -33,35 +33,36 @@ contract YKTranches is Oracular, YKStructs {
     require (recipient.id > 0);
     uint256 accumulated;
     uint256[] storage amounts = giving[sender.id].amounts;
-    bool doReward = false;
+    uint256 rewardsToGive = 0;
     for (uint256 i=0; i < amounts.length; i++) {
       if (accumulated.add(amounts[i]) >= _amount) {
         amounts[i] = amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
-        doReward = doReward || amounts[i] == 0;
+        rewardsToGive += (amounts[i]) == 0 ? 1 : 0;
         break;
       } else {
         accumulated = accumulated.add(amounts[i]);
         amounts[i] = 0;
-        doReward = true;
+        rewardsToGive += 1;
       }
     }
     
     require (_message.toSlice()._len < 256);
     require (_tags.toSlice()._len < 256);
     Tranche memory tranche = Tranche({
-      sender: sender.id,
-      recipient: recipient.id,
-      amount: _amount,
-      available: _amount,
-      tags: _tags,
-      message: _message
+      sender:     sender.id,
+      recipient:  recipient.id,
+      block:      block.number,
+      amount:     _amount,
+      available:  _amount,
+      tags:       _tags,
+      message:    _message
     });
     tranches[maxTrancheId] = tranche;
     given[sender.id].push(maxTrancheId);
     received[recipient.id].push(maxTrancheId);
     maxTrancheId += 1;
-    if (doReward) {
+    for (uint256 j=0; j < rewardsToGive; j++) {
       giveReward(sender.id, _tags);
     }
   }
@@ -72,6 +73,7 @@ contract YKTranches is Oracular, YKStructs {
       recipient:  _id,
       amount:     REWARD_AMOUNT,
       available:  REWARD_AMOUNT,
+      block:      block.number,
       tags:       _tags,
       message:    ''
     });
@@ -196,6 +198,9 @@ contract YKTranches is Oracular, YKStructs {
     out = out.toSlice().concat(s.toSlice());
     out = out.toSlice().concat(',"available":'.toSlice());
     s = uint2str(tranche.available);
+    out = out.toSlice().concat(s.toSlice());
+    out = out.toSlice().concat(',"block":'.toSlice());
+    s = uint2str(tranche.block);
     out = out.toSlice().concat(s.toSlice());
     out = out.toSlice().concat(',"message":"'.toSlice());
     s = getMessageJSONFrom(tranche.message);

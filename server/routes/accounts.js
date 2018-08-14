@@ -247,7 +247,7 @@ router.post('/give', function(req, res, next) {
     req.body.amount,
     req.body.message || '',
   );
-  eth.doSend(method, res, 1, 3, function() {
+  eth.doSend(method, res, 1, 4, function() {
     if (process.env.NODE_ENV!="test" && recipient.startsWith("mailto:")) {
       var docRef = firebase.db.collection('email-preferences').doc(recipient);
       docRef.get().then((doc) => {
