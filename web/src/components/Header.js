@@ -17,21 +17,24 @@ class Header extends React.Component {
           <Navbar.Brand>
             <Link to='/'>YKarma</Link>
           </Navbar.Brand>
+          <Navbar.Toggle />
         </Navbar.Header>
-        <Nav>
-          { !this.props.user || !this.props.user.uid ?
-              <NavItem key='login' href='/login'> Login</NavItem>
-          : [
-              <NavItem key='profile' href='/profile'>Profile</NavItem>,
-              <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>,
-              <NavItem key='signout' href='/signOut'>Sign Out</NavItem>,
-          ]}
-          { this.props.user && this.props.user.isAdmin ?
-            [
-              <NavItem key='admin' href='/admin'>Admin</NavItem>
-            ]
-          : null}
-        </Nav>
+        <Navbar.Collapse>
+          <Nav>
+            { !this.props.user || !this.props.user.uid ?
+                <NavItem key='login' href='/login'> Login</NavItem>
+            : [
+                <NavItem key='profile' href='/profile'>Profile</NavItem>,
+                <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>,
+                <NavItem key='signout' href='/signOut'>Sign Out</NavItem>,
+            ]}
+            { this.props.user && this.props.user.isAdmin ?
+              [
+                <NavItem key='admin' href='/admin'>Admin</NavItem>
+              ]
+            : null}
+          </Nav>
+        </Navbar.Collapse>
       </Navbar>
     );
   }

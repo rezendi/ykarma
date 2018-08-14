@@ -95,7 +95,7 @@ class Profile extends React.Component {
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
-                    <img style={{float:"right"}} src={this.props.user.providerData[0].photoURL}/>
+                    <img style={{float:"right"}} width={64} height={64} src={this.props.user.providerData[0].photoURL}/>
                   </Col> }
                 </Row>
               </Panel.Body>
@@ -111,7 +111,9 @@ class Profile extends React.Component {
                   <Col md={12}>
                     <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
                         <label htmlFor="name">Name</label>
+                        &nbsp;
                         <Field name="name" component="input" type="text"/>
+                        &nbsp;
                         <Button bsStyle="info" type="submit">Edit</Button>
                     </form>
                   </Col>
@@ -123,7 +125,7 @@ class Profile extends React.Component {
                     { this.props.user.email &&
                     (this.props.user.handle || JSON.parse(localStorage.getItem("additionalTwitterInfo") || '{}').username) &&
                     <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button> }
-                    { !this.props.user.email &&
+                    { this.props.user.uid && !this.props.user.email &&
                     <form onSubmit={this.props.handleSubmit(this.addEmail)}>
                       <label htmlFor="email">Email</label>
                       <Field name="email" component="input" type="text"/>
@@ -183,10 +185,10 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Received
+                My Given Karma
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received && this.props.user.received.map((tranche, idx) =>
+                {this.props.user.given && this.props.user.given.map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -195,10 +197,10 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Giving
+                My Received Karma
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given && this.props.user.given.map((tranche, idx) =>
+                {this.props.user.received && this.props.user.received.map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -217,6 +219,7 @@ Profile = reduxForm({
 function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
+    initialValues: state.user.metadata,
     ownedRewards: state.rewards.owned || [],
     vendedRewards: state.rewards.vended || [],
   }
