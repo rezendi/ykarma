@@ -138,7 +138,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.given.map((tranche, idx) =>
-                  <Tranche idx={idx} json={tranche}/>
+                  <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel> }
@@ -151,7 +151,7 @@ class Home extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.received.map((tranche, idx) =>
-                  <Tranche idx={idx} json={tranche}/>
+                  <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel> }

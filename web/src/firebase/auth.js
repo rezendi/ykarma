@@ -74,6 +74,9 @@ export const linkEmailViaEmailLink = async (user, href) => {
   }
 };
 
+export const currentUser = () => {
+  return firebase.auth().currentUser;
+};
 
 // Sign out
 export const doSignOut = () =>

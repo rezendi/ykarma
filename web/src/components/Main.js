@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, withRouter } from 'react-router-dom';
 import Home from './Home';
 import Profile from './Profile';
 import Login from './Login';
@@ -50,4 +50,6 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
-export default connect(mapStateToProps, null)(Main);
+Main = connect(mapStateToProps, null)(Main);
+
+export default withRouter(Main)

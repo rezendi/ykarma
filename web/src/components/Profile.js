@@ -63,10 +63,15 @@ class Profile extends React.Component {
     });
   }
 
+  getName = (user) => {
+    if (!user || !user.uid)
+      return "Nameless One";
+    if (!user.metadata || !user.metadata.name)
+      return user.displayName || "Nameless One";
+    return user.metadata.name;
+  }
+
   render() {
-    if (!this.props.user.uid || !this.props.user.metadata) {
-      return (<div>Loading...</div>)
-    }
     return (
       <Grid>
         <Row>
@@ -78,7 +83,7 @@ class Profile extends React.Component {
               <Panel.Body>
                 <Row>
                   <Col md={8}>
-                    Howdy, <b>{ this.props.user.metadata.name || this.props.user.displayName || "Nameless One" }</b>
+                    Howdy, <b>{ this.getName(this.props.user) }</b>
                     { false && JSON.stringify(this.props.user)}
                     <div>
                       { this.props.user.email}
@@ -88,7 +93,7 @@ class Profile extends React.Component {
                       @{ this.props.user.handle}
                     </div> }
                   </Col>
-                  { this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
+                  { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
                     <img style={{float:"right"}} src={this.props.user.providerData[0].photoURL}/>
                   </Col> }
@@ -155,7 +160,7 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.vendedRewards.map(reward =>
-                  <RewardRow reward={reward} showAvailable={true} />
+                  <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                 )}
               </Panel.Body>
             </Panel>
@@ -167,7 +172,7 @@ class Profile extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 {this.props.ownedRewards.map(reward =>
-                  <RewardRow reward={reward}/>
+                  <RewardRow key={reward.id} reward={reward}/>
                 )}
               </Panel.Body>
             </Panel>
@@ -181,8 +186,8 @@ class Profile extends React.Component {
                 My Received
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received.map((tranche, idx) =>
-                  <Tranche idx={idx} json={tranche}/>
+                {this.props.user.received && this.props.user.received.map((tranche, idx) =>
+                  <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel>
@@ -193,8 +198,8 @@ class Profile extends React.Component {
                 My Giving
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given.map((tranche, idx) =>
-                  <Tranche idx={idx} json={tranche}/>
+                {this.props.user.given && this.props.user.given.map((tranche, idx) =>
+                  <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
             </Panel>
@@ -208,12 +213,6 @@ class Profile extends React.Component {
 Profile = reduxForm({
   form: 'profile',
 })(Profile);
-
-Profile = connect(
-  state => ({
-    initialValues: state.user.metadata
-  }),
-)(Profile)
 
 function mapStateToProps(state, ownProps) {
   return {

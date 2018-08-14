@@ -28,7 +28,7 @@ class Rewards extends React.Component {
                 </Panel.Heading>
                 <Panel.Body>
                   {this.props.availableRewards.map(reward => reward.ownerId === 0 && reward.vendorId !== this.props.user.ykid &&
-                    <RewardRow reward={reward} showAvailable={true} />
+                    <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                   )}
                 </Panel.Body>
               </Panel>
@@ -42,7 +42,7 @@ class Rewards extends React.Component {
                 </Panel.Heading>
                 <Panel.Body>
                   {this.props.vendedRewards.map(reward => reward.vendorId === this.props.user.ykid &&
-                    <RewardRow reward={reward} showAvailable={true} />
+                    <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                   )}
                 </Panel.Body>
               </Panel>
@@ -54,7 +54,7 @@ class Rewards extends React.Component {
                 </Panel.Heading>
                 <Panel.Body>
                   {this.props.ownedRewards.map(reward =>
-                    <RewardRow reward={reward}/>
+                    <RewardRow key={reward.id} reward={reward}/>
                   )}
                 </Panel.Body>
               </Panel>

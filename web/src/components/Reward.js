@@ -68,20 +68,24 @@ class Reward extends React.Component {
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  <div>Description: {this.props.reward.metadata.description}</div>
-                  <div>Cost: {this.props.reward.cost} {this.props.reward.tag} karma</div>
-                  <div>Available: {this.props.reward.quantity}</div>
+                  <Col md={6}>
+                    <i>Cost:</i> {this.props.reward.cost} "{this.props.reward.tag}" karma
+                    &nbsp;
+                    <i>Available:</i> {this.props.reward.quantity}
+                  </Col>
+                  <Col md={6}>
+                    <i>Description:</i> {this.props.reward.metadata.description}
+                  </Col>
                 </Row>
-                { this.props.reward.ownerId === this.props.user.ykid &&
+                <hr/>
                 <Row>
-                  You own this reward.
+                  <Col md={12}>
+                    { this.props.reward.ownerId === this.props.user.ykid &&
+                    <div>You own this reward.</div> }
+                    { this.props.reward.ownerId === 0 && this.getSpendable() !== "nada" && this.getSpendable() > 0 &&
+                    <Button bsStyle="info" type="submit" onClick={this.doPurchase}>Purchase</Button> }
+                  </Col>
                 </Row>
-                }
-                { this.props.reward.ownerId === 0 && this.getSpendable() !== "nada" && this.getSpendable() > 0 &&
-                <Row>
-                  <Button bsStyle="info" type="submit" onClick={this.doPurchase}>Purchase</Button>
-                </Row>
-                }
               </Panel.Body>
             </Panel>
           </Col>

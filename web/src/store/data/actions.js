@@ -74,8 +74,8 @@ export function fetchUser() {
   if (util.testMode()) {
     return userFetched(util.getWebTestUser());
   }
-  if (auth.currentUser) {
-    return fetchYkUser(auth.currentUser);
+  if (auth.currentUser()) {
+    return fetchYkUser(auth.currentUser());
   }
   return function(dispatch) {
     firebase.auth.onAuthStateChanged(user => {
