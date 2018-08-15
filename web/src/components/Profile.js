@@ -95,7 +95,7 @@ class Profile extends React.Component {
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
-                    <img style={{float:"right"}} width={64} height={64} src={this.props.user.providerData[0].photoURL}/>
+                    <img alt="avatar" style={{float:"right"}} width={64} height={64} src={this.props.user.providerData[0].photoURL}/>
                   </Col> }
                 </Row>
               </Panel.Body>

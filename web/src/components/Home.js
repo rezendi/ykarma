@@ -1,6 +1,7 @@
 import React from 'react';
-import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom';
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { Field, reduxForm } from 'redux-form';
 import { setLoading } from '../store/data/actions'
 import Api from '../store/Api';
@@ -24,6 +25,32 @@ class Home extends React.Component {
       total += parseInt(spendable[i].available, 10);
     }
     return total;
+  }
+
+  karmaBreakdown() {
+    var myTags = {};
+    const spendable = this.props.user.received || [];
+    for (var i=0; i < spendable.length; i++) {
+      const tags = spendable[i].tags.split(",");
+      for (var j in tags) {
+        var tag = tags[j];
+        myTags[tag] = myTags[tag] ? myTags[tag] + spendable[i].available : spendable[i].available;
+      }
+    }
+
+    var sortedTags = [];
+    for (var key in myTags) {
+      sortedTags.push({tag: key, avail: myTags[key]});
+    }
+    sortedTags = sortedTags.sort(function(a,b) {return (a.avail > b.avail) ? 1 : ((b.avail > a.avail) ? -1 : 0);} );
+    sortedTags = sortedTags.reverse();
+
+    var retval = "";
+    for (var i in sortedTags) {
+      retval+= `${sortedTags[i].avail} "${sortedTags[i].tag}"`;
+      retval += i < sortedTags.length - 1 ? ", " : " karma";
+    }
+    return retval;
   }
 
   render() {
@@ -116,13 +143,10 @@ class Home extends React.Component {
                     <hr/>
                   </Row>
                   <Row>
-                    By tag if relevant
+                    <Link to="/rewards">View Available Rewards</Link>
                   </Row>
                   <Row>
-                    Top affordable reward
-                  </Row>
-                  <Row>
-                    Create a reward
+                    Your karma by tag: { this.karmaBreakdown() }
                   </Row>
                 </Col>
               </Panel.Body>

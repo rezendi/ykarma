@@ -74,15 +74,16 @@ export const linkEmailViaEmailLink = async (user, href) => {
   }
 };
 
+// Current user
+
 export const currentUser = () => {
   return firebase.auth().currentUser;
 };
 
 // Sign out
+
 export const doSignOut = () =>
   auth.signOut();
-
-// Current user
 
 export const setToken = (idToken) => {
   const additionaTwitterlInfo = JSON.parse(localStorage.getItem("additionalTwitterInfo") || "{}")

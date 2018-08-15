@@ -35,54 +35,50 @@ class RewardForm extends React.Component {
         <Panel.Body>
           <form onSubmit={this.props.handleSubmit(this.submitForm)}>
             <Row>
-              <Col md={3}>
+              <Col md={2}>
                 <label htmlFor="name">Name</label>
               </Col>
-              <Col md={6}>
-                <Field name="name" component="input" type="text"/>
+              <Col md={8}>
+                <Field name="name" component="input" size="40" type="text"/>
               </Col>
             </Row>
             <Row>
-              <Col md={3}>
+              <Col md={2}>
                 <label htmlFor="description">Description</label>
               </Col>
-              <Col md={6}>
-                <Field name="description" component="input" type="textarea"/>
+              <Col md={8}>
+                <Field name="description" component="textarea" cols="40" type="textarea"/>
               </Col>
             </Row>
-            <Row>
-              <Col md={3}>
+             <Row>
+              <Col md={1}>
                 <label htmlFor="cost">Cost</label>
               </Col>
-              <Col md={6}>
-                <Field name="cost" component="input" type="text"/>
-              </Col>
-            </Row>
-            <Row>
               <Col md={3}>
-                <label htmlFor="quantity">Quantity</label>
+                <Field name="cost" component="input" size="8" placeholder="? karma" type="text"/>
               </Col>
-              <Col md={6}>
-                <Field name="quantity" component="input" type="text"/>
+              <Col md={1}>
+                <label htmlFor="quantity">Qty</label>
               </Col>
-            </Row>
-            <Row>
               <Col md={3}>
+                <Field name="quantity" component="input" size="4" defaultValue="1" type="text"/>
+              </Col>
+              <Col md={1}>
                 <label htmlFor="tag">Tag</label>
               </Col>
-              <Col md={6}>
-                <Field name="tag" component="input" type="text"/>
+              <Col md={3}>
+                <Field name="tag" component="input" size="8" defaultValue="alpha" type="text"/>
               </Col>
             </Row>
             <Row>
               &nbsp;
             </Row>
             <Row>
-              <Col md={3}>
+              <Col md={4}>
                 &nbsp;
               </Col>
-              <Col md={6}>
-                <Button bsStyle="info" type="submit">Offer</Button>
+              <Col md={8}>
+                <Button bsStyle="info" type="submit">Offer This Reward</Button>
               </Col>
             </Row>
           </form>
@@ -106,8 +102,8 @@ function mapStateToProps(state, ownProps) {
       name: state.reward.metadata ? state.reward.metadata.name : '',
       description: state.reward.metadata ? state.reward.metadata.description : '',
       cost: state.reward.cost,
-      quantity: state.reward.quantity,
-      tag: state.reward.tag
+      quantity: state.reward.quantity || 1,
+      tag: state.reward.tag || 'alpha',
     }
   };
 }

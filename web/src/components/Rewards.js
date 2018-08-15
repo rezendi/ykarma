@@ -1,6 +1,5 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { loadOwnedRewards, loadVendedRewards, loadAvailableRewards } from '../store/data/actions';
 import RewardForm from './RewardForm';
