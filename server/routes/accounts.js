@@ -77,7 +77,7 @@ router.get('/account/:id', function(req, res, next) {
   if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
-  getAccountFor(id, (account) => {
+  eth.getAccountFor(id, (account) => {
     console.log('callback', account);
     res.json(account);
   });
@@ -88,7 +88,7 @@ router.get('/account/:id', function(req, res, next) {
 router.get('/me', function(req, res, next) {
   //console.log("session", req.session);
   if (req.session.ykid) {
-    getAccountFor(req.session.ykid, (account) => {
+    eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
       // console.log("account", account);
       res.json(account);
@@ -101,7 +101,10 @@ router.get('/me', function(req, res, next) {
     }
     getAccountForUrl(url, (account) => {
       getSessionFromAccount(req, account);
-      res.json(account);
+      eth.getCommunityFor(req.session.ykid, (community) => {
+        account.community = community;
+        res.json(account);
+      });
     });
   }
 });
@@ -305,23 +308,6 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-function getAccountFor(id, callback) {
-  var method = eth.contract.methods.accountForId(id);
-  console.log("accountForId", id);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getAccountFor error', error);
-    } else {
-      //console.log('getAccountFor result', result);
-      var account = getAccountFromResult(result);
-      callback(account);
-    }
-  })
-  .catch(function(error) {
-    console.log('getAccountFor call error ' + id, error);
-  });
-}
-
 function getAccountWithinCommunity(communityId, idx, callback) {
   var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
   // console.log("accountWithinCommunity idx "+idx, communityId);
@@ -330,7 +316,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
       console.log('accountWithinCommunity error', error);
     } else {
       // console.log('accountWithinCommunity result', result);
-      var account = getAccountFromResult(result);
+      var account = eth.getAccountFromResult(result);
       callback(account);
     }
   })
@@ -347,12 +333,12 @@ function getAccountForUrl(url, callback) {
       console.log('getAccountForUrl error', error);
     } else {
       // console.log('getAccountForUrl result', result);
-      var account = getAccountFromResult(result);
+      var account = eth.getAccountFromResult(result);
       callback(account);
     }
   })
   .catch(function(error) {
-    console.log('getAccountFor call error ' + url, error);
+    console.log('getAccountForUrl call error ' + url, error);
   });
 }
 
@@ -364,7 +350,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
       console.log('accountWithinCommunity error', error);
     } else {
       // console.log('accountWithinCommunity result', result);
-      var account = getAccountFromResult(result);
+      var account = eth.getAccountFromResult(result);
       callback(account);
     }
   })
@@ -428,22 +414,6 @@ function getSessionFromAccount(req, account) {
       req.session.handle = url.substring(20);
     }
   }
-}
-
-function getAccountFromResult(result) {
-  // console.log("result",result);
-  return {
-    id:           parseInt(result[0], 10),
-    communityId:  parseInt(result[1], 10),
-    userAddress:  result[2],
-    flags:        result[3],
-    metadata:     JSON.parse(result[4] || '{}'),
-    urls:         result[5],
-    rewards:      result[6],
-    givable:      parseInt(result[7], 10),
-    given:        JSON.parse(result[8] || '{}'),
-    received:     JSON.parse(result[9] || '{}'),
-  };
 }
 
 function sendKarmaSentMail(sender, recipient, amount) {

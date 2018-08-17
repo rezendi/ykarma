@@ -129,6 +129,7 @@ describe('Account', function () {
 
 describe('Reward', function () {
 
+  // assumes a reward added as part of deploy
   it('should add, get, update, and delete a reward', function (done) {
     this.timeout(5000);
     var rewardId = 1;
@@ -148,13 +149,13 @@ describe('Reward', function () {
               if (err) done (err);
               var rwds = JSON.parse(res.text).rewards;
               //console.log("rwds", rwds);
-              expect(rwds.length).to.equal(1);
+              expect(rwds.length).to.equal(2);
               //expect(rwds.length).to.be.above(0);
-              expect(JSON.parse(rwds[0].metadata).name).to.equal("Test Reward One");
-              expect(rwds[0].id).to.not.equal(0);
-              expect(rwds[0].cost).to.equal(10);
-              expect(rwds[0].tag).to.equal("test");
-              rewardId = rwds[0].id;
+              expect(JSON.parse(rwds[1].metadata).name).to.equal("Test Reward One");
+              expect(rwds[1].id).to.not.equal(0);
+              expect(rwds[1].cost).to.equal(10);
+              expect(rwds[1].tag).to.equal("test");
+              rewardId = rwds[1].id;
               api.put('/api/rewards/update')
                 .send({"reward":{"id":rewardId, "tag":"test", "metadata":'{"name":"Updated Test Reward One"}'}})
                 .set('Cookie', TestCookies).expect(200)
@@ -180,7 +181,7 @@ describe('Reward', function () {
                               if (err) done (err);
                               var rwds = JSON.parse(res.text).rewards;
                               console.log("got",rwds);
-                              expect(rwds.length).to.equal(0);
+                              expect(rwds.length).to.equal(1);
                               done();
                             });
                         });

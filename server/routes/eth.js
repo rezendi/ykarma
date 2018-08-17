@@ -25,7 +25,7 @@ const getFromAccount = function() {
       return getFromAccount();
     });
   });
-}
+};
 
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
   var notifying = false;
@@ -53,7 +53,66 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
     console.log('gas estimation call error', error);
     res.json({"success":false, "error": error});
   });
+};
+
+// TODO: cache on redis?
+
+function getAccountFor(id, callback) {
+  var method = eth.contract.methods.accountForId(id);
+  console.log("accountForId", id);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('getAccountFor error', error);
+    } else {
+      //console.log('getAccountFor result', result);
+      var account = getAccountFromResult(result);
+      callback(account);
+    }
+  })
+  .catch(function(error) {
+    console.log('getAccountFor call error ' + id, error);
+  });
 }
+
+function getAccountFromResult(result) {
+  // console.log("result",result);
+  return {
+    id:           parseInt(result[0], 10),
+    communityId:  parseInt(result[1], 10),
+    userAddress:  result[2],
+    flags:        result[3],
+    metadata:     JSON.parse(result[4] || '{}'),
+    urls:         result[5],
+    rewards:      result[6],
+    givable:      parseInt(result[7], 10),
+    given:        JSON.parse(result[8] || '{}'),
+    received:     JSON.parse(result[9] || '{}'),
+  };
+}
+
+const getCommunityFor = function (id, callback) {
+  var method = contract.methods.communityForId(id);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('getCommunityFor error', error);
+    } else {
+      //console.log('getCommunityFor result', result);
+      var community = {
+        id:           parseInt(result[0], 10),
+        adminAddress: result[1],
+        isClosed:     result[2],
+        domain:       result[3],
+        metadata:     JSON.parse(result[4] || '{}'),
+        tags:         result[5],
+        accounts:     parseInt(result[6], 10)
+      };
+      callback(community);
+    }
+  })
+  .catch(function(error) {
+    console.log('getCommunityFor call error ' + id, error);
+  });
+};
 
 
 module.exports = {
@@ -61,5 +120,8 @@ module.exports = {
     contract:  contract,
     doSend:    doSend,
     GAS:       GAS,
-    getFromAccount: getFromAccount,
+    getFromAccount:        getFromAccount,
+    getAccountFor:         getAccountFor,
+    getAccountFromResult:  getAccountFromResult,
+    getCommunityFor:       getCommunityFor,
 };

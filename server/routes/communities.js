@@ -12,7 +12,7 @@ const ADMIN_ID = 1;
 
 // GET set up
 router.get('/setup', function(req, res, next) {
-  getCommunityFor(1, (community) => {
+  eth.getCommunityFor(1, (community) => {
     if (community.id !== 0) {
       return res.json({"success":true, 'message':'Redundant'});
     }
@@ -32,7 +32,7 @@ router.get('/', function(req, res, next) {
     } else {
       console.log('getCommunityCount result', result);
       for (var i = 0; i < result; i++) {
-        getCommunityFor(i+1, (community) => {
+        eth.getCommunityFor(i+1, (community) => {
           communities.push(community);
           //console.log('callback', communities);
           if (communities.length >= result) {
@@ -51,7 +51,7 @@ router.get('/', function(req, res, next) {
 /* GET community details */
 router.get('/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
-  getCommunityFor(id, (community) => {
+  eth.getCommunityFor(id, (community) => {
     console.log('callback', community);
     res.json(community);
   });
@@ -110,33 +110,5 @@ router.delete('/:id', function(req, res, next) {
   var method = eth.contract.methods.deleteCommunity(req.params.id);
   eth.doSend(method,res);
 });
-
-/**
- * Ethereum methods
- */
-
-function getCommunityFor(id, callback) {
-  var method = eth.contract.methods.communityForId(id);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getCommunityFor error', error);
-    } else {
-      //console.log('getCommunityFor result', result);
-      var community = {
-        id:           parseInt(result[0], 10),
-        adminAddress: result[1],
-        isClosed:     result[2],
-        domain:       result[3],
-        metadata:     JSON.parse(result[4] || '{}'),
-        tags:         result[5],
-        accounts:     parseInt(result[6], 10)
-      };
-      callback(community);
-    }
-  })
-  .catch(function(error) {
-    console.log('getCommunityFor call error ' + id, error);
-  });
-}
 
 module.exports = router;
