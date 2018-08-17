@@ -58,7 +58,7 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
 // TODO: cache on redis?
 
 function getAccountFor(id, callback) {
-  var method = eth.contract.methods.accountForId(id);
+  var method = contract.methods.accountForId(id);
   console.log("accountForId", id);
   method.call(function(error, result) {
     if (error) {

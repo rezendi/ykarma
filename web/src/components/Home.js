@@ -46,9 +46,9 @@ class Home extends React.Component {
     sortedTags = sortedTags.reverse();
 
     var retval = "";
-    for (var i in sortedTags) {
-      retval+= `${sortedTags[i].avail} "${sortedTags[i].tag}"`;
-      retval += i < sortedTags.length - 1 ? ", " : " karma";
+    for (var k in sortedTags) {
+      retval+= `${sortedTags[k].avail} "${sortedTags[k].tag}"`;
+      retval += k < sortedTags.length - 1 ? ", " : " karma";
     }
     return retval;
   }

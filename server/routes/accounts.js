@@ -13,6 +13,8 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
+accountCache = {};
+
 const ADMIN_ID = 1;
 const ADMIN_EMAIL = 'jon@rezendi.com';
 
@@ -90,9 +92,11 @@ router.get('/me', function(req, res, next) {
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
-      // console.log("account", account);
-      hydrateAccount(account, () => {
-        res.json(account);
+      eth.getCommunityFor(req.session.ykid, (community) => {
+        account.community = community;
+        hydrateAccount(account, () => {
+          res.json(account);
+        });
       });
     });
   } else {
@@ -105,7 +109,9 @@ router.get('/me', function(req, res, next) {
       getSessionFromAccount(req, account);
       eth.getCommunityFor(req.session.ykid, (community) => {
         account.community = community;
-        res.json(account);
+        hydrateAccount(account, () => {
+          res.json(account);
+        });
       });
     });
   }
@@ -401,31 +407,44 @@ function removeUrlFromAccount(id, url, callback) {
 }
 
 function hydrateAccount(account, done) {
-  console.log("hydrating");
-  var givenHydrated = 0;
-  var receivedHydrated = 0;
+  var hydrated = 0;
   for (var i = 0; i < account.given.length; i++) {
-    eth.getAccountFor(account.given[i].receiver, (receiverAccount) => {
-      console.log("got account", receiverAccount);
-      account.given[i].receiverDetails = receiverAccount;
-      console.log("account", account);
-      givenHydrated += 1;
-      if (givenHydrated == account.given.length && receivedHydrated == account.received.length) {
-         done();
+    var given = account.given[i];
+    hydrateTranche(given, true, () => {
+      hydrated += 1;
+      if (hydrated == account.given.length + account.received.length) {
+        done();
       }
     });
   }
   for (var j = 0; j < account.received.length; j++) {
-    eth.getAccountFor(account.given[j].sender, (senderAccount) => {
-      account.given[j].senderDetails = senderAccount;
-      receivedHydrated += 1;
-      if (givenHydrated == account.given.length && receivedHydrated == account.received.length) {
-         done();
+    var received = account.received[j];
+    hydrateTranche(received, false, () => {
+      hydrated += 1;
+      if (hydrated == account.given.length + account.received.length) {
+        done();
       }
     });
   }
 }
 
+function hydrateTranche(tranche, given, done) {
+  const id = given ? tranche.receiver : tranche.sender;
+  if (id in accountCache) {
+    tranche.details = accountCache[id];
+    done();
+  } else {
+    eth.getAccountFor(id, (account) => {
+      tranche.details = {
+        metadata:     account.metadata,
+        urls:         account.urls,
+        communityId : account.communityId
+      };
+      accountCache[id] = tranche.details;
+      done();
+    });
+  }
+}
 
 // Utility functions
 
