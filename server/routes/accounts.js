@@ -91,7 +91,9 @@ router.get('/me', function(req, res, next) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
       // console.log("account", account);
-      res.json(account);
+      hydrateAccount(account, () => {
+        res.json(account);
+      });
     });
   } else {
   var url = req.session.email || req.session.handle;
@@ -396,6 +398,32 @@ function removeUrlFromAccount(id, url, callback) {
       }
     });
   });
+}
+
+function hydrateAccount(account, done) {
+  console.log("hydrating");
+  var givenHydrated = 0;
+  var receivedHydrated = 0;
+  for (var i = 0; i < account.given.length; i++) {
+    eth.getAccountFor(account.given[i].receiver, (receiverAccount) => {
+      console.log("got account", receiverAccount);
+      account.given[i].receiverDetails = receiverAccount;
+      console.log("account", account);
+      givenHydrated += 1;
+      if (givenHydrated == account.given.length && receivedHydrated == account.received.length) {
+         done();
+      }
+    });
+  }
+  for (var j = 0; j < account.received.length; j++) {
+    eth.getAccountFor(account.given[j].sender, (senderAccount) => {
+      account.given[j].senderDetails = senderAccount;
+      receivedHydrated += 1;
+      if (givenHydrated == account.given.length && receivedHydrated == account.received.length) {
+         done();
+      }
+    });
+  }
 }
 
 

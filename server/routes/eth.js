@@ -85,8 +85,8 @@ function getAccountFromResult(result) {
     urls:         result[5],
     rewards:      result[6],
     givable:      parseInt(result[7], 10),
-    given:        JSON.parse(result[8] || '{}'),
-    received:     JSON.parse(result[9] || '{}'),
+    given:        JSON.parse(result[8] || '[]'),
+    received:     JSON.parse(result[9] || '[]'),
   };
 }
 
