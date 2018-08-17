@@ -100,7 +100,7 @@ const getCommunityFor = function (id, callback) {
       var community = {
         id:           parseInt(result[0], 10),
         adminAddress: result[1],
-        isClosed:     result[2],
+        flags:        result[2],
         domain:       result[3],
         metadata:     JSON.parse(result[4] || '{}'),
         tags:         result[5],

@@ -89,7 +89,7 @@ router.post('/create', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var reward = req.body.reward;
-  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags || '0x00');
+  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag || '', JSON.stringify(reward.metadata), reward.flags || '0x00');
   eth.doSend(method, res);
 });
 

@@ -64,7 +64,7 @@ class RewardForm extends React.Component {
                 <Field name="quantity" component="input" size="4" defaultValue="1" type="text"/>
               </Col>
               <Col md={1}>
-                <label htmlFor="tag">Tag</label>
+                <label htmlFor="tag">Karma Flavor</label>
               </Col>
               <Col md={3}>
                 <Field name="tag" component="input" size="8" defaultValue="alpha" type="text"/>

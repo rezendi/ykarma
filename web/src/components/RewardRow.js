@@ -9,8 +9,9 @@ class RewardRow extends React.Component {
         <Col md={12}>
           <Link to={`/reward/${this.props.reward.id}`}>{this.props.reward.metadata.name || 'n/a'}</Link>
           &nbsp;
-          <span>cost: {this.props.reward.cost} "{this.props.reward.tag}" karma</span>
-          &nbsp;
+          <span>cost: {this.props.reward.cost}</span>
+          {this.props.reward.tag && <span> "{this.props.reward.tag}" </span>}
+          <span> karma</span>
           { this.props.showAvailable &&
           <span>, {this.props.reward.quantity} available</span> }
         </Col>

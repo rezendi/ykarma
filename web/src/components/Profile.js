@@ -86,11 +86,11 @@ class Profile extends React.Component {
                     Howdy, <b>{ this.getName(this.props.user) }</b>
                     { false && JSON.stringify(this.props.user)}
                     <div>
-                      { this.props.user.email}
+                      <i>{ this.props.user.email }</i>
                     </div>
                     { this.props.user.handle &&
                     <div>
-                      @{ this.props.user.handle}
+                      <i>@{ this.props.user.handle}</i>
                     </div> }
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
@@ -120,32 +120,39 @@ class Profile extends React.Component {
                 </Row>
                 <hr/>
                 <Row>
-                  <Col md={12}>
-                    { !this.props.user.handle && <Button bsStyle="info" type="submit" onClick={this.addTwitter}>Add Twitter</Button> }
-                    { this.props.user.email &&
-                    (this.props.user.handle || JSON.parse(localStorage.getItem("additionalTwitterInfo") || '{}').username) &&
-                    <Button type="submit" onClick={this.removeTwitter}>Remove Twitter</Button> }
-                    { this.props.user.uid && !this.props.user.email &&
+                  { !this.props.user.handle &&
+                  <Col md={4}>
+                    <Button bsStyle="info" type="submit" onClick={this.addTwitter}>Add Twitter</Button>
+                  </Col> }
+
+                  { this.props.user.email &&
+                  (this.props.user.handle || JSON.parse(localStorage.getItem("additionalTwitterInfo") || '{}').username ||
+                   (this.props.user.providerData.length > 0 && this.props.user.providerData[0].providerId==="twitter.com")) &&
+                  <Col md={4}>
+                    <Button bsStyle="info" type="submit" onClick={this.removeTwitter}>Remove Twitter</Button>
+                  </Col> }
+
+                  { this.props.user.uid && !this.props.user.email &&
+                  <Col md={8}>
                     <form onSubmit={this.props.handleSubmit(this.addEmail)}>
                       <label htmlFor="email">Email</label>
                       <Field name="email" component="input" type="text"/>
                       <Button bsStyle="info" type="submit">Add Email</Button>
-                    </form> }
-                      </Col>
-                </Row>
-                { this.props.user.email && this.props.user.handle &&
-                <Row>
-                  <Col md={12}>
+                    </form>
+                  </Col> }
+
+                  { this.props.user.email && this.props.user.handle &&
+                  <Col md={4}>
                     <Button bsStyle="info" type="submit" onClick={this.removeEmail}>Remove Email</Button>
-                  </Col>
-                </Row> }
+                  </Col> }
+                </Row>
                 { false &&
                 <Row>
                   <p>
                   { JSON.stringify(this.props.user) }
-                  &nbsp;
+                  <hr/>
                   { (localStorage.getItem("additionalTwitterInfo") || '') }
-                  &nbsp;
+                  <hr/>
                   { (localStorage.getItem("additionalEmailInfo") || '') }
                   </p>
                 </Row> }

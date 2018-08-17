@@ -74,6 +74,7 @@ export function userReducer(state = initialState.user, action) {
         givable: yk.givable  || 0,
         given: yk.given || {},
         received: yk.received || {},
+        community: yk.community || {},
       }
     case types.TWITTER_ADDED:
       return { ...state, handle: action.handle }
