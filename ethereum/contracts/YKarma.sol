@@ -113,9 +113,7 @@ contract YKarma is Oracular, YKStructs {
     communityData.removeAccount(_communityId, _accountId);
   }
   
-  function deleteCommunity(uint256 _id) public {
-    Community memory community = communityData.communityForId(_id);
-    require (community.adminAddress == msg.sender || senderIsOracle());
+  function deleteCommunity(uint256 _id) public onlyOracle {
     communityData.deleteCommunity(_id);
   }
   
@@ -135,13 +133,18 @@ contract YKarma is Oracular, YKStructs {
     trancheData.recalculateBalances(_id);
   }
 
-  //TODO: move JSON data to separate pageable function
-  function accountForId(uint256 _id) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
+  function accountForId(uint256 _id) public onlyOracle view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
     Account memory a = accountData.accountForId(_id);
-    Community memory community = communityData.communityForId(a.communityId);
-    require (community.adminAddress == msg.sender || senderIsOracle());
     return (a.id, a.communityId, a.userAddress, a.flags, a.metadata, a.urls, a.rewardIds.length,
             trancheData.availableToGive(a.id), trancheData.givenToJSON(a.id), trancheData.receivedToJSON(a.id));
+  }
+  
+  function trancheTotalsForId(uint256 _id) public onlyOracle view returns (uint256, uint256) {
+    return trancheData.trancheTotalsForId(_id);
+  }
+  
+  function tranchesForId(uint256 _id, uint256 _page, uint256 _size, bool _sender) public onlyOracle view returns (string) {
+    return trancheData.tranchesToJSON(_id, _page, _size, _sender);
   }
   
   function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
@@ -155,9 +158,7 @@ contract YKarma is Oracular, YKStructs {
     return accountForId(id);
   }
   
-  function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public returns (uint256) {
-    Community memory community = communityData.communityForId(_communityId);
-    require (community.adminAddress == msg.sender || senderIsOracle());
+  function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOracle returns (uint256) {
     uint256 newAccountId = accountData.addAccount(_communityId, _address, _metadata, _url);
     communityData.addAccount(_communityId, newAccountId);
     return newAccountId;

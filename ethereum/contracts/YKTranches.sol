@@ -163,18 +163,24 @@ contract YKTranches is Oracular, YKStructs {
     return !s3.empty();
   }
   
+  function trancheTotalsForId(uint256 _id) public view onlyOracle returns (uint256, uint256) {
+    return (given[_id].length, received[_id].length);
+  }
+
   function givenToJSON(uint256 _id) public view onlyOracle returns (string) {
-    return tranchesToJSON(_id, true);
+    return tranchesToJSON(_id, 0, 10, true);
   }
 
   function receivedToJSON(uint256 _id) public view onlyOracle returns (string) {
-    return tranchesToJSON(_id, false);
+    return tranchesToJSON(_id, 0, 10, false);
   }
 
-  function tranchesToJSON(uint256 _id, bool sender) internal view returns (string) {
-    uint256[] memory trancheIds = sender ? given[_id] : received[_id];
+  function tranchesToJSON(uint256 _id, uint256 _page, uint256 _size, bool sender) public view onlyOracle returns (string) {
+    uint256[] memory trancheIds = sender ? given[_id] : received[_id];    
+    uint256 tStart = trancheIds.length < (_page+1) * _size ? 0 : (_page+1) * _size;
+    uint256 tEnd = tStart + _size > trancheIds.length ? trancheIds.length : tStart + _size;
     string memory json = "[";
-    for (uint i = 0; i < trancheIds.length; i++) {
+    for (uint256 i = tStart; i < tEnd; i++) {
       string memory trancheString = trancheToJSON(trancheIds[i]);
       json = json.toSlice().concat(trancheString.toSlice());
       if (i < trancheIds.length - 1) {
