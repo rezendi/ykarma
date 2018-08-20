@@ -40,6 +40,7 @@ app.use('/api/rewards', rewardsRouter);
 app.use('/api/communities', communitiesRouter);
 
 console.log("hostname", os.hostname());
+console.log("ykarma", process.env.YKARMA_ADDRESS);
 
 if (process.env.NODE_ENV == "production") {
   app.enable('trust proxy');
