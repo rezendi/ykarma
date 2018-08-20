@@ -2,14 +2,35 @@ import React from 'react';
 import { Row, Col, Panel, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
-import { Field, reduxForm } from 'redux-form';
+import { Field, reduxForm, SubmissionError } from 'redux-form';
 import { setLoading } from '../store/data/actions'
 import Api from '../store/Api';
 
 class RewardForm extends React.Component {
 
   submitForm = async (values) => {
-    //console.log("submitting", body);
+    //console.log("submitting", values);
+    if (!values.name || values.name.length === 0) {
+      alert("Invalid name");
+      throw new SubmissionError({
+        cost: 'Invalid name',
+        _error: 'Reward creation failed',
+      }) ;
+    }
+    if (!values.cost || parseInt(values.cost, 10) <= 0) {
+      alert("Invalid cost");
+      throw new SubmissionError({
+        cost: 'Invalid cost',
+        _error: 'Reward creation failed',
+      }) ;
+    }
+    if (!values.quantity || parseInt(values.quantity, 10) <= 0) {
+      alert("Invalid quantity");
+      throw new SubmissionError({
+        cost: 'Invalid quantity',
+        _error: 'Reward creation failed',
+      }) ;
+    }
     this.props.setLoading(true);
     Api.upsertReward(values).then((res) => {
       this.props.setLoading(false);
@@ -61,13 +82,13 @@ class RewardForm extends React.Component {
                 <label htmlFor="quantity">Qty</label>
               </Col>
               <Col md={3}>
-                <Field name="quantity" component="input" size="4" defaultValue="1" type="text"/>
+                <Field name="quantity" component="input" size="4" type="text"/>
               </Col>
               <Col md={1}>
                 <label htmlFor="tag">Karma Flavor</label>
               </Col>
               <Col md={3}>
-                <Field name="tag" component="input" size="8" defaultValue="alpha" type="text"/>
+                <Field name="tag" component="input" size="8" type="text"/>
               </Col>
             </Row>
             <Row>

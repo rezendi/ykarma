@@ -1,6 +1,6 @@
 import * as types from './types';
 import Api from '../Api';
-import util from '../util';
+import util from '../../utils/util';
 import { auth, firebase } from '../../firebase';
 
 

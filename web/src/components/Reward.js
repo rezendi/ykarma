@@ -69,7 +69,7 @@ class Reward extends React.Component {
               <Panel.Body>
                 <Row>
                   <Col md={6}>
-                    <i>Cost:</i> {this.props.reward.cost} "{this.props.reward.tag}" karma
+                    <i>Cost:</i> {this.props.reward.cost} {this.props.reward.tag && "{this.props.reward.tag}" } karma
                     &nbsp;
                     <i>Available:</i> {this.props.reward.quantity}
                   </Col>
