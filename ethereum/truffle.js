@@ -5,6 +5,11 @@ module.exports = {
       port: 8545,
       network_id: '*',
       gas: 6721975,
+    },
+    production: {
+      host: 'eth',
+      port: 8545,
+      network_id: '*'
     }
   },
   optimizer: {

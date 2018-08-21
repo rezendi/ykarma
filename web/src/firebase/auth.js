@@ -7,7 +7,10 @@ var devActionCodeSettings = {
   handleCodeInApp: true,
 };
 
-const prodActionCodeSettings = devActionCodeSettings;
+const prodActionCodeSettings = {
+  url: 'http://localhost/finishSignIn',
+  handleCodeInApp: true,
+};
 
 // Link code settings
 var devLinkCodeSettings = {
@@ -15,7 +18,10 @@ var devLinkCodeSettings = {
   handleCodeInApp: true,
 };
 
-const prodLinkCodeSettings = devActionCodeSettings;
+const prodLinkCodeSettings = {
+  url: 'http://localhost/linkEmail',
+  handleCodeInApp: true,
+};
 
 const actionCodeSettings = process.env.NODE_ENV === 'production' ? prodActionCodeSettings : devActionCodeSettings;
 const linkCodeSettings = process.env.NODE_ENV === 'production' ? prodLinkCodeSettings : devLinkCodeSettings;
@@ -82,8 +88,13 @@ export const currentUser = () => {
 
 // Sign out
 
-export const doSignOut = () =>
+export const doSignOut = () => {
+  console.log("Signing out");
   auth.signOut();
+  setToken(null);
+  sessionStorage.clear();
+  localStorage.clear();
+}
 
 export const setToken = (idToken) => {
   const additionaTwitterlInfo = JSON.parse(localStorage.getItem("additionalTwitterInfo") || "{}")
@@ -95,14 +106,5 @@ export const setToken = (idToken) => {
     body: JSON.stringify({ token: idToken, handle: handle })
   });
 }
-
-auth.onAuthStateChanged(function (user) {
-  if (!user) {
-    console.log("Signing out");
-    setToken(null);
-    sessionStorage.clear();
-    localStorage.clear();
-  }
-});
 
 // TODO: linking credentials at the Firebase level per https://firebase.google.com/docs/auth/web/email-link-auth etc.

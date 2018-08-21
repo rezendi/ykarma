@@ -20,6 +20,7 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(YKCommunities, {from : owner});
     await deployer.deploy(YKRewards, {from : owner});
     await deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
+    setEnvAddress(YKarma.address);
     const ykt = await YKTranches.deployed();
     await ykt.addOracle(YKarma.address, {from: owner});
     const yka = await YKAccounts.deployed();
@@ -33,7 +34,7 @@ module.exports = (deployer, network, accounts) => {
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');
     await yk.replenish(1);
     
-    // test data if appropriate
+    // add test data if appropriate
     if (process.env.TRUFFLE_ENV !== 'production') {
       await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com');
       await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@rezendi.com');
@@ -42,10 +43,20 @@ module.exports = (deployer, network, accounts) => {
       await yk.give(2, 'mailto:jon@rezendi.com', 80, "Just a message");
       await yk.give(1, 'mailto:test@rezendi.com', 20, "Another message");
     }
+  });
+};
 
-    // update .env if appropriate
-    const filename = process.env.TRUFFLE_ENV === 'production' ? '../server/.env.production' : '../server/.env';
-    const fs = require('fs');
+function setEnvAddress(address) {
+  // update .env if appropriate
+  const fs = require('fs');
+  const filename = '../server/.env';
+  if (process.env.TRUFFLE_ENV === 'production') {
+    const s = `YKARMA_ADDRESS=${address}\n`;
+    fs.writeFile(filename, s, 'utf8', (err) => {
+      if (err) throw err;
+      console.log("Address written");
+    });
+  } else {
     fs.readFile(filename, "utf8", (err, data) => {
       var s = ""+data;
       if (err) throw err;
@@ -54,12 +65,12 @@ module.exports = (deployer, network, accounts) => {
         var start = s.indexOf('=', idx+1);
         var end = s.indexOf('\n', start+1);
         var addr = s.substring(start+1, end);
-        s = s.replace(addr, ""+YKarma.address);
+        s = s.replace(addr, ""+address);
         fs.writeFile(filename, s, 'utf8', (err) => {
           if (err) throw err;
           console.log("Address written");
         });
       }
     });
-  });
-};
+  }
+}

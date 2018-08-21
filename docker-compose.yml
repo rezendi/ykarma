@@ -1,13 +1,21 @@
 version: '2'
 services:
+  web:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+        - ./server/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - node
   node:
     build: .
     ports:
       - "8080:8080"
-      - "3001:3001"
     env_file: ./server/.env.production
     depends_on:
       - eth
+      - redis
   eth:
     image: foamspace/cliquebait:latest
     ports:
@@ -23,9 +31,3 @@ services:
     image: redis
     ports:
       - "6379:6379"
-  web:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-        - ./server/nginx.conf:/etc/nginx/nginx.conf

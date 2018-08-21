@@ -6,7 +6,6 @@
 */.gitignore
 */build
 */node_modules
-ethereum
 npm-debug.log
 */npm-debug.log
 *.komodoproject
