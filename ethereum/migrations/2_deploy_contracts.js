@@ -31,12 +31,35 @@ module.exports = (deployer, network, accounts) => {
     const yk = await YKarma.deployed();
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha,test');
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');
-    await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com');
-    await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@rezendi.com');
-    await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
     await yk.replenish(1);
-    await yk.replenish(2);
-    await yk.give(2, 'mailto:jon@rezendi.com', 80, "Just a message");
-    await yk.give(1, 'mailto:test@rezendi.com', 20, "Another message");
+    
+    // test data if appropriate
+    if (process.env.TRUFFLE_ENV !== 'production') {
+      await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com');
+      await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@rezendi.com');
+      await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
+      await yk.replenish(2);
+      await yk.give(2, 'mailto:jon@rezendi.com', 80, "Just a message");
+      await yk.give(1, 'mailto:test@rezendi.com', 20, "Another message");
+    }
+
+    // update .env if appropriate
+    const filename = process.env.TRUFFLE_ENV === 'production' ? '../server/.env.production' : '../server/.env';
+    const fs = require('fs');
+    fs.readFile(filename, "utf8", (err, data) => {
+      var s = ""+data;
+      if (err) throw err;
+      var idx = data.indexOf('YKARMA_ADDRESS');
+      if (idx > 0) {
+        var start = s.indexOf('=', idx+1);
+        var end = s.indexOf('\n', start+1);
+        var addr = s.substring(start+1, end);
+        s = s.replace(addr, ""+YKarma.address);
+        fs.writeFile(filename, s, 'utf8', (err) => {
+          if (err) throw err;
+          console.log("Address written");
+        });
+      }
+    });
   });
 };
