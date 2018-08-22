@@ -66,7 +66,7 @@ export function userReducer(state = initialState.user, action) {
         emailVerified:  fbase.emailVerified || false,
         uid:            fbase.uid || '',
         providerData:   fbase.providerData,
-        isAdmin:        fbase.email === "jon@rezendi.com",
+        isAdmin:        fbase.email === process.env.REACT_APP_ADMIN_EMAIL,
         ykid:           yk.id || 0,
         metadata:       yk.metadata || {},
         urls:           yk.urls || '',

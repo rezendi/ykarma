@@ -15,37 +15,36 @@ describe('Account', function () {
     api.get('/api/accounts/setup').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-      api.get('/api/accounts/url/test@rezendi.com')
+      api.get('/api/accounts/url/test@example.com')
         .set('Cookie', TestCookies).expect(200)
         .end(function (err, res) {
           if (err) done (err);
           var acct = JSON.parse(res.text);
-          //expect(acct.urls).to.equal("mailto:test@rezendi.com||https://twitter.com/testrezendi");
-          expect(acct.urls).to.equal("mailto:test@rezendi.com");
+          expect(acct.urls).to.equal("mailto:test@example.com");
           api.put('/api/accounts/addUrl')
-            .send({"url":"@testrezendi"})
+            .send({"url":"@testuser"})
             .set('Cookie', TestCookies).expect(200)
             .end(function (err, res) {
               if (err) done (err);
               expect(JSON.parse(res.text).success).to.equal(true);
-              api.get('/api/accounts/url/test@rezendi.com')
+              api.get('/api/accounts/url/test@example.com')
                 .set('Cookie', TestCookies).expect(200)
                 .end(function (err, res) {
                   if (err) done (err);
                   var acct = JSON.parse(res.text);
-                  expect(acct.urls).to.equal("mailto:test@rezendi.com||https://twitter.com/testrezendi");
+                  expect(acct.urls).to.equal("mailto:test@example.com||https://twitter.com/testuser");
                   api.put('/api/accounts/removeUrl')
-                    .send({"url":"@testrezendi"})
+                    .send({"url":"@testuser"})
                     .set('Cookie', TestCookies).expect(200)
                     .end(function (err, res) {
                       if (err) done (err);
                       expect(JSON.parse(res.text).success).to.equal(true);
-                      api.get('/api/accounts/url/test@rezendi.com')
+                      api.get('/api/accounts/url/test@example.com')
                         .set('Cookie', TestCookies).expect(200)
                         .end(function (err, res) {
                           if (err) done (err);
                           var acct = JSON.parse(res.text);
-                          expect(acct.urls).to.equal("mailto:test@rezendi.com");
+                          expect(acct.urls).to.equal("mailto:test@example.com");
                           done();
                         });
                     });
@@ -82,7 +81,7 @@ describe('Account', function () {
         .end(function (err, res) {
           if (err) done (err);
           expect(JSON.parse(res.text).success).to.equal(true);
-          api.get('/api/accounts/url/test@rezendi.com')
+          api.get('/api/accounts/url/test@example.com')
             .set('Cookie', TestCookies).expect(200)
             .end(function (err, res) {
               if (err) done (err);
@@ -101,7 +100,7 @@ describe('Account', function () {
     api.get('/api/accounts/setup').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-      api.get('/api/accounts/url/test@rezendi.com')
+      api.get('/api/accounts/url/test@example.com')
         .set('Cookie', TestCookies).expect(200)
         .end(function (err, res) {
           if (err) done (err);
@@ -112,7 +111,7 @@ describe('Account', function () {
             .end(function (err, res) {
               if (err) done (err);
               expect(JSON.parse(res.text).success).to.equal(true);
-              api.get('/api/accounts/url/test@rezendi.com')
+              api.get('/api/accounts/url/test@example.com')
                 .set('Cookie', TestCookies).expect(200)
                 .end(function (err, res) {
                   if (err) done (err);

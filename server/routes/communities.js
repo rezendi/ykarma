@@ -8,8 +8,6 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-const ADMIN_ID = 1;
-
 // GET set up
 router.get('/setup', function(req, res, next) {
   eth.getCommunityFor(1, (community) => {
@@ -60,7 +58,7 @@ router.get('/:id', function(req, res, next) {
 /* POST new community. */
 router.post('/create', function(req, res, next) {
   console.log("session", req.session);
-  if (parseInt(req.session.ykid) !== ADMIN_ID && req.session.email !== 'jon@rezendi.com') {
+  if (req.session.email !== process.env.ADMIN_EMAIL) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   var community = req.body.community;
@@ -81,7 +79,7 @@ router.post('/create', function(req, res, next) {
 /* PUT edit community */
 router.put('/update', function(req, res, next) {
   var community = req.body.community;
-  if (parseInt(req.session.ykid) !== ADMIN_ID && parseInt(req.session.communityAdminId) !== community.id) {
+  if (req.session.email !== process.env.ADMIN_EMAIL && parseInt(req.session.communityAdminId) !== community.id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   console.log("community", JSON.stringify(community));
@@ -101,7 +99,7 @@ router.put('/update', function(req, res, next) {
 
 /* DELETE remove community. */
 router.delete('/:id', function(req, res, next) {
-  if (parseInt(req.session.ykid) !== ADMIN_ID) {
+  if (req.session.email !== process.env.ADMIN_EMAIL) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   if (req.params.id === 0) {

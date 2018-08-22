@@ -7,7 +7,7 @@ class util {
     return {
       fbase: {
         displayName: "Test User",
-        email: "test@rezendi.com",
+        email: "test@example.com",
         emailVerified: true,
         uid: "test",
         handle: "testuser",

@@ -13,26 +13,23 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-accountCache = {};
+accountCache = {}; // TODO probably move this to redis
 
-const ADMIN_ID = 1;
-const ADMIN_EMAIL = 'jon@rezendi.com';
-
-// GET set up
+// GET set upFADMIN
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.log("setting up test data");
-    req.session.email = "test@rezendi.com";
+    req.session.email = "test@example.com";
     req.session.ykid = 2;
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
   } else {
     util.log("setting up admin account");
-    getAccountForUrl('mailto:'+ADMIN_URL, (account) => {
+    getAccountForUrl('mailto:'+process.env.ADMIN_EMAIL, (account) => {
       if (account.id !== '0') {
         return res.json({"success":true, 'message':'Redundant'});
       }
-      var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');
+      var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Admin"}', 'mailto:'+process.env.ADMIN_EMAIL);
       doSend(method, res, 1, 2);
     });
   }
@@ -43,7 +40,7 @@ router.get('/setup', function(req, res, next) {
 /* GET account list */
 router.get('/for/:communityId', function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
-  if (req.session.ykid !== ADMIN_ID && req.session.communityAdminId !== communityId) {
+  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.communityAdminId !== communityId) {
     util.log("not allowed to get accounts for",communityId);
     util.log("communityAdminId",req.session.communityAdminId);
     return res.json([]);
@@ -76,7 +73,7 @@ router.get('/for/:communityId', function(req, res, next) {
 /* GET account details */
 router.get('/account/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
-  if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
+  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   eth.getAccountFor(id, (account) => {
@@ -124,7 +121,7 @@ router.get('/me', function(req, res, next) {
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
-  if (req.session.email !== url && req.session.handle !== url && req.session.ykid !== ADMIN_ID) {
+  if (req.session.email !== url && req.session.handle !== url && req.session.email !== process.env.ADMIN_EMAIL) {
     util.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
   }
@@ -141,7 +138,7 @@ router.get('/url/:url', function(req, res, next) {
 /* PUT replenish */
 router.put('/replenish', function(req, res, next) {
   const id = parseInt(req.body.id || req.session.ykid);
-  if (req.session.ykid !== ADMIN_ID && req.session.ykid !== id) {
+  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   var method = eth.contract.methods.replenish(id);
@@ -221,7 +218,7 @@ router.put('/update', function(req, res, next) {
   if (account.id === 0) {
     return res.json({"success":false, "error": 'Account ID not set'});
   }
-  if (req.session.ykid !== ADMIN_ID && req.session.ykid !== account.id) {
+  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== account.id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   //console.log("About to edit", account);
@@ -237,7 +234,7 @@ router.put('/update', function(req, res, next) {
 
 /* DELETE remove account. */
 router.delete('/destroy/:id', function(req, res, next) {
-  if (req.session.ykid !== ADMIN_ID) {
+  if (req.session.email !== process.env.ADMIN_EMAIL) {
     return res.json({"success":false, "error": "Admin only"});
   }
   if (req.params.id === 0) {
@@ -250,7 +247,7 @@ router.delete('/destroy/:id', function(req, res, next) {
 
 /* POST give coins */
 router.post('/give', function(req, res, next) {
-  var sender = req.session.ykid === ADMIN_ID ? req.body.id : req.session.ykid;
+  var sender = req.session.email !== process.env.ADMIN_EMAIL ? req.body.id : req.session.ykid;
   var recipient = getLongUrlFromShort(req.body.recipient);
   if (recipient.startsWith('error')) {
     return res.json({"success":false, "error": recipient});
