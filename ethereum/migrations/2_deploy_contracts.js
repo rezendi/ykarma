@@ -16,7 +16,7 @@ module.exports = (deployer, network, accounts) => {
     if (process.env.TRUFFLE_ENV === 'production') {
       if (process.env.YKARMA_ADDRESS) return;
       var data = await checkEnvFile();
-      if (data.indexOf("YKARMA_ADDRESS") >= 0) return;
+      if (data.indexOf("YKARMA_ADDRESS=") >= 0) return;
     }
 
     await deployer.deploy(strings, {from : owner});
