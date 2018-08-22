@@ -21,8 +21,11 @@ function verifyURLs(urlsString) {
   return true;
 }
 
-function log(a,b) {
-  console.log(a,b);
+// TODO: real logging
+function log(a,b,c) {
+  if (c!==0) { // take this out for verbose logging
+    console.log(a,b);
+  }
 }
 
 module.exports = {
