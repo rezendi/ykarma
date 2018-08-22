@@ -58,23 +58,23 @@ function getTwitterHandleFromUrls(urlsString) {
 export function userReducer(state = initialState.user, action) {
   switch (action.type) {
     case types.USER:
-      const firebase = action.user.firebase;
+      const fbase = action.user.fbase;
       const yk = action.user.yk;
       return {
-        displayName: firebase.displayName || '',
-        email: firebase.email || '',
-        emailVerified: firebase.emailVerified || false,
-        uid: firebase.uid || '',
-        providerData: firebase.providerData,
-        isAdmin: firebase.email === "jon@rezendi.com",
-        ykid: yk.id || 0,
-        metadata: yk.metadata || {},
-        urls: yk.urls || '',
-        handle: getTwitterHandleFromUrls(yk.urls || ''),
-        givable: yk.givable  || 0,
-        given: yk.given || {},
-        received: yk.received || {},
-        community: yk.community || {},
+        displayName:    fbase.displayName || '',
+        email:          fbase.email || '',
+        emailVerified:  fbase.emailVerified || false,
+        uid:            fbase.uid || '',
+        providerData:   fbase.providerData,
+        isAdmin:        fbase.email === "jon@rezendi.com",
+        ykid:           yk.id || 0,
+        metadata:       yk.metadata || {},
+        urls:           yk.urls || '',
+        handle:         getTwitterHandleFromUrls(yk.urls || ''),
+        givable:        yk.givable  || 0,
+        given:          yk.given || {},
+        received:       yk.received || {},
+        community:      yk.community || {},
       }
     case types.TWITTER_ADDED:
       return { ...state, handle: action.handle }

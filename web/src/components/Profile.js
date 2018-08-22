@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
 import firebase from 'firebase/app'
 import 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../fbase';
 import { loadOwnedRewards, loadVendedRewards, setLoading } from '../store/data/actions'
 import Api from '../store/Api';
 import Tranche from './Tranche';

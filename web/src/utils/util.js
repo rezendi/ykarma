@@ -5,7 +5,7 @@ class util {
 
   static getWebTestUser() {
     return {
-      firebase: {
+      fbase: {
         displayName: "Test User",
         email: "test@rezendi.com",
         emailVerified: true,

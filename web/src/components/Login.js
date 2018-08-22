@@ -3,7 +3,7 @@ import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { Field, reduxForm } from 'redux-form';
 import firebase from 'firebase/app'
 import 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../fbase';
 
 class Login extends React.Component {
 

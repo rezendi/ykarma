@@ -1,7 +1,7 @@
 import * as types from './types';
 import Api from '../Api';
 import util from '../../utils/util';
-import { auth, firebase } from '../../firebase';
+import { auth, fbase } from '../../fbase';
 
 
 // Communities
@@ -78,7 +78,7 @@ export function fetchUser() {
     return fetchYkUser(auth.currentUser());
   }
   return function(dispatch) {
-    firebase.auth.onAuthStateChanged(user => {
+    fbase.auth.onAuthStateChanged(user => {
       return dispatch(fetchYkUser(user));
     });
   }
@@ -89,7 +89,7 @@ export function fetchYkUser(user) {
     return userFetched(util.getWebTestUser());
   }
   if (user === null) {
-    return userFetched({firebase:{}, yk:{}});
+    return userFetched({fbase:{}, yk:{}});
   }
   return function(dispatch, getState) {
     var forceRefresh = sessionStorage.getItem("currentToken") == null;
@@ -101,7 +101,7 @@ export function fetchYkUser(user) {
     return user.getIdToken(forceRefresh).then((idToken) => {
       if (!forceRefresh) {
         Api.loadMyYKAccount().then(loaded => {
-          dispatch(userFetched({ firebase:user, yk:loaded}));
+          dispatch(userFetched({ fbase:user, yk:loaded}));
         }).catch(error => {
           throw(error);
         });
@@ -113,7 +113,7 @@ export function fetchYkUser(user) {
           if (!result.ok) { return {}; }
           result.json().then((json) => {
             Api.loadMyYKAccount().then(loaded => {
-              dispatch(userFetched({ firebase:user, yk:loaded}));
+              dispatch(userFetched({ fbase:user, yk:loaded}));
             }).catch(error => {
               throw(error);
             });
@@ -136,7 +136,7 @@ export function userFetched(user) {
 
 export function loadAvailableRewards() {
   return function(dispatch) {
-    return firebase.auth.onAuthStateChanged(user => {
+    return fbase.auth.onAuthStateChanged(user => {
       return Api.loadAvailableRewards().then(result => {
           if (!result.ok) {
             return loadAvailableRewardsSuccess([]);
@@ -157,7 +157,7 @@ export function loadAvailableRewardsSuccess(rewards) {
 
 export function loadOwnedRewards() {
   return function(dispatch) {
-    return firebase.auth.onAuthStateChanged(user => {
+    return fbase.auth.onAuthStateChanged(user => {
       return Api.loadOwnedRewards().then(result => {
         if (!result.ok) {
           return loadOwnedRewardsSuccess([]);
@@ -178,7 +178,7 @@ export function loadOwnedRewardsSuccess(rewards) {
 
 export function loadVendedRewards() {
   return function(dispatch) {
-    return firebase.auth.onAuthStateChanged(user => {
+    return fbase.auth.onAuthStateChanged(user => {
       return Api.loadVendedRewards().then(result => {
         if (!result.ok) {
           return loadVendedRewardsSuccess([]);

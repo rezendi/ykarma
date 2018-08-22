@@ -1,11 +1,11 @@
 import React from 'react';
-import { auth, firebase } from '../firebase';
+import { auth, fbase } from '../fbase';
 import Api from '../store/Api';
 
 class LinkEmail extends React.Component {
 
   componentDidMount() {
-    firebase.auth.onAuthStateChanged(function (user) {
+    fbase.auth.onAuthStateChanged(function (user) {
       if (user) {
         auth.linkEmailViaEmailLink(user, window.location.href).then(result => {
           window.localStorage.removeItem('emailForLinkIn');
