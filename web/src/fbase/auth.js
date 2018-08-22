@@ -8,7 +8,7 @@ var devActionCodeSettings = {
 };
 
 const prodActionCodeSettings = {
-  url: `${process.env.PRODUCTION_ROOT}/finishSignIn`,
+  url: `${process.env.REACT_APP_PRODUCTION_ROOT}/finishSignIn`,
   handleCodeInApp: true,
 };
 
@@ -19,7 +19,7 @@ var devLinkCodeSettings = {
 };
 
 const prodLinkCodeSettings = {
-  url: `${process.env.PRODUCTION_ROOT}/linkEmail`,
+  url: `${process.env.REACT_APP_PRODUCTION_ROOT}/linkEmail`,
   handleCodeInApp: true,
 };
 
