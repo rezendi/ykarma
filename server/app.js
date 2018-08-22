@@ -20,7 +20,7 @@ var sessionConfig = {
     resave: false,
     httpOnly: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === "production" && os.hostname().indexOf('ykarma') >= 0 }
+    cookie: { secure: process.env.NODE_ENV === "production" && os.hostname().indexOf('ykarma.com') >= 0 }
 };
 if (process.env.NODE_ENV === "production") {
   var RedisStore = require('connect-redis')(session);
@@ -55,9 +55,9 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+  // TODO: set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = process.env.NODE_ENV == "development" ? err : {};
+  res.locals.error = process.env.NODE_ENV == "development" && false ? err : {};
 
   // render the error page
   console.log("error", err);

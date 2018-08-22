@@ -35,6 +35,7 @@ COPY ./server ./server/
 
 EXPOSE 3000
 EXPOSE 3001
+EXPOSE 8080
 
 WORKDIR /usr/src/app
 # [[ -z "${YKARMA_ADDRESS}" ]] && sleep 60; may be unnecessary
