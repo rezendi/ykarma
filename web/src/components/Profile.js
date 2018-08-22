@@ -2,7 +2,8 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
-import * as firebase from 'firebase'
+import firebase from 'firebase/app'
+import 'firebase/auth';
 import { auth } from '../firebase';
 import { loadOwnedRewards, loadVendedRewards, setLoading } from '../store/data/actions'
 import Api from '../store/Api';

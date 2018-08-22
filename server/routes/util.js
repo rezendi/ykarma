@@ -5,7 +5,7 @@ const isValidUrl = (string) => {
     new URL(string);
     return true;
   } catch (error) {
-    console.log("error",error);
+    log("error", error);
     return false;  
   }
 }
@@ -14,14 +14,18 @@ function verifyURLs(urlsString) {
   var split = urlsString.split(",");
   for (var i = 0; i < split.length; i++) {
     if (!isValidUrl(split[i])) {
-      console.log("invalid url",split[i])
+      log("invalid url", split[i]);
       return false;
     }
   }
   return true;
 }
 
+function log(a,b) {
+  console.log(a,b);
+}
 
 module.exports = {
   verifyURLs: verifyURLs,
+  log:        log,
 };

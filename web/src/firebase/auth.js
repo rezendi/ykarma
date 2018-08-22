@@ -1,5 +1,5 @@
+import firebase from 'firebase/app'
 import { auth } from './firebase';
-import * as firebase from 'firebase'
 
 // Action code settings
 var devActionCodeSettings = {

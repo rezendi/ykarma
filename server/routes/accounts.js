@@ -21,13 +21,13 @@ const ADMIN_EMAIL = 'jon@rezendi.com';
 // GET set up
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
-    console.log("setting up test data");
+    util.log("setting up test data");
     req.session.email = "test@rezendi.com";
     req.session.ykid = 2;
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
   } else {
-    console.log("setting up admin account");
+    util.log("setting up admin account");
     getAccountForUrl('mailto:'+ADMIN_URL, (account) => {
       if (account.id !== '0') {
         return res.json({"success":true, 'message':'Redundant'});
@@ -44,19 +44,19 @@ router.get('/setup', function(req, res, next) {
 router.get('/for/:communityId', function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
   if (req.session.ykid !== ADMIN_ID && req.session.communityAdminId !== communityId) {
-    console.log("not allowed to get accounts for",communityId);
-    console.log("communityAdminId",req.session.communityAdminId);
+    util.log("not allowed to get accounts for",communityId);
+    util.log("communityAdminId",req.session.communityAdminId);
     return res.json([]);
   }
-  console.log("getting accounts for",communityId);
+  util.log("getting accounts for",communityId);
   var accounts = [];
   var method = eth.contract.methods.getAccountCount(communityId);
   method.call(function(error, result) {
     if (error) {
-      console.log('getAccountCount error', error);
+      util.log('getAccountCount error', error);
       res.json([]);
     } else {
-      console.log('getAccountCount result', result);
+      util.log('getAccountCount result', result);
       for (var i = 0; i < result; i++) {
         getAccountWithinCommunity(communityId, i, (account) => {
           accounts.push(account);
@@ -69,7 +69,7 @@ router.get('/for/:communityId', function(req, res, next) {
     }
   })
   .catch(function(error) {
-    console.log('getAccountCount call error', error);
+    util.log('getAccountCount call error', error);
   });
 });
 
@@ -80,7 +80,7 @@ router.get('/account/:id', function(req, res, next) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   eth.getAccountFor(id, (account) => {
-    console.log('callback', account);
+    util.log('callback', account);
     res.json(account);
   });
 });
@@ -88,7 +88,7 @@ router.get('/account/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/me', function(req, res, next) {
-  //console.log("session", req.session);
+  util.log("me session", req.session);
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
@@ -106,10 +106,14 @@ router.get('/me', function(req, res, next) {
       return res.json({"success":false, "error": url});
     }
     getAccountForUrl(url, (account) => {
+      util.log("getting session from", account);
       getSessionFromAccount(req, account);
+      util.log("me new session", req.session);
       eth.getCommunityFor(req.session.ykid, (community) => {
+        util.log("got community", community);
         account.community = community;
         hydrateAccount(account, () => {
+          util.log("hydrated", account);
           res.json(account);
         });
       });
@@ -121,7 +125,7 @@ router.get('/me', function(req, res, next) {
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
   if (req.session.email !== url && req.session.handle !== url && req.session.ykid !== ADMIN_ID) {
-    console.log("Not authorized", req.params.url);
+    util.log("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
   }
   url = getLongUrlFromShort(url);
@@ -189,7 +193,7 @@ router.put('/addUrl', function(req, res, next) {
 router.put('/removeUrl', function(req, res, next) {
   var url = getLongUrlFromShort(req.body.url);
   if (url.startsWith("error")) {
-    console.log("removing url type", type);
+    util.log("removing url type", type);
     var type = req.body.type;
     if (type=="twitter") {
       if (!req.session.handle) {
@@ -251,7 +255,7 @@ router.post('/give', function(req, res, next) {
   if (recipient.startsWith('error')) {
     return res.json({"success":false, "error": recipient});
   }
-  console.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
+  util.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
   var method = eth.contract.methods.give(
     sender,
     recipient,
@@ -265,7 +269,7 @@ router.post('/give', function(req, res, next) {
         // TODO: query rather than get entire document?
         var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
         if (sendEmail) {
-          console.log("sending mail");
+          util.log("sending mail");
           const senderName = req.session.name || req.session.email;
           sendKarmaSentMail(senderName, recipient, req.body.amount);
           docRef.update({ [sender]:true }, { create: true } );
@@ -273,7 +277,7 @@ router.post('/give', function(req, res, next) {
         return res.json({"success":true});
       })
       .catch(err => {
-        console.log('Error getting document', err);
+        util.log('Error getting document', err);
         return res.json({"success":false, "error":err});
       });
     } else {
@@ -286,7 +290,7 @@ router.post('/give', function(req, res, next) {
 
 /* POST set token */
 router.post('/token/set', function(req, res, next) {
-  // console.log("token set", req.body);
+  util.log("token set", req.body);
   if (!req.body.token) {
     req.session.uid = null;
     req.session.name = null;
@@ -302,13 +306,13 @@ router.post('/token/set', function(req, res, next) {
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
     req.session.handle = null;
-    //console.log("decoded", JSON.stringify(decodedToken.firebase.identities));
+    //util.log("decoded", JSON.stringify(decodedToken.firebase.identities));
     const twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
     if (twitterIdentities.length > 0) {
       req.session.twitter_id = twitterIdentities[0];
       req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
     }
-    //console.log("session", req.session);
+    util.log("post token session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});
@@ -321,7 +325,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
   // console.log("accountWithinCommunity idx "+idx, communityId);
   method.call(function(error, result) {
     if (error) {
-      console.log('accountWithinCommunity error', error);
+      util.log('accountWithinCommunity error', error);
     } else {
       // console.log('accountWithinCommunity result', result);
       var account = eth.getAccountFromResult(result);
@@ -329,24 +333,25 @@ function getAccountWithinCommunity(communityId, idx, callback) {
     }
   })
   .catch(function(error) {
-    console.log('accountWithinCommunity call error ' + id, error);
+    util.log('accountWithinCommunity call error ' + id, error);
     callback({});
   });
 }
 
 function getAccountForUrl(url, callback) {
   var method = eth.contract.methods.accountForUrl(url);
+  // util.log("method", method);
   method.call(function(error, result) {
     if (error) {
-      console.log('getAccountForUrl error', error);
+      util.log('getAccountForUrl error', error);
     } else {
-      // console.log('getAccountForUrl result', result);
+      util.log('getAccountForUrl result', result);
       var account = eth.getAccountFromResult(result);
       callback(account);
     }
   })
   .catch(function(error) {
-    console.log('getAccountForUrl call error ' + url, error);
+    util.log('getAccountForUrl call error ' + url, error);
   });
 }
 
@@ -355,7 +360,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
   // console.log("accountWithinCommunity idx "+idx, communityId);
   method.call(function(error, result) {
     if (error) {
-      console.log('accountWithinCommunity error', error);
+      util.log('accountWithinCommunity error', error);
     } else {
       // console.log('accountWithinCommunity result', result);
       var account = eth.getAccountFromResult(result);
@@ -363,18 +368,18 @@ function getAccountWithinCommunity(communityId, idx, callback) {
     }
   })
   .catch(function(error) {
-    console.log('accountWithinCommunity call error ' + id, error);
+    util.log('accountWithinCommunity call error ' + id, error);
     callback({});
   });
 }
 
 function addUrlToAccount(id, url, callback) {
-  console.log("adding url "+url, id);
+  util.log("adding url "+url, id);
   var notifying = false;
   var method = eth.contract.methods.addUrlToExistingAccount(id, url);
   method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
     method.send({from:fromAccount, gas: gasAmount * 2}).on('error', (error) => {
-      console.log('addUrlToAccount error', error);
+      util.log('addUrlToAccount error', error);
       callback(false);
     })
     .on('confirmation', (number, receipt) => {
@@ -388,12 +393,12 @@ function addUrlToAccount(id, url, callback) {
 }
 
 function removeUrlFromAccount(id, url, callback) {
-  console.log("removing url "+url, id);
+  util.log("removing url "+url, id);
   var notifying = false;
   var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
   method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
     method.send({from:fromAccount, gas: gasAmount * 4}).on('error', (error) => {
-      console.log('removeUrlFromAccount error', error);
+      util.log('removeUrlFromAccount error', error);
       callback(false);
     })
     .on('confirmation', (number, receipt) => {
@@ -408,6 +413,9 @@ function removeUrlFromAccount(id, url, callback) {
 
 function hydrateAccount(account, done) {
   var hydrated = 0;
+  if (account.given.length===0 && account.received.length===0) {
+    done();
+  }
   for (var i = 0; i < account.given.length; i++) {
     var given = account.given[i];
     hydrateTranche(given, true, () => {

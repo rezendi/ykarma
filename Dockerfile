@@ -15,12 +15,6 @@ RUN npm install
 WORKDIR /usr/src/app/web
 RUN npm install
 
-# Copy smart contracts, install truffle
-WORKDIR /usr/src/app
-RUN mkdir ethereum
-COPY ./ethereum ./ethereum/
-RUN npm install -g truffle
-
 # Production build for React
 # TODO: production build for Firebase
 WORKDIR /usr/src/app
@@ -28,6 +22,12 @@ COPY ./web ./web/
 
 WORKDIR /usr/src/app/web
 RUN npm run build
+
+# Copy smart contracts, install truffle
+WORKDIR /usr/src/app
+RUN mkdir ethereum
+COPY ./ethereum ./ethereum/
+RUN npm install -g truffle
 
 # Copy the API code over
 WORKDIR /usr/src/app
@@ -37,4 +37,5 @@ EXPOSE 3000
 EXPOSE 3001
 
 WORKDIR /usr/src/app
-CMD sleep 10; cd ./ethereum; truffle migrate --network production; sleep 60; cd ../server; npm start
+# [[ -z "${YKARMA_ADDRESS}" ]] && sleep 60; may be unnecessary
+CMD sleep 5; cd ./ethereum; truffle migrate --network production; cd ../server; npm start

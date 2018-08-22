@@ -6,10 +6,19 @@ const YKAccounts = artifacts.require('YKAccounts.sol');
 const YKCommunities = artifacts.require('YKCommunities.sol');
 const YKRewards = artifacts.require('YKRewards.sol');
 const YKarma = artifacts.require('YKarma.sol');
+const fs = require('fs');
+const envFile = '../server/.env';
 
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
   deployer.then(async () => {
+    // if we already have a YKarma, don't deploy
+    if (process.env.TRUFFLE_ENV === 'production') {
+      if (process.env.YKARMA_ADDRESS) return;
+      var data = await checkEnvFile();
+      if (data.indexOf("YKARMA_ADDRESS") >= 0) return;
+    }
+
     await deployer.deploy(strings, {from : owner});
     await deployer.deploy(SafeMath, {from : owner});
     await deployer.deploy(YKStructs, {from : owner});
@@ -46,18 +55,24 @@ module.exports = (deployer, network, accounts) => {
   });
 };
 
+function checkEnvFile() {
+  return new Promise(function(resolve, reject){
+    fs.readFile(envFile, "utf-8", (err, data) => {
+        err ? resolve('') : resolve(data);
+    });
+  });
+}
+
 function setEnvAddress(address) {
   // update .env if appropriate
-  const fs = require('fs');
-  const filename = '../server/.env';
   if (process.env.TRUFFLE_ENV === 'production') {
     const s = `YKARMA_ADDRESS=${address}\n`;
-    fs.writeFile(filename, s, 'utf8', (err) => {
+    fs.writeFile(envFile, s, 'utf8', (err) => {
       if (err) throw err;
       console.log("Address written");
     });
   } else {
-    fs.readFile(filename, "utf8", (err, data) => {
+    fs.readFile(envFile, "utf8", (err, data) => {
       var s = ""+data;
       if (err) throw err;
       var idx = data.indexOf('YKARMA_ADDRESS');
@@ -66,7 +81,7 @@ function setEnvAddress(address) {
         var end = s.indexOf('\n', start+1);
         var addr = s.substring(start+1, end);
         s = s.replace(addr, ""+address);
-        fs.writeFile(filename, s, 'utf8', (err) => {
+        fs.writeFile(envFile, s, 'utf8', (err) => {
           if (err) throw err;
           console.log("Address written");
         });
