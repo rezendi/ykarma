@@ -44,9 +44,13 @@ console.log("ykarma", process.env.YKARMA_ADDRESS);
 
 if (process.env.NODE_ENV == "production") {
   app.enable('trust proxy');
-  console.log("dirname is", path.normalize(path.join(__dirname+'/../web/build')));
-  app.use(express.static(path.normalize(path.join(__dirname+'/../web/build'))));
+  console.log("dirname is", path.normalize(path.join(__dirname, '/../web/build')));
+  app.use(express.static(path.normalize(path.join(__dirname, '/../web/build'))));
 }
+
+app.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, '/../web/build', 'index.html'));
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
