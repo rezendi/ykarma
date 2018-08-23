@@ -6,7 +6,8 @@ class FinishSignIn extends React.Component {
   componentDidMount() {
     auth.signInViaEmailLink(window.location.href).then(authUser => {
       localStorage.setItem("authProvider", "email");
-      this.props.history.push("/?first=true");
+      //this.props.history.push("/");
+      //this.props.history.push("/?first=true");
     });
   }
 

@@ -22,7 +22,8 @@ class Login extends React.Component {
       // var user = result.user;
       localStorage.setItem("authProvider", "twitter");
       localStorage.setItem("additionalTwitterInfo", JSON.stringify(result.additionalUserInfo));
-      window.location = "/?first=true";
+      window.location = "/";
+      // window.location = "/?first=true";
     }).catch(function(error) {
       // var errorCode = error.code;
       var errorMessage = error.message;
