@@ -10,6 +10,7 @@ To avoid deploying/using a new contract next time:
 Left as an exercise:
  - Firewalls
  - HTTPS vs. Let's Encrypt
+   https://medium.com/bros/enabling-https-with-lets-encrypt-over-docker-9cad06bdb82b
 
 Forthcoming:
  - Cron jobs
