@@ -7,9 +7,9 @@ services:
       - "443:443"
     volumes:
         - ./server/nginx.conf:/etc/nginx/nginx.conf
-        #- /var/www/html/shared:/var/www/
-        #- /etc/letsencrypt:/etc/letsencrypt
-        #- /root/letsencrypt/lib:/var/lib/letsencrypt
+        #- /var/www/html/shared:/var/www/ # uncomment if running on Linux
+        #- /etc/letsencrypt:/etc/letsencrypt #uncomment for production HTTPS
+        #- /root/letsencrypt/lib:/var/lib/letsencrypt #uncomment for production HTTPS
     depends_on:
       - node
   node:
