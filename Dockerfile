@@ -19,6 +19,7 @@ RUN npm install
 # TODO: production build for Firebase
 WORKDIR /usr/src/app
 COPY ./web ./web/
+RUN mv ./web/.env.production ./web/.env
 
 WORKDIR /usr/src/app/web
 RUN npm run build

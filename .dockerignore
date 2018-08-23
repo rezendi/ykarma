@@ -1,7 +1,7 @@
 .env
 .git
 .gitignore
-*/.env*
+/server/.env.production
 */.git
 */.gitignore
 */build
