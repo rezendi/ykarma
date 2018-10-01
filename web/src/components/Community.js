@@ -34,33 +34,6 @@ class Community extends React.Component {
       );
     }
 
-    // probably unnecessary now, but wait before deleting 
-    if (this.props.community.id===1 && this.props.accounts.length===0) {
-      fetch('/api/communities/setup', {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      })
-      .then(res => {
-        if (!res.ok) {
-          alert("Server error!");
-        } else {
-          fetch('/api/accounts/setup', {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-          })
-          .then(res2 => {
-            if (!res2.ok) {
-              alert("Server error!");
-            } else {
-              window.location.reload();
-            }
-          });
-        }
-      });
-    }
-
     return (
       <Grid>
         <Row>

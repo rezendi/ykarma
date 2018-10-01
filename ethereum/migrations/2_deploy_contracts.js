@@ -40,7 +40,8 @@ module.exports = (deployer, network, accounts) => {
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha,test');
-    await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:jon@rezendi.com');
+    var adminEmailAddress = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL : 'jon@rezendi.com';
+    await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:' + adminEmailAddress);
     await yk.replenish(1);
     
     // add test data if appropriate

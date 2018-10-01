@@ -9,9 +9,13 @@ class Login extends React.Component {
 
   doLogin = async (values) => {
     console.log("Logging in", values.email);
-    auth.sendSignInLinkToEmail(values.email);
-    alert("Email sent!");
-    this.props.history.push("/");
+    auth.sendSignInLinkToEmail(values.email, () => {
+        alert("Email sent!");
+        this.props.history.push("/");
+      }, () => {
+        alert("Email failed!");
+      }
+    );
   }
   
   doTwitter = () => {

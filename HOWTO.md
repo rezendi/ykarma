@@ -1,16 +1,25 @@
 To get running:
  - pull code from github
- - populate .env.production in server and web
  - populate .firebase.json and fbase.js
+ - local:
+    - cp .example.env .env.production
+    - ganache-cli -u 0
+    - cd ethereum && truffle deploy
+    - set YKarma address in server .env
+    - cd server && npm start
+    - cd web && npm start
+ - production:
+   - cp .example.env .env.production
+   - populate .env.production in server and web
+
  - docker-compose build & docker-compose up -d
 
 To avoid deploying/using a new contract next time:
  - write ykarma address to .env.production
 
-Left as an exercise:
- - Firewalls
- - HTTPS vs. Let's Encrypt
-   https://medium.com/bros/enabling-https-with-lets-encrypt-over-docker-9cad06bdb82b
+Briefly mentioned:
+ - Firewalls https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands
+ - HTTPS via Let's Encrypt https://medium.com/bros/enabling-https-with-lets-encrypt-over-docker-9cad06bdb82b
 
 Forthcoming:
  - Cron jobs

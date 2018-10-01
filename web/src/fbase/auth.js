@@ -27,13 +27,15 @@ const actionCodeSettings = process.env.NODE_ENV === 'production' ? prodActionCod
 const linkCodeSettings = process.env.NODE_ENV === 'production' ? prodLinkCodeSettings : devLinkCodeSettings;
 
 // Send sign in link
-export const sendSignInLinkToEmail = (email) => {
+export const sendSignInLinkToEmail = (email, onSuccess, onError) => {
   auth.sendSignInLinkToEmail(email, actionCodeSettings)
   .then(function() {
     window.localStorage.setItem('emailForSignIn', email);
+    onSuccess();
   })
   .catch(function(error) {
     console.log("Firebase sign-in link error", error);
+    onError();
   });
 };
 
