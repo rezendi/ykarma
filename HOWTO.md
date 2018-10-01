@@ -2,7 +2,9 @@ To get running:
  - pull code from github
  - populate .firebase.json and fbase.js
  - local:
-    - cp .example.env .env.production
+    - cd server && cp .example.env .env.production
+    - cd web && cp .example.env .env.production
+    - change admin email
     - ganache-cli -u 0
     - cd ethereum && truffle deploy
     - set YKarma address in server .env

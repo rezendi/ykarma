@@ -6,16 +6,20 @@ const YKAccounts = artifacts.require('YKAccounts.sol');
 const YKCommunities = artifacts.require('YKCommunities.sol');
 const YKRewards = artifacts.require('YKRewards.sol');
 const YKarma = artifacts.require('YKarma.sol');
+
 const fs = require('fs');
 const envFile = '../server/.env';
 
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
+  var adminEmail = '';
   deployer.then(async () => {
+
+    var data = await checkEnvFile();
+    adminEmail = getAdminEmail(data);
     // if we already have a YKarma, don't deploy
     if (process.env.TRUFFLE_ENV === 'production') {
       if (process.env.YKARMA_ADDRESS) return;
-      var data = await checkEnvFile();
       if (data.indexOf("YKARMA_ADDRESS=") >= 0) return;
     }
 
@@ -40,18 +44,17 @@ module.exports = (deployer, network, accounts) => {
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha,test');
-    var adminEmailAddress = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL : 'jon@rezendi.com';
-    await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:' + adminEmailAddress);
+    await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:' + adminEmail);
     await yk.replenish(1);
     
     // add test data if appropriate
     if (process.env.TRUFFLE_ENV !== 'production') {
-      await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@rezendi.com');
-      await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@rezendi.com');
+      await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@example.com');
+      await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@example.com');
       await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
       await yk.replenish(2);
-      await yk.give(2, 'mailto:jon@rezendi.com', 80, "Just a message");
-      await yk.give(1, 'mailto:test@rezendi.com', 20, "Another message");
+      await yk.give(2, 'mailto:'+adminEmail, 80, "Just a message");
+      await yk.give(1, 'mailto:test@example.com', 20, "Another message");
     }
   });
 };
@@ -62,6 +65,17 @@ function checkEnvFile() {
         err ? resolve('') : resolve(data);
     });
   });
+}
+
+function getAdminEmail(data) {
+  var idx = data.indexOf('ADMIN_EMAIL');
+  if (idx > 0) {
+    var start = s.indexOf('=', idx+1);
+    var end = s.indexOf('\n', start+1);
+    var addr = s.substring(start+1, end);
+    return addr;
+  }
+  return "n/a";
 }
 
 function setEnvAddress(address) {
