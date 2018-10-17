@@ -12,6 +12,7 @@ services:
         #- /root/letsencrypt/lib:/var/lib/letsencrypt #uncomment for production HTTPS
     depends_on:
       - node
+
   node:
     build: .
     ports:
@@ -20,17 +21,30 @@ services:
     depends_on:
       - eth
       - redis
+
   eth:
-    image: foamspace/cliquebait:latest
-    ports:
-      - "8545:8545"
-    environment:
-      EXTERNAL_ALLOCS: 0xC7679A8C55817EFA649961C6d9DF7596e4bd8C51
-      ACCOUNTS_TO_CREATE: 5
-      ALLOC_WEI: 0xFFFFFFFFFFFFFFFFFFFF
+    image: parity/parity:stable
+    command:
+      --config /parity/config/authority.toml
+      --dapps-interface 0.0.0.0
+      --ws-interface 0.0.0.0
+      --ui-interface 0.0.0.0
+      --unsafe-expose   
+      --jsonrpc-cors all
     volumes:
-      - ./cbdata:/cbdata
+      - ./parity/config:/parity/config:ro
+      - eth:/root/.local/share/io.parity.ethereum/
+      - ./parity/authorities/authority0.json:/root/.local/share/io.parity.ethereum/keys/ykarma/authority.json:ro
+      - ./parity/keys:/root/.local/share/io.parity.ethereum/keys/ykarma
+      - ./parity/authorities/authority0.pwd:/parity/authority.pwd:ro
+      - ./parity/node0.network.key:/root/.local/share/io.parity.ethereum/network/key:ro
+    ports:
+      - 8545:8545
+
   redis:
     image: redis
     ports:
       - "6379:6379"
+
+volumes:
+  eth:
