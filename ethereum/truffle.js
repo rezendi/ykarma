@@ -4,13 +4,14 @@ module.exports = {
       host: '127.0.0.1',
       port: 8545,
       network_id: '*',
-      from: "0x0000000000000000000000000000000000000001"
     },
     production: {
       host: 'eth',
       port: 8545,
       network_id: '*',
-      from: "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
+      gas: 4712388,
+      gasPrice: 20000000000,
+      from: "00aa39d30f0d20ff03a22ccfc30b7efbfca597c2"
     }
   },
   optimizer: {

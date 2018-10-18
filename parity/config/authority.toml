@@ -8,11 +8,11 @@ hosts = ["all"]
 apis = ["web3", "eth", "net", "parity", "traces", "rpc", "personal", "parity_accounts", "signer", "parity_set"]
 
 [account]
-unlock = ["00bd138abd70e2f00903268f3db08f2d25677c9e"]
-password = ["/parity/authority.pwd"]
+unlock = ["00aa39d30f0d20ff03a22ccfc30b7efbfca597c2"]
+password = ["/parity/ykarma.pwd"]
 
 [mining]
-reseal_on_txs = "none"
-gas_floor_target = "0x165A0BC00"
-tx_queue_size = 16384
-tx_queue_mem_limit = 1024
+reseal_on_txs = "all"
+force_sealing = true
+reseal_min_period = 0
+usd_per_tx = "0"
