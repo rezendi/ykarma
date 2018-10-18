@@ -1,0 +1,6 @@
+*
+!.gitignore
+
+# keys to keep
+!/master*.json
+!/slave.json

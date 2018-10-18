@@ -15,6 +15,7 @@ node_modules
 .DS_Store
 *.komodoproject
 .env*
+*.pwd
 .firebase.json
 
 npm-debug.log*

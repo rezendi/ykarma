@@ -23,7 +23,7 @@ services:
       - redis
 
   eth:
-    image: parity/parity:stable
+    image: parity/parity:v1.9.7
     command:
       --config /parity/config/authority.toml
       --dapps-interface 0.0.0.0

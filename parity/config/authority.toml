@@ -1,0 +1,18 @@
+[parity]
+chain = "/parity/config/chain.json"
+
+[rpc]
+interface = "0.0.0.0"
+cors = ["all"]
+hosts = ["all"]
+apis = ["web3", "eth", "net", "parity", "traces", "rpc", "personal", "parity_accounts", "signer", "parity_set"]
+
+[account]
+unlock = ["00bd138abd70e2f00903268f3db08f2d25677c9e"]
+password = ["/parity/authority.pwd"]
+
+[mining]
+reseal_on_txs = "none"
+gas_floor_target = "0x165A0BC00"
+tx_queue_size = 16384
+tx_queue_mem_limit = 1024
