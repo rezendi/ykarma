@@ -23,25 +23,9 @@ services:
       - redis
 
   eth:
-    image: parity/parity:v1.11.11
-    command:
-      --config /parity/config/authority.toml
-      --jsonrpc-interface 0.0.0.0
-      --ws-interface 0.0.0.0
-      --no-ui
-      --unsafe-expose   
-      --jsonrpc-cors all
-    volumes:
-      - ./parity/config:/parity/config:ro
-      - eth:/root/.local/share/io.parity.ethereum/
-      - ./parity/authorities/authority0.json:/root/.local/share/io.parity.ethereum/keys/ykarma/authority.json:ro
-      - ./parity/keys:/root/.local/share/io.parity.ethereum/keys/ykarma
-      - ./parity/authorities/authority0.pwd:/parity/authority.pwd:ro
-      - ./parity/authorities/authority1.json:/root/.local/share/io.parity.ethereum/keys/ykarma/ykarma.json:ro
-      - ./parity/authorities/authority1.pwd:/parity/ykarma.pwd:ro
-      - ./parity/node0.network.key:/root/.local/share/io.parity.ethereum/network/key:ro
+    build: ./geth
     ports:
-      - 8545:8545
+      - "8545:8545"
 
   redis:
     image: redis
