@@ -1,23 +1,16 @@
 #!/bin/bash
 
-VERCOMP='/cliquebait/vercomp.bash'
 STRIPPED_GETH_VERSION=`echo $GETH_VERSION | sed s/v//`
-DEFAULT_ALLOC_WEI="0x3635C9ADC5DEA00000"
+DEFAULT_ALLOC_WEI="0x3635C9ADC5DEA00000000"
 
 export GETHROOT=/cbdata
 export CBROOT=$GETHROOT/_cliquebait
 export GETHDATADIR="$GETHROOT/ethereum"
-export RPCARGS='--rpc --rpcaddr 0.0.0.0 --rpccorsdomain=* --rpcapi "admin,debug,eth,miner,net,personal,shh,txpool,web3" --ws --wsaddr 0.0.0.0 --wsorigins=* --wsapi "admin,debug,eth,miner,net,personal,shh,txpool,web3" '
+export RPCARGS='--rpc --rpcaddr 0.0.0.0 --rpccorsdomain=* --rpcapi "admin,debug,eth,miner,net,personal,shh,txpool,web3" --ws --wsaddr 0.0.0.0 --wsorigins=* --wsapi "admin,debug,eth,miner,net,personal,shh,txpool,web3" --rpcvhosts=* '
 export DEFAULT_PASSWORD_PATH=${DEFAULT_PASSWORD_PATH:-"/cliquebait/default-password"}
 export ACCOUNTS_TO_CREATE=${ACCOUNTS_TO_CREATE:-"5"}
 export EXTERNAL_ALLOCS=${EXTERNAL_ALLOCS:-""}
 export ALLOC_WEI=${ALLOC_WEI:-""}
-
-if $VERCOMP $STRIPPED_GETH_VERSION '>=' 1.8.0; then
-	echo 'adding --rpcvhosts=* as we are in geth >= v1.8.0'
-	export RPCARGS="${RPCARGS} --rpcvhosts=* "
-fi
-
 
 function make_account() {
 	mkdir -p /tmp/cliquebait/make_account

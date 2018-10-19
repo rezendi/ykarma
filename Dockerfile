@@ -39,5 +39,4 @@ EXPOSE 3001
 EXPOSE 8080
 
 WORKDIR /usr/src/app
-# [[ -z "${YKARMA_ADDRESS}" ]] && sleep 60; may be unnecessary
 CMD sleep 5; cd ./ethereum; truffle migrate --network production; cd ../server; npm start
