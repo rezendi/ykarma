@@ -6,7 +6,7 @@ DEFAULT_ALLOC_WEI="0x3635C9ADC5DEA00000000"
 export GETHROOT=/cbdata
 export CBROOT=$GETHROOT/_cliquebait
 export GETHDATADIR="$GETHROOT/ethereum"
-export RPCARGS='--rpc --rpcaddr 0.0.0.0 --rpccorsdomain=* --rpcapi "admin,debug,eth,miner,net,personal,shh,txpool,web3" --ws --wsaddr 0.0.0.0 --wsorigins=* --wsapi "admin,debug,eth,miner,net,personal,shh,txpool,web3" --rpcvhosts=* '
+export RPCARGS='--rpc --rpcaddr 0.0.0.0 --rpccorsdomain=* --rpcapi "debug,eth,net,personal,shh,web3" --rpcvhosts=* '
 export DEFAULT_PASSWORD_PATH=${DEFAULT_PASSWORD_PATH:-"/cliquebait/default-password"}
 export ACCOUNTS_TO_CREATE=${ACCOUNTS_TO_CREATE:-"5"}
 export EXTERNAL_ALLOCS=${EXTERNAL_ALLOCS:-""}
@@ -160,4 +160,4 @@ fi
 # figure out what accounts we need to unlock, and finally run cliquebait!
 ACCOUNTS_TO_UNLOCK=`cat $CBROOT/accounts | tr '\n' ',' | sed s/,$//`
 run_geth_bare --networkid="$(cat $CBROOT/chainid)" --mine --minerthreads 1 --etherbase $(cat $CBROOT/etherbase) \
-              --cache=256 --unlock "$ACCOUNTS_TO_UNLOCK" --password $CBROOT/account-passwords $@
+              --cache=16 --lightkdf --unlock "$ACCOUNTS_TO_UNLOCK" --password $CBROOT/account-passwords $@
