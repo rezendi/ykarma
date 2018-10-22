@@ -160,4 +160,4 @@ fi
 # figure out what accounts we need to unlock, and finally run cliquebait!
 ACCOUNTS_TO_UNLOCK=`cat $CBROOT/accounts | tr '\n' ',' | sed s/,$//`
 run_geth_bare --networkid="$(cat $CBROOT/chainid)" --mine --minerthreads 1 --etherbase $(cat $CBROOT/etherbase) \
-              --cache=16 --lightkdf --unlock "$ACCOUNTS_TO_UNLOCK" --password $CBROOT/account-passwords $@
+              --cache=2048 --lightkdf --unlock "$ACCOUNTS_TO_UNLOCK" --password $CBROOT/account-passwords $@
