@@ -260,23 +260,17 @@ router.post('/give', function(req, res, next) {
     req.body.message || '',
   );
   eth.doSend(method, res, 1, 4, function() {
-    if (process.env.NODE_ENV!="test" && recipient.startsWith("mailto:")) {
-      var docRef = firebase.db.collection('email-preferences').doc(recipient);
-      docRef.get().then((doc) => {
-        // TODO: query rather than get entire document?
-        var sendEmail = !doc.exists || !doc.recipient || !doc.recipient.data().all || !doc.recipient.data()[sender]; 
-        if (sendEmail) {
-          util.log("sending mail");
-          const senderName = req.session.name || req.session.email;
-          sendKarmaSentMail(senderName, recipient, req.body.amount);
-          docRef.update({ [sender]:true }, { create: true } );
-        }
-        return res.json({"success":true});
-      })
-      .catch(err => {
-        util.log('Error getting document', err);
-        return res.json({"success":false, "error":err});
-      });
+    if (process.env.NODE_ENV != "test" && recipient.startsWith("mailto:")) {
+      var prefs = JSON.parse(req.session.prefs || "{}");
+      var sendEmail = prefs[sender] !== 0;
+      if (sendEmail) {
+        util.log("sending mail");
+        const senderName = req.session.name || req.session.email;
+        sendKarmaSentMail(senderName, recipient, req.body.amount);
+        prefs.sender = 1;
+        // TODO: update account in blockchain
+      }
+      return res.json({"success":true});
     } else {
       // TODO: Twitter notifications
       return res.json({"success":true});
@@ -296,6 +290,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.ykcid = null;
     req.session.handle = null;
     req.session.twitter_id = null;
+    req.session.prefs = null;
     return res.json({"success":true});
   }
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
@@ -457,6 +452,7 @@ function getSessionFromAccount(req, account) {
   req.session.ykid = parseInt(account.id);
   req.session.ykcid = parseInt(account.communityId);
   req.session.name = account.metadata.name;
+  req.session.prefs = account.metadata.prefs;
   var urls = account.urls.split(",");
   for (var url in urls) {
     if (url.startsWith("mailto:")) {
