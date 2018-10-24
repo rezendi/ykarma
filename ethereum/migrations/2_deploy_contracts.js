@@ -69,6 +69,7 @@ function checkEnvFile() {
 
 function getAdminEmail(data) {
   if (process.env.ADMIN_EMAIL) {
+    console.log("admin email " + process.env.ADMIN_EMAIL);
     return process.env.ADMIN_EMAIL;
   }
   var idx = data.indexOf('ADMIN_EMAIL');
