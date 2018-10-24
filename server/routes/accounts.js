@@ -103,14 +103,14 @@ router.get('/me', function(req, res, next) {
       return res.json({"success":false, "error": url});
     }
     getAccountForUrl(url, (account) => {
-      util.log("getting session from", account, 0);
+      // util.log("getting session from", account, 0);
       getSessionFromAccount(req, account);
-      util.log("me new session", req.session, 0);
+      // util.log("me new session", req.session, 0);
       eth.getCommunityFor(req.session.ykid, (community) => {
-        util.log("got community", community, 0);
+        // util.log("got community", community, 0);
         account.community = community;
         hydrateAccount(account, () => {
-          util.log("hydrated", account, 0);
+          // util.log("hydrated", account, 0);
           res.json(account);
         });
       });
@@ -226,7 +226,7 @@ router.put('/update', function(req, res, next) {
     account.id,
     account.userAddress,
     JSON.stringify(account.metadata),
-    '0x00'
+    account.flags || '0x00'
   );
   eth.doSend(method, res);
 });
@@ -261,16 +261,27 @@ router.post('/give', function(req, res, next) {
   );
   eth.doSend(method, res, 1, 4, function() {
     if (process.env.NODE_ENV != "test" && recipient.startsWith("mailto:")) {
-      var prefs = JSON.parse(req.session.prefs || "{}");
-      var sendEmail = prefs[sender] !== 0;
+      var account = req.session.account || {};
+      account.metadata = account.metadata || {};
+      account.metadata.prefs = account.metadata.prefs || {};
+      var sendEmail = prefs[req.body.recipient] !== 0;
       if (sendEmail) {
         util.log("sending mail");
         const senderName = req.session.name || req.session.email;
         sendKarmaSentMail(senderName, recipient, req.body.amount);
-        prefs.sender = 1;
-        // TODO: update account in blockchain
+        account.metadata.prefs[req.body.recipient] = 1;
+        var method2 = eth.contract.methods.editAccount(
+          account.id,
+          account.userAddress,
+          JSON.stringify(account.metadata),
+          account.flags
+        );
+        eth.doSend(method2, res, 1, 4, function() {
+          return res.json({"success":true});
+        });
+      } else {
+        return res.json({"success":true});
       }
-      return res.json({"success":true});
     } else {
       // TODO: Twitter notifications
       return res.json({"success":true});
@@ -290,7 +301,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.ykcid = null;
     req.session.handle = null;
     req.session.twitter_id = null;
-    req.session.prefs = null;
+    req.session.account = null;
     return res.json({"success":true});
   }
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
@@ -452,7 +463,7 @@ function getSessionFromAccount(req, account) {
   req.session.ykid = parseInt(account.id);
   req.session.ykcid = parseInt(account.communityId);
   req.session.name = account.metadata.name;
-  req.session.prefs = account.metadata.prefs;
+  req.session.account = account;
   var urls = account.urls.split(",");
   for (var url in urls) {
     if (url.startsWith("mailto:")) {
