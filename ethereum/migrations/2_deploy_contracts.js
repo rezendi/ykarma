@@ -33,7 +33,6 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(YKCommunities, {from : owner});
     await deployer.deploy(YKRewards, {from : owner});
     await deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
-    setEnvAddress(YKarma.address);
     const ykt = await YKTranches.deployed();
     await ykt.addOracle(YKarma.address, {from: owner});
     const yka = await YKAccounts.deployed();
@@ -46,6 +45,7 @@ module.exports = (deployer, network, accounts) => {
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha,test');
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:' + adminEmail);
     await yk.replenish(1);
+    setEnvAddress(YKarma.address);
     
     // add test data if appropriate
     if (process.env.TRUFFLE_ENV !== 'production') {
@@ -83,6 +83,10 @@ function getAdminEmail(data) {
 function setEnvAddress(address) {
   // update .env if appropriate
   console.log("setting env address");
+  if (!fs.existsSync(envFile)) {
+    console.log("file does not exist: " + envFile);
+    return;
+}
   fs.readFile(envFile, "utf8", (err, data) => {
     if (err) throw err;
     var s = ""+data;
