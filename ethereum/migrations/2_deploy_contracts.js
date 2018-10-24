@@ -70,9 +70,9 @@ function checkEnvFile() {
 function getAdminEmail(data) {
   var idx = data.indexOf('ADMIN_EMAIL');
   if (idx > 0) {
-    var start = s.indexOf('=', idx+1);
-    var end = s.indexOf('\n', start+1);
-    var addr = s.substring(start+1, end);
+    var start = data.indexOf('=', idx+1);
+    var end = data.indexOf('\n', start+1);
+    var addr = data.substring(start+1, end);
     return addr;
   }
   return "n/a";
@@ -80,27 +80,22 @@ function getAdminEmail(data) {
 
 function setEnvAddress(address) {
   // update .env if appropriate
-  if (process.env.TRUFFLE_ENV === 'production') {
-    const s = `YKARMA_ADDRESS=${address}\n`;
-    fs.writeFile(envFile, s, 'utf8', (err) => {
-      if (err) throw err;
+  console.log("setting env address");
+  fs.readFile(envFile, "utf8", (err, data) => {
+    if (err) throw err;
+    var s = ""+data;
+    var idx = s.indexOf('YKARMA_ADDRESS');
+    if (idx > 0) {
+      var start = s.indexOf('=', idx+1);
+      var end = s.indexOf('\n', start+1);
+      var addr = s.substring(start+1, end);
+      s = s.replace(addr, ""+address);
+    } else {
+      s = s +`\nYKARMA_ADDRESS=${address}\n`;
+    }
+    fs.writeFile(envFile, s, 'utf8', (err2) => {
+      if (err2) throw err2;
       console.log("Address written");
     });
-  } else {
-    fs.readFile(envFile, "utf8", (err, data) => {
-      var s = ""+data;
-      if (err) throw err;
-      var idx = data.indexOf('YKARMA_ADDRESS');
-      if (idx > 0) {
-        var start = s.indexOf('=', idx+1);
-        var end = s.indexOf('\n', start+1);
-        var addr = s.substring(start+1, end);
-        s = s.replace(addr, ""+address);
-        fs.writeFile(envFile, s, 'utf8', (err) => {
-          if (err) throw err;
-          console.log("Address written");
-        });
-      }
-    });
-  }
+  });
 }
