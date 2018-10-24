@@ -73,8 +73,10 @@ function getAdminEmail(data) {
     var start = data.indexOf('=', idx+1);
     var end = data.indexOf('\n', start+1);
     var addr = data.substring(start+1, end);
+    console.log("admin email " + addr);
     return addr;
   }
+  console.log("admin email not found");
   return "n/a";
 }
 
