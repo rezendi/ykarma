@@ -19,8 +19,8 @@ services:
       - "8080:8080"
     env_file: ./server/.env.production
     volumes:
-      - ./server/.env.production :/usr/src/app/server/.env
-      - ./web/.env.production :/usr/src/app/web/.env
+      - ./server/.env.production:/usr/src/app/server/.env
+      - ./web/.env.production:/usr/src/app/web/.env
     depends_on:
       - eth
       - redis
