@@ -264,27 +264,28 @@ router.post('/give', function(req, res, next) {
       var account = req.session.account || {};
       account.metadata = account.metadata || {};
       account.metadata.prefs = account.metadata.prefs || {};
-      var sendEmail = prefs[req.body.recipient] !== 0;
+      util.log("prefs", account.metadata.prefs);
+      var sendEmail = account.metadata.prefs[req.body.recipient] !== 0;
       if (sendEmail) {
-        util.log("sending mail");
+        util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
         sendKarmaSentMail(senderName, recipient, req.body.amount);
-        account.metadata.prefs[req.body.recipient] = 1;
+        account.metadata.prefs[req.body.recipient] = 0;
+        util.log("updated metadata", account.metadata);
         var method2 = eth.contract.methods.editAccount(
           account.id,
           account.userAddress,
           JSON.stringify(account.metadata),
           account.flags
         );
-        eth.doSend(method2, res, 1, 4, function() {
-          return res.json({"success":true});
-        });
+        // util.log("sending", method2);
+        eth.doSend(method2, res, 1, 4);
       } else {
-        return res.json({"success":true});
+        util.log("not sending email", account.metadata.prefs);
+        return res.json( { "success":true } );
       }
     } else {
       // TODO: Twitter notifications
-      return res.json({"success":true});
     }
   });
 });
