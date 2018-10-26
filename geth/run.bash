@@ -1,16 +1,16 @@
 #!/bin/bash
 
 STRIPPED_GETH_VERSION=`echo $GETH_VERSION | sed s/v//`
-DEFAULT_ALLOC_WEI="0x3635C9ADC5DEA00000000"
+DEFAULT_ALLOC_WEI="0x3635C9ADC5DEA0000000000000"
 
 export GETHROOT=/cbdata
 export CBROOT=$GETHROOT/_cliquebait
 export GETHDATADIR="$GETHROOT/ethereum"
 export RPCARGS='--rpc --rpcaddr 0.0.0.0 --rpccorsdomain=* --rpcapi "debug,eth,net,personal,shh,web3" --rpcvhosts=* '
 export DEFAULT_PASSWORD_PATH=${DEFAULT_PASSWORD_PATH:-"/cliquebait/default-password"}
-export ACCOUNTS_TO_CREATE=${ACCOUNTS_TO_CREATE:-"5"}
+export ACCOUNTS_TO_CREATE=${ACCOUNTS_TO_CREATE:-"1"}
 export EXTERNAL_ALLOCS=${EXTERNAL_ALLOCS:-""}
-export ALLOC_WEI=${ALLOC_WEI:-""}
+export ALLOC_WEI=${ALLOC_WEI:-"0x3635C9ADC5DEA0000000000000"}
 
 function make_account() {
 	mkdir -p /tmp/cliquebait/make_account
@@ -160,4 +160,4 @@ fi
 # figure out what accounts we need to unlock, and finally run cliquebait!
 ACCOUNTS_TO_UNLOCK=`cat $CBROOT/accounts | tr '\n' ',' | sed s/,$//`
 run_geth_bare --networkid="$(cat $CBROOT/chainid)" --mine --minerthreads 1 --etherbase $(cat $CBROOT/etherbase) \
-              --cache=2048 --lightkdf --unlock "$ACCOUNTS_TO_UNLOCK" --password $CBROOT/account-passwords $@
+              --cache=256 --lightkdf --unlock "$ACCOUNTS_TO_UNLOCK" --password $CBROOT/account-passwords $@
