@@ -183,7 +183,7 @@ contract YKTranches is Oracular, YKStructs {
     for (uint256 i = tStart; i < tEnd; i++) {
       string memory trancheString = trancheToJSON(trancheIds[i]);
       json = json.toSlice().concat(trancheString.toSlice());
-      if (i < trancheIds.length - 1) {
+      if (i < tEnd - 1) {
         json = json.toSlice().concat(",".toSlice());
       }
     }
