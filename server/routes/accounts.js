@@ -4,6 +4,7 @@ var bodyParser = require("body-parser");
 var eth = require('./eth');
 var util = require('./util');
 var firebase = require('./firebase');
+var redisService = require("redis"), redis = redisService.createClient();
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -12,8 +13,6 @@ var fromAccount = null;
 eth.getFromAccount().then(address => {
   fromAccount = address;
 });
-
-accountCache = {}; // TODO probably move this to redis
 
 // GET set upFADMIN
 router.get('/setup', function(req, res, next) {
@@ -441,21 +440,28 @@ function hydrateAccount(account, done) {
 }
 
 function hydrateTranche(tranche, given, done) {
+  // check account cache on redis
   const id = given ? tranche.receiver : tranche.sender;
-  if (id in accountCache) {
-    tranche.details = accountCache[id];
-    done();
-  } else {
-    eth.getAccountFor(id, (account) => {
-      tranche.details = {
-        metadata:     account.metadata,
-        urls:         account.urls,
-        communityId : account.communityId
-      };
-      accountCache[id] = tranche.details;
+  const key = `account-${id}`;
+  redis.get(key, function (err, val) {
+    if (err) {
+      console.log("redis error", err);
+    }
+    if (val && val !== '') {
+      tranche.details = JSON.parse(val);
       done();
-    });
-  }
+    } else {
+      eth.getAccountFor(id, (account) => {
+        tranche.details = {
+          metadata:     account.metadata,
+          urls:         account.urls,
+          communityId : account.communityId
+        };
+        redis.set(key, JSON.stringify(tranche.details));
+        done();
+      });
+    }
+  });
 }
 
 // Utility functions

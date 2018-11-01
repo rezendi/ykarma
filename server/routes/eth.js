@@ -55,8 +55,6 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
   });
 };
 
-// TODO: cache on redis?
-
 function getAccountFor(id, callback) {
   var method = contract.methods.accountForId(id);
   console.log("accountForId", id);

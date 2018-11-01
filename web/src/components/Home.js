@@ -99,6 +99,7 @@ class Home extends React.Component {
             </Panel>
           </Col>
         </Row>
+
         <Row>
           <Col md={6}>
             <Panel>
@@ -134,6 +135,7 @@ class Home extends React.Component {
               </Panel.Body>
             </Panel>
           </Col>
+
           <Col md={6}>
             <Panel>
               <Panel.Heading>
@@ -156,6 +158,7 @@ class Home extends React.Component {
             </Panel>
           </Col>
         </Row>
+
         <Row>
           <Col md={6}>
             {this.props.user.given.length > 0 &&
