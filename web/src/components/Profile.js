@@ -83,6 +83,18 @@ class Profile extends React.Component {
       return user.displayName || "Nameless One";
     return user.metadata.name;
   }
+  
+  getTotalSoldRewards = (offered) => {
+    return offered.reduce((acc, offer) => {
+      return acc + offer.ownerId ? offer.quantity : 0;
+    }, 0);
+  }
+
+  getTotalSoldKarma = (offered) => {
+    return offered.reduce((acc, offer) => {
+      return acc + offer.ownerId ? offer.cost : 0;
+    }, 0);
+  }
 
   render() {
     return (
@@ -194,6 +206,7 @@ class Profile extends React.Component {
                 {this.props.vendedRewards.map(reward =>
                   <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                 )}
+                You have sold {this.getTotalSoldRewards(this.props.vendedRewards)} rewards for a total of {this.getTotalSoldKarma(this.props.vendedRewards)} karma.
               </Panel.Body>
             </Panel>
           </Col>
@@ -206,6 +219,7 @@ class Profile extends React.Component {
                 {this.props.ownedRewards.map(reward =>
                   <RewardRow key={reward.id} reward={reward}/>
                 )}
+                {this.props.ownedRewards.length === 0 && <span>You have purchased 0 rewards.</span>}
               </Panel.Body>
             </Panel>
           </Col>

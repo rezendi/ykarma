@@ -22,7 +22,7 @@ router.get('/reward/:id', function(req, res, next) {
   });
 });
 
-/* GET rewards available to the currenty user */
+/* GET rewards available to the current user */
 // for now just their community's rewards, if any
 router.get('/available', function(req, res, next) {
   console.log("getting rewards available to community", req.session.ykcid);
