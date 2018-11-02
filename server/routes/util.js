@@ -22,8 +22,8 @@ function verifyURLs(urlsString) {
 }
 
 // TODO: real logging
-function log(a,b,c) {
-  if (c!==0) { // take this out for verbose logging
+function log(a, b, c=null) {
+  if (c) { // if (!c) for verbose logging
     console.log(a,b);
   }
 }

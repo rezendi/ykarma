@@ -56,12 +56,24 @@ class Profile extends React.Component {
   }
 
   editMetadata = async (values) => {
-    console.log("Submitting form", values);
+    var toSubmit = { };
+    toSubmit.name = values.name;
+    toSubmit.prefs = {
+      kr: values.kr ? 1 : 0,
+      rw: values.rw ? 1 : 0,
+      wk: values.wk ? 1 : 0,
+      mt: values.mt ? 1 : 0
+    };
+    console.log("Submitting form", toSubmit);
     this.props.setLoading(true);
-    Api.updateAccount(this.props.user.ykid, values).then((res) => {
+    Api.updateAccount(this.props.user.ykid, toSubmit).then((res) => {
       this.props.setLoading(false);
       !res.ok ? alert("Server error!") : window.location.reload();
     });
+  }
+
+  editEmailPrefs = async (values) => {
+    console.log("Submitting email prefs form", JSON.stringify(values));
   }
 
   getName = (user) => {
@@ -98,26 +110,6 @@ class Profile extends React.Component {
                   <Col md={4}>
                     <img alt="avatar" style={{float:"right"}} width={64} height={64} src={this.props.user.providerData[0].photoURL}/>
                   </Col> }
-                </Row>
-              </Panel.Body>
-            </Panel>
-          </Col>
-          <Col md={6}>
-            <Panel>
-              <Panel.Heading>
-                Edit Profile
-              </Panel.Heading>
-              <Panel.Body>
-                <Row>
-                  <Col md={12}>
-                    <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
-                        <label htmlFor="name">Name</label>
-                        &nbsp;
-                        <Field name="name" component="input" type="text"/>
-                        &nbsp;
-                        <Button bsStyle="info" type="submit">Edit</Button>
-                    </form>
-                  </Col>
                 </Row>
                 <hr/>
                 <Row>
@@ -157,6 +149,36 @@ class Profile extends React.Component {
                   { (localStorage.getItem("additionalEmailInfo") || '') }
                   </p>
                 </Row> }
+              </Panel.Body>
+            </Panel>
+          </Col>
+          <Col md={6}>
+            <Panel>
+              <Panel.Heading>
+                Edit Profile
+              </Panel.Heading>
+              <Panel.Body>
+                <Row>
+                  <Col md={12}>
+                    <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
+                        <label htmlFor="name">Name</label>
+                        &nbsp;
+                        <Field name="name" component="input" type="text"/>
+                        <br/>
+                        <label htmlFor="pref1">Email Preferences</label>
+                        <br/>
+                        <Field name='kr' id='kr' component="input" type="checkbox"/>Whenever you receive karma
+                        <br/>
+                        <Field name='rw' id='rw' component="input" type="checkbox"/>Whenever you create, buy, or sell a reward
+                        <br/>
+                        <Field name='mt' id='mt' component="input" type="checkbox"/>Weekly updates, when your karma is replenished
+                        <br/>
+                        <Field name='yr' id='yr' component="input" type="checkbox"/>Monthly updates
+                        <br/>
+                        <Button bsStyle="info" type="submit">Edit</Button>
+                    </form>
+                  </Col>
+                </Row>
               </Panel.Body>
             </Panel>
           </Col>
@@ -215,6 +237,7 @@ class Profile extends React.Component {
             </Panel>
           </Col>
         </Row>
+
       </Grid>
     );
   }

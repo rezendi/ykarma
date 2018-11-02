@@ -158,6 +158,7 @@ class Api {
           id: id,
           metadata: {
             name: values.name,
+            emailPreferences: values.prefs,
           }
         }
       })

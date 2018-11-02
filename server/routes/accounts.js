@@ -4,7 +4,13 @@ var bodyParser = require("body-parser");
 var eth = require('./eth');
 var util = require('./util');
 var firebase = require('./firebase');
-var redisService = require("redis"), redis = redisService.createClient();
+var redisService = require("redis");
+var redis = redisService.createClient({host:"redis", port: 6379});
+redis.on('error', function (err) {
+  if (process.env.NODE_ENV === "production") {
+    console.log('Something went wrong with Redis', err);
+  }
+});
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -14,7 +20,7 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-// GET set upFADMIN
+// GET set up
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.log("setting up test data");
@@ -102,14 +108,14 @@ router.get('/me', function(req, res, next) {
       return res.json({"success":false, "error": url});
     }
     getAccountForUrl(url, (account) => {
-      // util.log("getting session from", account, 0);
+      util.log("getting session from", account, 0);
       getSessionFromAccount(req, account);
-      // util.log("me new session", req.session, 0);
+      util.log("me new session", req.session, 0);
       eth.getCommunityFor(req.session.ykid, (community) => {
-        // util.log("got community", community, 0);
+        util.log("got community", community, 0);
         account.community = community;
         hydrateAccount(account, () => {
-          // util.log("hydrated", account, 0);
+          util.log("hydrated", account, 0);
           res.json(account);
         });
       });
@@ -264,7 +270,7 @@ router.post('/give', function(req, res, next) {
       account.metadata = account.metadata || {};
       account.metadata.prefs = account.metadata.prefs || {};
       util.log("prefs", account.metadata.prefs);
-      var sendEmail = account.metadata.prefs[req.body.recipient] !== 0;
+      var sendEmail = account.metadata.prefs[req.body.recipient] !== 0 || account.metadata.prefs.kr !== 0;
       if (sendEmail) {
         util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
@@ -442,8 +448,9 @@ function hydrateAccount(account, done) {
 function hydrateTranche(tranche, given, done) {
   // check account cache on redis
   const id = given ? tranche.receiver : tranche.sender;
+  util.log("hydrating tranche", id);
   const key = `account-${id}`;
-  redis.get(key, function (err, val) {
+  var success = redis.get(key, function (err, val) {
     if (err) {
       console.log("redis error", err);
     }
@@ -462,6 +469,17 @@ function hydrateTranche(tranche, given, done) {
       });
     }
   });
+  if (!success) {
+    eth.getAccountFor(id, (account) => {
+      tranche.details = {
+        metadata:     account.metadata,
+        urls:         account.urls,
+        communityId : account.communityId
+      };
+      redis.set(key, JSON.stringify(tranche.details));
+      done();
+    });
+  }
 }
 
 // Utility functions
