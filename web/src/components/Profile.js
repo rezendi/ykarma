@@ -62,7 +62,6 @@ class Profile extends React.Component {
       kr: values.kr ? 1 : 0,
       rw: values.rw ? 1 : 0,
       wk: values.wk ? 1 : 0,
-      mt: values.mt ? 1 : 0
     };
     console.log("Submitting form", toSubmit);
     this.props.setLoading(true);
@@ -117,6 +116,7 @@ class Profile extends React.Component {
                     <div>
                       <i>@{ this.props.user.handle}</i>
                     </div> }
+                    You have { this.props.user.givable } karma available to give.
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
@@ -183,9 +183,7 @@ class Profile extends React.Component {
                         <br/>
                         <Field name='rw' id='rw' component="input" type="checkbox"/>Whenever you create, buy, or sell a reward
                         <br/>
-                        <Field name='mt' id='mt' component="input" type="checkbox"/>Weekly updates, when your karma is replenished
-                        <br/>
-                        <Field name='yr' id='yr' component="input" type="checkbox"/>Monthly updates
+                        <Field name='wk' id='wk' component="input" type="checkbox"/>Weekly updates, when your karma is replenished
                         <br/>
                         <Button bsStyle="info" type="submit">Edit</Button>
                     </form>
@@ -262,9 +260,17 @@ Profile = reduxForm({
 })(Profile);
 
 function mapStateToProps(state, ownProps) {
+  var metadata = state.user.metadata || {}
+  var prefs = metadata.emailPrefs || {}
   return {
     user: state.user,
-    initialValues: state.user.metadata,
+    initialValues: state.user.metadata ?
+    {
+      name: state.user.metadata ? state.user.metadata.name : undefined,
+      kr: prefs.kr !== 0,
+      rw: prefs.rw !== 0,
+      wk: prefs.wk !== 0
+    } : undefined,
     ownedRewards: state.rewards.owned || [],
     vendedRewards: state.rewards.vended || [],
   }
