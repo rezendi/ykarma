@@ -34,6 +34,7 @@ class Main extends React.Component {
             <Route exact path='/admin' component={Admin}/>
             <Route exact path='/community/new' component={CommunityForm}/>
             <Route exact path='/community/:id' component={Community}/>
+            <Route exact path='/community' component={Community}/>
             <Route exact path='/account/:id' component={Account}/>
             <Route exact path='/user' component={Account}/>
             <Route exact path='/reward/new' component={RewardForm}/>

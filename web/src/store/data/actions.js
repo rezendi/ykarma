@@ -23,11 +23,13 @@ export function loadCommunitiesSuccess(communities) {
 
 export function loadCommunity(communityId) {
   return function(dispatch) {
-    return Api.loadCommunity(communityId).then(community => {
-      dispatch(loadCommunitySuccess(community));
-    }).catch(error => {
-      throw(error);
-    });
+    if (communityId) {
+      return Api.loadCommunity(communityId).then(community => {
+        dispatch(loadCommunitySuccess(community));
+      }).catch(error => {
+        throw(error);
+      });
+    }
   };
 }
 
@@ -40,11 +42,13 @@ export function loadCommunitySuccess(community) {
 
 export function loadAccountsFor(communityId) {
   return function(dispatch) {
-    return Api.loadAccountsFor(communityId).then(accounts => {
-      dispatch(loadAccountsSuccess(accounts));
-    }).catch(error => {
-      throw(error);
-    });
+    if (communityId) {
+      return Api.loadAccountsFor(communityId).then(accounts => {
+        dispatch(loadAccountsSuccess(accounts));
+      }).catch(error => {
+        throw(error);
+      });
+    }
   };
 }
 
