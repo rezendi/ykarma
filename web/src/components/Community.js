@@ -1,12 +1,24 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
-import CommunityForm from './CommunityForm';
 import { connect } from 'react-redux'
-import { loadCommunity, loadAccountsFor } from '../store/data/actions'
+import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import { reduxForm } from 'redux-form';
+import { loadCommunity, loadAccountsFor, setLoading } from '../store/data/actions'
+import CommunityForm from './CommunityForm';
+import CommunityMember from './CommunityMember';
 
 class Community extends React.Component {
   
+  submitForm = async (values) => {
+    console.log("Submitting form", values);
+    //this.props.setLoading(true);
+    /*
+    Api.giveKarma(this.props.user.ykid, values).then((res) => {
+      this.props.setLoading(false);
+      res.ok ? window.location.reload() : alert("Server error!");
+    });
+    */
+  }
+
   componentDidMount() {
     const communityId = this.props.match.params.id;
     this.props.loadCommunity(communityId);
@@ -44,18 +56,26 @@ class Community extends React.Component {
               <Panel.Heading>
                 {this.props.community.metadata.name}
                 {this.props.user.isAdmin && <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>}
-                &nbsp;
+                &nbsp; &nbsp;
                 {this.props.accounts.length} members
               </Panel.Heading>
               <Panel.Body>
-                <Row>
+                <Row><Col md={12}>
                   {this.props.community.metadata.description}
-                </Row>
-                {this.props.accounts.map(account =>
-                  <Row key={account.id}>
-                    <Link to={`/account/${account.id}`}>{account.metadata.name || account.metadata.email}</Link>
+                </Col></Row>
+                <Row><Col md={12}>
+                  You have { this.props.user.givable } karma available to give.
+                  <hr/>
+                </Col></Row>
+                <form onSubmit={this.props.handleSubmit(this.submitForm)}>
+                  {this.props.accounts.map((account,idx) =>
+                    <CommunityMember key={idx} member={account} senderId={this.props.user.ykid}/>
+                  )}
+                  <Row>
+                    <Col md={8}>&nbsp;</Col>
+                    <Col md={4}><input type="submit" value="Give"/></Col>
                   </Row>
-                )}
+                </form>
               </Panel.Body>
             </Panel>
           </Col>
@@ -78,7 +98,13 @@ function mapDispatchToProps(dispatch) {
   return {
     loadCommunity: (communityId) => dispatch(loadCommunity(communityId)),
     loadAccountsFor: (communityId) => dispatch(loadAccountsFor(communityId)),
+    setLoading: (active) => dispatch(setLoading(active)),
   }
 }
+
+Community = reduxForm({
+  form: 'community-give',
+})(Community);
+
 
 export default connect(mapStateToProps, mapDispatchToProps)(Community);

@@ -54,14 +54,15 @@ class Home extends React.Component {
   }
 
   render() {
-    if (!this.props.user || !this.props.user.uid) {
+   if (!this.props.user || Object.keys(this.props.user).length === 0) {
       return (
-        <Grid><Row>Welcome to YKarma!
-          { false &&
-          <form onSubmit={this.props.handleSubmit(this.submitForm)}>
-            <Button type="submit">Submit</Button>
-          </form> }
-        </Row></Grid>
+        <Grid><Row>Loading...</Row></Grid>
+      );
+    }
+
+   if (!this.props.user.uid) {
+      return (
+        <Grid><Row>Welcome to YKarma!</Row></Grid>
       );
     }
 

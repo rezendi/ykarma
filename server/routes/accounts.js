@@ -448,7 +448,7 @@ function hydrateAccount(account, done) {
 function hydrateTranche(tranche, given, done) {
   // check account cache on redis
   const id = given ? tranche.receiver : tranche.sender;
-  util.log("hydrating tranche", id);
+  util.log("hydrating tranche for", id);
   const key = `account-${id}`;
   var success = redis.get(key, function (err, val) {
     if (err) {

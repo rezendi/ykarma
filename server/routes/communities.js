@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require("body-parser");
 var router = express.Router();
 var eth = require('./eth');
+var util = require('./util');
 
 var fromAccount = null;
 eth.getFromAccount().then(address => {
@@ -28,7 +29,7 @@ router.get('/', function(req, res, next) {
       console.log('getCommunityCount error', error);
       res.json({"success":false, "error": error});
     } else {
-      console.log('getCommunityCount result', result);
+      util.log('getCommunityCount result', result);
       for (var i = 0; i < result; i++) {
         eth.getCommunityFor(i+1, (community) => {
           communities.push(community);
@@ -50,7 +51,7 @@ router.get('/', function(req, res, next) {
 router.get('/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   eth.getCommunityFor(id, (community) => {
-    console.log('callback', community);
+    util.log('callback', community);
     res.json(community);
   });
 });
@@ -62,7 +63,7 @@ router.post('/create', function(req, res, next) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   var community = req.body.community;
-  console.log("community", JSON.stringify(community));
+  util.log("community", JSON.stringify(community));
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
   }
@@ -82,7 +83,7 @@ router.put('/update', function(req, res, next) {
   if (req.session.email !== process.env.ADMIN_EMAIL && parseInt(req.session.communityAdminId) !== community.id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
-  console.log("community", JSON.stringify(community));
+  util.log("community", JSON.stringify(community));
   if (community.id === 0) {
     res.json({'success':false, 'error':'community not saved'});
   }
