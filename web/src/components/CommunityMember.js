@@ -18,7 +18,7 @@ class CommunityMember extends React.Component {
     return (
       <Row>
         <Col md={8}>
-          <Link to={`account/${this.props.member.id}`}>{this.getName(this.props.member)}</Link>
+          <Link to={`/account/${this.props.member.id}`}>{this.getName(this.props.member)}</Link>
         </Col>
         { this.props.member.id !== this.props.senderId &&
         <Col md={4}>

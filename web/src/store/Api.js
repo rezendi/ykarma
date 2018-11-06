@@ -31,7 +31,7 @@ class Api {
   }
 
   static loadAccount(accountId) {
-    return fetch(`/api/accounts/${accountId}`, { credentials: 'include'})
+    return fetch(`/api/accounts/account/${accountId}`, { credentials: 'include'})
       .then(response => {
         return response.json();
     }).catch(error => {

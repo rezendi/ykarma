@@ -2,7 +2,6 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { loadAccount } from '../store/data/actions'
-import AccountForm from './AccountForm';
 
 class Account extends React.Component {
   componentDidMount() {
@@ -10,43 +9,58 @@ class Account extends React.Component {
     this.setState({editing: false});
   }
   
-  toggleEditing = () => {
-    this.setState({editing: this.state.editing ? false : true});
+  getFirstUrlFrom = (urls) => {
+    return (urls || '').split(',')[0].replace("mailto:","").replace("https://www.twitter.com/","@")
+  }
+
+  getSecondUrlFrom = (urls) => {
+    return (urls || '').split(',').length < 2 ? null : (urls || '').split(',')[1].replace("mailto:","").replace("https://www.twitter.com/","@")
   }
 
   render() {
-   if (this.props.account.id === undefined) {
+    if (!this.props.account.id) {
       return (
         <div>Loading...</div>
       );
     }
-    if (this.state && this.state.editing) {
-      return (
-        <AccountForm account = {this.props.account}/>
-      );
-    }
+
     return (
       <Grid>
         <Row>
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                {this.props.account.metadata.name} <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>
+                Community Member
               </Panel.Heading>
               <Panel.Body>
                 <Row>
-                  {this.props.account.metadata.description}
+                  <Col md={8}>
+                    { this.props.account.metadata && this.props.account.metadata.name && <b>{ this.props.account.metadata.name }</b> }
+                    <div>
+                      <i>{ this.getFirstUrlFrom(this.props.account.urls) }</i>
+                    </div>
+                    { this.getSecondUrlFrom(this.props.account.urls) &&
+                    <div>
+                      <i>@{ this.getSecondUrlFrom(this.props.account.urls) }</i>
+                    </div> }
+                  </Col>
+                  { this.props.account.providerData && this.props.account.providerData.length > 0 && this.props.account.providerData[0].photoURL &&
+                  <Col md={4}>
+                    <img alt="avatar" style={{float:"right"}} width={64} height={64} src={this.props.account.providerData[0].photoURL}/>
+                  </Col> }
                 </Row>
               </Panel.Body>
             </Panel>
           </Col>
         </Row>
+
       </Grid>
     );
   }
 }
 
 function mapStateToProps(state, ownProps) {
+  console.log("account", state.account);
   return {
     account: state.account
   }

@@ -78,10 +78,11 @@ router.get('/for/:communityId', function(req, res, next) {
 /* GET account details */
 router.get('/account/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
-  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id) {
-    return res.json({"success":false, "error": "Not authorized"});
-  }
   eth.getAccountFor(id, (account) => {
+    if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityId) {
+      console.log('Unauthorized account request');
+      return res.json({"success":false, "error": "Not authorized"});
+    }
     util.log('callback', account);
     res.json(account);
   });

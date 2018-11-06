@@ -42,7 +42,7 @@ module.exports = (deployer, network, accounts) => {
     const ykv = await YKRewards.deployed();
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
-    await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha,test');
+    await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:' + adminEmail);
     await yk.replenish(1);
     setEnvAddress(YKarma.address);
