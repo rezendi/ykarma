@@ -5,18 +5,40 @@ import { reduxForm } from 'redux-form';
 import { loadCommunity, loadAccountsFor, setLoading } from '../store/data/actions'
 import CommunityForm from './CommunityForm';
 import CommunityMember from './CommunityMember';
+import Api from '../store/Api';
 
 class Community extends React.Component {
   
-  submitForm = async (values) => {
-    console.log("Submitting form", values);
-    //this.props.setLoading(true);
-    /*
-    Api.giveKarma(this.props.user.ykid, values).then((res) => {
-      this.props.setLoading(false);
-      res.ok ? window.location.reload() : alert("Server error!");
-    });
-    */
+  submitForm = async (formValues) => {
+    console.log("Submitting form", formValues);
+    var values = {};
+    for (var key in formValues) {
+      const pieces = key.split("-");
+      const newKey = pieces[1];
+      var innerDict = values[newKey] || {};
+      innerDict[pieces[0]] = formValues[key];
+      values[newKey] = innerDict;
+    }
+    // console.log("Values", values);
+    for (var key2 in values) {
+      var args = {
+        // FIXME note incredibly ugly hack because no dots allowed in forms, see also CommunityMember.js
+        recipient: key2.replace("|||","."),
+        coins: values[key2]['coins'],
+        message: values[key2]['message'],
+      }
+      // console.log("args", args);
+      var callbacks = 0;
+      this.props.setLoading(true);
+      // eslint-disable-next-line
+      Api.giveKarma(this.props.user.ykid, args).then((res) => {
+        console.log("res", res);
+        if (++callbacks === Object.keys(values).length) {
+          this.props.setLoading(false);
+          res.ok ? window.location.reload() : alert("Server error!");
+        }
+      });
+    }
   }
 
   componentDidMount() {

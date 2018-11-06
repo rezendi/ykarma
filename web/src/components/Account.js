@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { loadAccount } from '../store/data/actions'
 
