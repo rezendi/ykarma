@@ -29,10 +29,14 @@ const getFromAccount = function() {
 
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
   var notifying = false;
-  method.estimateGas({gas: GAS}, function(error, gasAmount) {
+  method.estimateGas({gas: GAS}, function(estError, gasAmount) {
+    if (estError) {
+      console.log('error', estError);
+      return res.json({'success':false, 'error':estError});
+    }
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
       console.log('error', error);
-      res.json({'success':false, 'error':error});
+      return res.json({'success':false, 'error':error});
     })
     .on('confirmation', (number, receipt) => {
       if (number >= minConfirmations && !notifying) {

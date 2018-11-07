@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "testrun": "NODE_ENV=test node ./bin/www"
+    "test": "NODE_ENV=test node ./bin/www",
+    "cron": "node ./cron/cron.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
