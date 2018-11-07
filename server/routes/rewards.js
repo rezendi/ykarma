@@ -90,7 +90,18 @@ router.post('/create', function(req, res, next) {
   }
   var reward = req.body.reward;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag || '', JSON.stringify(reward.metadata), reward.flags || '0x00');
-  eth.doSend(method, res);
+  eth.doSend(method, res, 1, 2, () => {
+    if (req.session.email) {
+      var account = req.session.account || {};
+      account.metadata = account.metadata || {};
+      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+      util.log("emailPrefs", account.metadata.emailPrefs);
+      if (account.metadata.emailPrefs.rw !== 0) {
+        sendRewardCreatedEmail(req.session.email, reward);
+      }
+    }
+    return res.json({"success":true, "result": reward});
+  });
 });
 
 /* PUT update a reward */
@@ -129,7 +140,28 @@ router.post('/purchase', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
-  eth.doSend(method, res);
+  eth.doSend(method, res, 1, 2, () => {
+    if (req.session.email) {
+      var account = req.session.account || {};
+      account.metadata = account.metadata || {};
+      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+      util.log("emailPrefs", account.metadata.emailPrefs);
+      if (account.metadata.emailPrefs.rw !== 0) {
+        sendRewardPurchasedEmail(req.session.email, reward);
+      }
+    }
+    eth.getAccountFor(req.body.vendorId, (vendor) => {
+      if (vendor.urls && vendor.urls.indexOf("mailto") > 0) {
+        const urls = vendor.urls.split(",");
+        for (var url in urls) {
+          if (url.startsWith("mailto:")) {
+            sendRewarSoldEmail(url, reward);
+          }
+        }
+      }
+      return res.json({"success":true, "result": reward});
+    });
+  });
 });
 
 
@@ -149,7 +181,7 @@ function getRewardFor(id, callback) {
     }
   })
   .catch(function(error) {
-    console.log('getAccountFor call error ' + id, error);
+    console.log('getRewardFor call error ' + id, error);
     callback({});
   });
 }
@@ -183,5 +215,48 @@ function getRewardFromResult(result) {
     metadata: JSON.parse(result[7] || '{}'),
   };
 }
+
+function sendRewardCreatedEmail(vendor, reward) {
+  if (process.env.NODE_ENV === "test") return;
+  var recipientEmail = vendor.replace("mailto:","");
+  // TODO check that the URL is an email address
+  const msg = {
+    to: recipientEmail,
+    from: 'karma@ykarma.com',
+    subject: `You just created a reward!`,
+    text: `You should totally find out more! ${reward.metadata}`,
+    html: `<strong>You should totally find out more.</strong>  ${reward.metadata}`,
+  };
+  sgMail.send(msg);  
+}
+
+function sendRewardSoldEmail(vendor, reward) {
+  if (process.env.NODE_ENV === "test") return;
+  var recipientEmail = vendor.replace("mailto:","");
+  // TODO check that the URL is an email address
+  const msg = {
+    to: recipientEmail,
+    from: 'karma@ykarma.com',
+    subject: `You just sold a reward!`,
+    text: `You should totally find out more! ${reward.metadata}`,
+    html: `<strong>You should totally find out more.</strong>  ${reward.metadata}`,
+  };
+  sgMail.send(msg);
+}
+
+function sendRewardPurchasedEmail(purchaser, reward) {
+  if (process.env.NODE_ENV === "test") return;
+  recipientMail = purchaser.replace("mailto:","");
+  // TODO check that the URL is an email address
+  const msg2 = {
+    to: recipientEmail,
+    from: 'karma@ykarma.com',
+    subject: `You just bought a reward!`,
+    text: `You should totally find out more! ${reward.metadata}`,
+    html: `<strong>You should totally find out more.</strong>  ${reward.metadata}`,
+  };
+  sgMail.send(msg2);
+}
+
 
 module.exports = router;

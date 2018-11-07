@@ -266,17 +266,18 @@ router.post('/give', function(req, res, next) {
     req.body.message || '',
   );
   eth.doSend(method, res, 1, 4, function() {
-    if (process.env.NODE_ENV != "test" && recipient.startsWith("mailto:")) {
+    if (recipient.startsWith("mailto:")) {
       var account = req.session.account || {};
       account.metadata = account.metadata || {};
-      account.metadata.prefs = account.metadata.prefs || {};
-      util.log("prefs", account.metadata.prefs);
-      var sendEmail = account.metadata.prefs[req.body.recipient] !== 0 || account.metadata.prefs.kr !== 0;
+      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+      util.log("emailPrefs", account.metadata.emailPrefs);
+      var prefs = util.getPrefsFrom(req);
+      var sendEmail = account.metadata.emailPrefs[req.body.recipient] !== 0 || account.metadata.emailPrefs.kr !== 0;
       if (sendEmail) {
         util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
-        sendKarmaSentMail(senderName, recipient, req.body.amount);
-        account.metadata.prefs[req.body.recipient] = 0;
+        sendKarmaSentEmail(senderName, recipient, req.body.amount);
+        account.metadata.emailPrefs[req.body.recipient] = 0;
         util.log("updated metadata", account.metadata);
         var method2 = eth.contract.methods.editAccount(
           account.id,
@@ -287,7 +288,7 @@ router.post('/give', function(req, res, next) {
         // util.log("sending", method2);
         eth.doSend(method2, res, 1, 4);
       } else {
-        util.log("not sending email", account.metadata.prefs);
+        util.log("not sending email", account.metadata.emailPrefs);
         return res.json( { "success":true } );
       }
     } else {
@@ -501,19 +502,6 @@ function getSessionFromAccount(req, account) {
   }
 }
 
-function sendKarmaSentMail(sender, recipient, amount) {
-  var recipientEmail = recipient.replace("mailto:","");
-  // TODO check that the URL is an email address
-  const msg = {
-    to: recipientEmail,
-    from: 'karma@ykarma.com',
-    subject: `${sender} just sent you ${amount} YKarma!`,
-    text: 'You should totally find out more!',
-    html: '<strong>You should totally find out more.</strong>',
-  };
-  sgMail.send(msg);  
-}
-
 function getLongUrlFromShort(shortUrl) {
   var url = shortUrl;
   if (!url || url.length === 0) {
@@ -536,5 +524,20 @@ function getLongUrlFromShort(shortUrl) {
   }
   return url;
 }
+
+function sendKarmaSentEmail(sender, recipient, amount) {
+  if (process.env.NODE_ENV === "test") return;
+  var recipientEmail = recipient.replace("mailto:","");
+  // TODO check that the URL is an email address
+  const msg = {
+    to: recipientEmail,
+    from: 'karma@ykarma.com',
+    subject: `${sender} just sent you ${amount} YKarma!`,
+    text: 'You should totally find out more!',
+    html: '<strong>You should totally find out more.</strong>',
+  };
+  sgMail.send(msg);  
+}
+
 
 module.exports = router;
