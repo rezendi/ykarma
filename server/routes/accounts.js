@@ -95,6 +95,20 @@ router.get('/me', function(req, res, next) {
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
+
+      // set account as active if not
+      if (account.flags == 0x1) {
+        util.log("Marking account active");
+        var method = eth.contract.methods.editAccount(
+          account.id,
+          account.userAddress,
+          JSON.stringify(account.metadata),
+          '0x00'
+        );
+        eth.doSend(method, res, 1, 2, () => {});
+      }
+
+      // populate community and tranche data
       eth.getCommunityFor(req.session.ykid, (community) => {
         account.community = community;
         hydrateAccount(account, () => {

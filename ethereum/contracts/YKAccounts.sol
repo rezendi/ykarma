@@ -38,7 +38,7 @@ contract YKAccounts is Oracular, YKStructs {
       id:           maxAccountId + 1,
       communityId:  _communityId,
       userAddress:  _address,
-      flags:        0x0,
+      flags:        0x1, // mark account as new
       metadata:     _metadata,
       urls:         _url,
       rewardIds:    new uint256[](0),

@@ -151,14 +151,7 @@ router.post('/purchase', function(req, res, next) {
       }
     }
     eth.getAccountFor(req.body.vendorId, (vendor) => {
-      if (vendor.urls && vendor.urls.indexOf("mailto") > 0) {
-        const urls = vendor.urls.split(",");
-        for (var url in urls) {
-          if (url.startsWith("mailto:")) {
-            sendRewarSoldEmail(url, reward);
-          }
-        }
-      }
+      sendRewardSoldEmail(vendor, reward);
       return res.json({"success":true, "result": reward});
     });
   });
@@ -232,8 +225,16 @@ function sendRewardCreatedEmail(vendor, reward) {
 
 function sendRewardSoldEmail(vendor, reward) {
   if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = vendor.replace("mailto:","");
-  // TODO check that the URL is an email address
+  var recipientEmail = "";
+  if (vendor.urls && vendor.urls.indexOf("mailto") > 0) {
+    const urls = vendor.urls.split(",");
+    for (var url in urls) {
+      if (url.startsWith("mailto:")) {
+        recipientEmail = url.replace("mailto:","");
+      }
+    }
+  }
+  if (recipientEmail === "") return;
   const msg = {
     to: recipientEmail,
     from: 'karma@ykarma.com',

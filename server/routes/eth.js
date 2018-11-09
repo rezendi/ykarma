@@ -4,13 +4,13 @@ const abi = [{"constant":true,"inputs":[],"name":"senderIsOracle","outputs":[{"n
 const contract = new web3.eth.Contract(abi, process.env.YKARMA_ADDRESS);
 const GAS = "5000000";
 
+var fromAccount;
+
 function delay(t, v) {
    return new Promise(function(resolve) { 
        setTimeout(resolve.bind(null, v), t)
    });
 }
-
-var fromAccount;
 
 const getFromAccount = function() {
    if (fromAccount) {
@@ -21,7 +21,7 @@ const getFromAccount = function() {
     return fromAccount;
   })
   .catch(err => {
-    return delay(5000).then(function() {
+    return delay(1000).then(function() {
       return getFromAccount();
     });
   });
@@ -118,10 +118,11 @@ const getCommunityFor = function (id, callback) {
 
 
 module.exports = {
-    web3:      web3,
-    contract:  contract,
-    doSend:    doSend,
-    GAS:       GAS,
+    web3:         web3,
+    contract:     contract,
+    doSend:       doSend,
+    GAS:          GAS,
+    fromAccount:  fromAccount,
     getFromAccount:        getFromAccount,
     getAccountFor:         getAccountFor,
     getAccountFromResult:  getAccountFromResult,
