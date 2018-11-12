@@ -27,8 +27,11 @@ services:
 
   eth:
     build: ./geth
+    restart: unless-stopped
     ports:
       - "8545:8545"
+    volumes:
+      - ./geth/cbdata:/cbdata
 
   # just for Node web session storage, currently
   redis:
