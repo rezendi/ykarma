@@ -29,7 +29,7 @@ services:
     build: ./geth
     restart: unless-stopped
     ports:
-      - "32769:8545"
+      - "8545:8545"
     volumes:
       - ./geth/cbdata:/cbdata
 
