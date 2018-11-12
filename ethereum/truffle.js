@@ -7,7 +7,7 @@ module.exports = {
     },
     production: {
       host: 'eth',
-      port: 8545,
+      port: 32769,
       network_id: '*',
     }
   },
