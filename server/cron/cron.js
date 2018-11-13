@@ -50,7 +50,9 @@ function replenishCommunity(community) {
     } else {
       for (var i = 0; i < result; i++) {
         getAccountWithinCommunity(community.id, i, (account) => {
-          replenishAccount(account);
+          if (!account.flags === 0x1) {
+            replenishAccount(account);
+          }
         });
       }
     }

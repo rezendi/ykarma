@@ -59,7 +59,7 @@ contract YKarma is Oracular, YKStructs {
     Community memory community = communityData.communityForId(giver.communityId);
     Account memory recipient = accountData.accountForId(accountData.accountIdForUrl(_url));
     if (recipient.id == 0) {
-      recipient = accountData.accountForId(addNewAccount(community.id, 0, '', _url));
+      recipient = accountData.accountForId(addNewAccount(community.id, 0, '', 0x1, _url)); // 0x1 to mark account created by giving
     }
     trancheData.performGive(giver, recipient, _amount, community.tags, _message);
   }
@@ -158,8 +158,8 @@ contract YKarma is Oracular, YKStructs {
     return accountForId(id);
   }
   
-  function addNewAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOracle returns (uint256) {
-    uint256 newAccountId = accountData.addAccount(_communityId, _address, _metadata, _url);
+  function addNewAccount(uint256 _communityId, address _address, string _metadata, bytes32 _flags, string _url) public onlyOracle returns (uint256) {
+    uint256 newAccountId = accountData.addAccount(_communityId, _address, _metadata, _flags, _url);
     communityData.addAccount(_communityId, newAccountId);
     return newAccountId;
   }

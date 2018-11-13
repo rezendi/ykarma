@@ -43,14 +43,14 @@ module.exports = (deployer, network, accounts) => {
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
-    await yk.addNewAccount(1, 0, '{"name":"Jon"}', 'mailto:' + adminEmail);
+    await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
     await yk.replenish(1);
     setEnvAddress(YKarma.address);
     
     // add test data if appropriate
     if (process.env.TRUFFLE_ENV !== 'production') {
-      await yk.addNewAccount(1, 0, '{"name":"Test"}', 'mailto:test@example.com');
-      await yk.addNewAccount(1, 0, '{"name":"Test Two"}', 'mailto:test2@example.com');
+      await yk.addNewAccount(1, 0, '{"name":"Test"}', '0x00', 'mailto:test@example.com');
+      await yk.addNewAccount(1, 0, '{"name":"Test Two"}', '0x00', 'mailto:test2@example.com');
       await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
       await yk.replenish(2);
       await yk.give(2, 'mailto:'+adminEmail, 80, "Just a message");

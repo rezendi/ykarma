@@ -31,14 +31,14 @@ contract YKAccounts is Oracular, YKStructs {
     return accountsByUrl[_url];
   }
   
-  function addAccount(uint256 _communityId, address _address, string _metadata, string _url) public onlyOracle returns (uint256) {
+  function addAccount(uint256 _communityId, address _address, string _metadata, bytes32 _flags, string _url) public onlyOracle returns (uint256) {
     require(urlIsValid(_url));
     require (_metadata.toSlice()._len < 2048);
     Account memory account = Account({
       id:           maxAccountId + 1,
       communityId:  _communityId,
       userAddress:  _address,
-      flags:        0x1, // mark account as new
+      flags:        _flags,
       metadata:     _metadata,
       urls:         _url,
       rewardIds:    new uint256[](0),

@@ -28,11 +28,12 @@ contract('Paces', function(accounts) {
     assert.equal(count, 2, "Community created");
     var vals = await ykarma.communityForId(1);
     assert.equal(accounts[1], vals[1]);
-    await ykarma.addNewAccount(1, '', '{"name":"Jon"}', 'mailto:jon@rezendi.com', );
+    await ykarma.addNewAccount(1, '', '{"name":"Jon"}', '0x00', 'mailto:jon@rezendi.com', );
     vals = await ykarma.accountForId(1);
     assert.equal(vals[4], '{"name":"Jon"}', "Account metadata");
     assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
     assert.equal(""+vals[7], '0', "Account pre-replenish");
+    assert.equal(vals[3], 0x0);
     await ykarma.replenish(1);
     await ykarma.recalculateBalances(1);
     vals = await ykarma.accountForId(1);
@@ -48,6 +49,7 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals[7], '60', "Giving happened");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[0]["amount"], 40, "Giving received");
+    assert.equal(vals[3], 0x1);
     await ykarma.give(1, 'mailto:jay@rezendi.com', 20, 'Another "quote-unquote" message');
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '40', "Giving happened II");

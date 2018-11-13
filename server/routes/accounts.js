@@ -34,7 +34,7 @@ router.get('/setup', function(req, res, next) {
       if (account.id !== '0') {
         return res.json({"success":true, 'message':'Redundant'});
       }
-      var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Admin"}', 'mailto:'+process.env.ADMIN_EMAIL);
+      var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Admin"}', '0x00', 'mailto:'+process.env.ADMIN_EMAIL);
       doSend(method, res, 1, 2);
     });
   }
