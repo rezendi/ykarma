@@ -72,14 +72,12 @@ class Home extends React.Component {
       );
     }
 
-    /*
     if (this.props.location.search.indexOf("?first=true")===0) {
       Api.replenish().then(result => {
         console.log('replenish result', result);
-        window.location="/";
+        window.location="/?";
       });
     }
-    */
 
     return (
       <Grid>
