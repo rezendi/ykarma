@@ -23,13 +23,14 @@ eth.getFromAccount().then(address => {
 // GET set up
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
-    util.log("setting up test data");
-    req.session.email = "test@example.com";
+    util.warn("setting up test data");
+    req.session.email = process.env.ADMIN_EMAIL;
     req.session.ykid = 2;
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
+    util.log("set up test data", req.session);
   } else {
-    util.log("setting up admin account");
+    util.warn("setting up admin account");
     getAccountForUrl('mailto:'+process.env.ADMIN_EMAIL, (account) => {
       if (account.id !== '0') {
         return res.json({"success":true, 'message':'Redundant'});
@@ -97,7 +98,7 @@ router.get('/me', function(req, res, next) {
       getSessionFromAccount(req, account);
 
       // set account as active if not
-      if (account.flags == 0x1) {
+      if (account.flags == '0x0000000000000000000000000000000000000000000000000000000000000001') {
         util.log("Marking account active");
         var method = eth.contract.methods.editAccount(
           account.id,
@@ -234,7 +235,7 @@ router.put('/removeUrl', function(req, res, next) {
 /* PUT edit account */
 router.put('/update', function(req, res, next) {
   var account = req.body.account;
-  //console.log("updating account", account);
+  util.log("updating account", account);
   if (account.id === 0) {
     return res.json({"success":false, "error": 'Account ID not set'});
   }
@@ -267,12 +268,12 @@ router.delete('/destroy/:id', function(req, res, next) {
 
 /* POST give coins */
 router.post('/give', function(req, res, next) {
-  var sender = req.session.email === process.env.ADMIN_EMAIL ? req.body.id : req.session.ykid;
+  var sender = req.session.email === process.env.ADMIN_EMAIL ? req.body.id || req.session.ykid : req.session.ykid;
   var recipient = getLongUrlFromShort(req.body.recipient);
   if (recipient.startsWith('error')) {
     return res.json({"success":false, "error": recipient});
   }
-  util.log(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
+  util.warn(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
   var method = eth.contract.methods.give(
     sender,
     recipient,

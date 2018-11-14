@@ -50,7 +50,7 @@ function replenishCommunity(community) {
     } else {
       for (var i = 0; i < result; i++) {
         getAccountWithinCommunity(community.id, i, (account) => {
-          if (!account.flags === 0x1) {
+          if (account.flags !== '0x0000000000000000000000000000000000000000000000000000000000000001') { // if not newly created by receipt
             replenishAccount(account);
           }
         });

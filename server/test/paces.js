@@ -21,6 +21,7 @@ describe('Account', function () {
           if (err) done (err);
           var acct = JSON.parse(res.text);
           expect(acct.urls).to.equal("mailto:test@example.com");
+          expect(acct.flags).to.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
           api.put('/api/accounts/addUrl')
             .send({"url":"@testuser"})
             .set('Cookie', TestCookies).expect(200)
@@ -44,7 +45,6 @@ describe('Account', function () {
                         .end(function (err, res) {
                           if (err) done (err);
                           var acct = JSON.parse(res.text);
-                          expect(acct.urls).to.equal("mailto:test@example.com");
                           done();
                         });
                     });
@@ -117,7 +117,14 @@ describe('Account', function () {
                   if (err) done (err);
                   var acct = JSON.parse(res.text);
                   expect(parseInt(acct.givable)).to.equal(initial - 1);
-                  done();
+                  api.get('/api/accounts/url/@testrecipient')
+                    .set('Cookie', TestCookies).expect(200)
+                    .end(function (err, res) {
+                      if (err) done (err);
+                      acct = JSON.parse(res.text);
+                      expect(acct.flags).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001');
+                      done();
+                    });
                 });
             });
         });
