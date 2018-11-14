@@ -22,13 +22,25 @@ function verifyURLs(urlsString) {
 }
 
 // TODO: real logging
+function warn(a, b, c=null) {
+  b ? console.warn(a,b) : console.warn(a);
+}
+
 function log(a, b, c=null) {
   if (c) { // if (!c) for verbose logging
-    console.log(a,b);
+    b ? console.log(a,b) : console.log(a);
+  }
+}
+
+function debug(a, b, c=null) {
+  if (c) { // if (!c) for verbose debug logging
+    b ? console.log(a,b) : console.log(a);
   }
 }
 
 module.exports = {
   verifyURLs: verifyURLs,
   log:        log,
+  debug:      debug,
+  warn:       warn, 
 };

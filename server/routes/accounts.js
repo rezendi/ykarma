@@ -1,10 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var bodyParser = require("body-parser");
-var eth = require('./eth');
-var util = require('./util');
-var firebase = require('./firebase');
-var redisService = require("redis");
+const express = require('express');
+const router = express.Router();
+const bodyParser = require("body-parser");
+const eth = require('./eth');
+const util = require('./util');
+const firebase = require('./firebase');
+const redisService = require("redis");
 var redis = redisService.createClient({host:"redis", port: 6379});
 redis.on('error', function (err) {
   if (process.env.NODE_ENV === "production") {
@@ -46,8 +46,8 @@ router.get('/setup', function(req, res, next) {
 router.get('/for/:communityId', function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
   if (req.session.email !== process.env.ADMIN_EMAIL && req.session.communityAdminId !== communityId) {
-    util.log("not allowed to get accounts for",communityId);
-    util.log("communityAdminId",req.session.communityAdminId);
+    util.log("not allowed to get accounts for", communityId);
+    util.log("communityAdminId", req.session.communityAdminId);
     return res.json([]);
   }
   util.log("getting accounts for",communityId);
@@ -55,7 +55,7 @@ router.get('/for/:communityId', function(req, res, next) {
   var method = eth.contract.methods.getAccountCount(communityId);
   method.call(function(error, result) {
     if (error) {
-      util.log('getAccountCount error', error);
+      util.warn('getAccountCount error', error);
       res.json([]);
     } else {
       util.log('getAccountCount result', result);
@@ -80,7 +80,7 @@ router.get('/account/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   eth.getAccountFor(id, (account) => {
     if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityId) {
-      console.log('Unauthorized account request');
+      util.warn('Unauthorized account request', req.session);
       return res.json({"success":false, "error": "Not authorized"});
     }
     util.log('callback', account);
@@ -123,14 +123,14 @@ router.get('/me', function(req, res, next) {
       return res.json({"success":false, "error": url});
     }
     getAccountForUrl(url, (account) => {
-      util.log("getting session from", account, 0);
+      //util.log("getting session from", account, 0);
       getSessionFromAccount(req, account);
-      util.log("me new session", req.session, 0);
+      //util.log("me new session", req.session, 0);
       eth.getCommunityFor(req.session.ykid, (community) => {
-        util.log("got community", community, 0);
+        //util.log("got community", community, 0);
         account.community = community;
         hydrateAccount(account, () => {
-          util.log("hydrated", account, 0);
+          //util.log("hydrated", account, 0);
           res.json(account);
         });
       });
@@ -142,7 +142,7 @@ router.get('/me', function(req, res, next) {
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
   if (req.session.email !== url && req.session.handle !== url && req.session.email !== process.env.ADMIN_EMAIL) {
-    util.log("Not authorized", req.params.url);
+    util.warn("Not authorized", req.params.url);
     return res.json({"success":false, "error": "Not authorized"});
   }
   url = getLongUrlFromShort(url);
@@ -267,7 +267,7 @@ router.delete('/destroy/:id', function(req, res, next) {
 
 /* POST give coins */
 router.post('/give', function(req, res, next) {
-  var sender = req.session.email !== process.env.ADMIN_EMAIL ? req.body.id : req.session.ykid;
+  var sender = req.session.email === process.env.ADMIN_EMAIL ? req.body.id : req.session.ykid;
   var recipient = getLongUrlFromShort(req.body.recipient);
   if (recipient.startsWith('error')) {
     return res.json({"success":false, "error": recipient});
@@ -280,17 +280,22 @@ router.post('/give', function(req, res, next) {
     req.body.message || '',
   );
   eth.doSend(method, res, 1, 4, function() {
+    util.log("karma sent", req.body.recipient);
     if (recipient.startsWith("mailto:")) {
       var account = req.session.account || {};
       account.metadata = account.metadata || {};
       account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-      util.log("emailPrefs", account.metadata.emailPrefs);
-      var prefs = util.getPrefsFrom(req);
+      // util.log("emailPrefs", account.metadata.emailPrefs);
       var sendEmail = account.metadata.emailPrefs[req.body.recipient] !== 0 || account.metadata.emailPrefs.kr !== 0;
       if (sendEmail) {
         util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
         sendKarmaSentEmail(senderName, recipient, req.body.amount);
+        if (account.metadata.emailPrefs.kr && account.metadata.emailPrefs.kr !== 0) {
+          return res.json( { "success":true } );
+        }
+
+        // make sure we don't send karma-received email more than once unless explicitly desired
         account.metadata.emailPrefs[req.body.recipient] = 0;
         util.log("updated metadata", account.metadata);
         var method2 = eth.contract.methods.editAccount(
@@ -307,6 +312,7 @@ router.post('/give', function(req, res, next) {
       }
     } else {
       // TODO: Twitter notifications
+      return res.json( { "success":true } );
     }
   });
 });
@@ -350,7 +356,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
   // console.log("accountWithinCommunity idx "+idx, communityId);
   method.call(function(error, result) {
     if (error) {
-      util.log('accountWithinCommunity error', error);
+      util.warn('accountWithinCommunity error', error);
     } else {
       // console.log('accountWithinCommunity result', result);
       var account = eth.getAccountFromResult(result);
@@ -358,7 +364,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
     }
   })
   .catch(function(error) {
-    util.log('accountWithinCommunity call error ' + id, error);
+    util.warn('accountWithinCommunity call error ' + id, error);
     callback({});
   });
 }
@@ -368,15 +374,15 @@ function getAccountForUrl(url, callback) {
   // util.log("method", method);
   method.call(function(error, result) {
     if (error) {
-      util.log('getAccountForUrl error', error);
+      util.warn('getAccountForUrl error', error);
     } else {
-      util.log('getAccountForUrl result', result, 0);
+      util.debug('getAccountForUrl result', result, 0);
       var account = eth.getAccountFromResult(result);
       callback(account);
     }
   })
   .catch(function(error) {
-    util.log('getAccountForUrl call error ' + url, error);
+    util.warn('getAccountForUrl call error ' + url, error);
   });
 }
 
@@ -385,7 +391,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
   // console.log("accountWithinCommunity idx "+idx, communityId);
   method.call(function(error, result) {
     if (error) {
-      util.log('accountWithinCommunity error', error);
+      util.warn('accountWithinCommunity error', error);
     } else {
       // console.log('accountWithinCommunity result', result);
       var account = eth.getAccountFromResult(result);
@@ -393,7 +399,7 @@ function getAccountWithinCommunity(communityId, idx, callback) {
     }
   })
   .catch(function(error) {
-    util.log('accountWithinCommunity call error ' + id, error);
+    util.warn('accountWithinCommunity call error ' + id, error);
     callback({});
   });
 }
@@ -404,7 +410,7 @@ function addUrlToAccount(id, url, callback) {
   var method = eth.contract.methods.addUrlToExistingAccount(id, url);
   method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
     method.send({from:fromAccount, gas: gasAmount * 2}).on('error', (error) => {
-      util.log('addUrlToAccount error', error);
+      util.warn('addUrlToAccount error', error);
       callback(false);
     })
     .on('confirmation', (number, receipt) => {
@@ -423,7 +429,7 @@ function removeUrlFromAccount(id, url, callback) {
   var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
   method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
     method.send({from:fromAccount, gas: gasAmount * 4}).on('error', (error) => {
-      util.log('removeUrlFromAccount error', error);
+      util.warn('removeUrlFromAccount error', error);
       callback(false);
     })
     .on('confirmation', (number, receipt) => {
@@ -468,7 +474,7 @@ function hydrateTranche(tranche, given, done) {
   const key = `account-${id}`;
   var success = redis.get(key, function (err, val) {
     if (err) {
-      console.log("redis error", err);
+      util.warn("redis error", err);
     }
     if (val && val !== '') {
       tranche.details = JSON.parse(val);

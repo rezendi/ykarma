@@ -96,7 +96,7 @@ describe('Account', function () {
 
   it('should send karma to another account', function (done) {
     var initial;
-    this.timeout(5000);
+    this.timeout(10000);
     api.get('/api/accounts/setup').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -130,7 +130,7 @@ describe('Reward', function () {
 
   // assumes a reward added as part of deploy
   it('should add, get, update, and delete a reward', function (done) {
-    this.timeout(6000);
+    this.timeout(10000);
     var rewardId = 1;
     var initialRewards;
     api.get('/api/accounts/setup').expect(200).end((err, res) => {

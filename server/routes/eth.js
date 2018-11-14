@@ -4,6 +4,8 @@ const abi = [{"constant":true,"inputs":[],"name":"senderIsOracle","outputs":[{"n
 const contract = new web3.eth.Contract(abi, process.env.YKARMA_ADDRESS);
 const GAS = "5000000";
 
+const util = require('./util');
+
 var fromAccount;
 
 function delay(t, v) {
