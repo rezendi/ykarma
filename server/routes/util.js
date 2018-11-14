@@ -27,13 +27,13 @@ function warn(a, b, c=null) {
 }
 
 function log(a, b, c=null) {
-  if (c) { // if (!c) for verbose logging
+  if (!c && (""+process.env.LOG_LEVEL).indexOf("LOG") < 0) { // if (!c) for logging
     b ? console.log(a,b) : console.log(a);
   }
 }
 
 function debug(a, b, c=null) {
-  if (c) { // if (!c) for verbose debug logging
+  if (c && (""+process.env.LOG_LEVEL).indexOf("DEBUG") < 0) { // if (!c) for verbose logging
     b ? console.log(a,b) : console.log(a);
   }
 }

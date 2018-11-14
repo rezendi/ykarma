@@ -5,7 +5,7 @@ import { Row, Col } from 'react-bootstrap';
 class Tranche extends React.Component {
 
   getDetailString = (dict) => {
-    var name = dict.metadata && dict.metadata.name ? dict.metadata.name : 'unknown';
+    var name = dict.name ? dict.name : 'unknown';
     var url = (dict.urls || '').split("||")[0];
     url = url.substring(url.indexOf(":")+1);
     return `${name} (${url})`;

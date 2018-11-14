@@ -33,11 +33,11 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
   var notifying = false;
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
     if (estError) {
-      console.log('error', estError);
+      util.warn('error', estError);
       return res.json({'success':false, 'error':estError});
     }
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
-      console.log('error', error);
+      util.warn('error', error);
       return res.json({'success':false, 'error':error});
     })
     .on('confirmation', (number, receipt) => {
@@ -51,22 +51,22 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
       }
     })
     .catch(function(error) {
-      console.log('send call error ' + error);
+      util.warn('send call error ' + error);
       res.json({"success":false, "error": error});
     });
   })
   .catch(function(error) {
-    console.log('gas estimation call error', error);
+    util.warn('gas estimation call error', error);
     res.json({"success":false, "error": error});
   });
 };
 
 function getAccountFor(id, callback) {
   var method = contract.methods.accountForId(id);
-  console.log("accountForId", id);
+  util.log("accountForId", id);
   method.call(function(error, result) {
     if (error) {
-      console.log('getAccountFor error', error);
+      util.warn('getAccountFor error', error);
     } else {
       //console.log('getAccountFor result', result);
       var account = getAccountFromResult(result);
@@ -74,7 +74,7 @@ function getAccountFor(id, callback) {
     }
   })
   .catch(function(error) {
-    console.log('getAccountFor call error ' + id, error);
+    console.warn('getAccountFor call error ' + id, error);
   });
 }
 

@@ -15,6 +15,8 @@ redis.on('error', function (err) {
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+var accountCache = {}
+
 var fromAccount = null;
 eth.getFromAccount().then(address => {
   fromAccount = address;
@@ -113,6 +115,8 @@ router.get('/me', function(req, res, next) {
       eth.getCommunityFor(req.session.ykid, (community) => {
         account.community = community;
         hydrateAccount(account, () => {
+          account.given = account.given.reverse();
+          account.received = account.received.reverse();
           res.json(account);
         });
       });
@@ -281,13 +285,14 @@ router.post('/give', function(req, res, next) {
     req.body.message || '',
   );
   eth.doSend(method, res, 1, 4, function() {
-    util.log("karma sent", req.body.recipient);
+    util.log("karma sent to", req.body.recipient);
     if (recipient.startsWith("mailto:")) {
       var account = req.session.account || {};
       account.metadata = account.metadata || {};
       account.metadata.emailPrefs = account.metadata.emailPrefs || {};
       // util.log("emailPrefs", account.metadata.emailPrefs);
-      var sendEmail = account.metadata.emailPrefs[req.body.recipient] !== 0 || account.metadata.emailPrefs.kr !== 0;
+      var sendEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
+      // TODO: send mail based on recipient's "kr" email pref if they exist
       if (sendEmail) {
         util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
@@ -305,7 +310,6 @@ router.post('/give', function(req, res, next) {
           JSON.stringify(account.metadata),
           account.flags
         );
-        // util.log("sending", method2);
         eth.doSend(method2, res, 1, 4);
       } else {
         util.log("not sending email", account.metadata.emailPrefs);
@@ -478,28 +482,37 @@ function hydrateTranche(tranche, given, done) {
       util.warn("redis error", err);
     }
     if (val && val !== '') {
+      util.debug("redis cache hit");
       tranche.details = JSON.parse(val);
       done();
-    } else {
-      eth.getAccountFor(id, (account) => {
-        tranche.details = {
-          metadata:     account.metadata,
-          urls:         account.urls,
-          communityId : account.communityId
-        };
-        redis.set(key, JSON.stringify(tranche.details));
-        done();
-      });
+      return;
     }
-  });
-  if (!success) {
     eth.getAccountFor(id, (account) => {
       tranche.details = {
-        metadata:     account.metadata,
+        name:         account.metadata.name,
         urls:         account.urls,
         communityId : account.communityId
       };
       redis.set(key, JSON.stringify(tranche.details));
+      done();
+    });
+  });
+
+  // if redis not working
+  if (!success) {
+    val = accountCache[key];
+    if (val) {
+      tranche.details = JSON.parse(val);
+      done();
+      return;
+    }
+    eth.getAccountFor(id, (account) => {
+      tranche.details = {
+        name:         account.metadata.name,
+        urls:         account.urls,
+        communityId : account.communityId
+      };
+      accountCache[key] = JSON.stringify(tranche.details);
       done();
     });
   }
