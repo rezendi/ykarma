@@ -154,7 +154,7 @@ router.post('/purchase', function(req, res, next) {
           sendRewardPurchasedEmail(req.session.email, reward);
         }
       }
-      eth.getAccountFor(req.body.vendorId, (vendor) => {
+      eth.getAccountFor(reward.vendorId, (vendor) => {
         sendRewardSoldEmail(vendor, reward);
         return res.json({"success":true, "result": reward});
       });
@@ -260,7 +260,6 @@ function sendRewardPurchasedEmail(purchaser, reward) {
     text: `You should totally find out more! ${JSON.stringify(reward)}`,
     html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
   };
-  util.log("really emailing now");
   sgMail.send(msg2);
 }
 

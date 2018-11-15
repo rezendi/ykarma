@@ -46,6 +46,8 @@ contract YKStructs {
     uint256 ownerId;
     uint256 cost;
     uint256 quantity;
+    uint256 created; // block
+    uint256 sold; // block
     bytes32 flags;
     string tag;
     string metadata;

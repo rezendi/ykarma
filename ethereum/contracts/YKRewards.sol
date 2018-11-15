@@ -27,6 +27,8 @@ contract YKRewards is Oracular, YKStructs {
       parentId: 0,
       vendorId: _vendorId,
       ownerId:  0,
+      created:  block.number,
+      sold:     0,
       flags:    _flags,
       cost:     _cost,
       quantity: _quantity,
@@ -51,6 +53,7 @@ contract YKRewards is Oracular, YKStructs {
     require (reward.quantity > 0);
     if (reward.quantity == 1) {
       reward.ownerId = _spenderId;
+      reward.sold = block.number;
       return _rewardId;
     }
     
@@ -60,6 +63,8 @@ contract YKRewards is Oracular, YKStructs {
       parentId: reward.id,
       vendorId: reward.vendorId,
       ownerId:  _spenderId,
+      created:  reward.created,
+      sold:     block.number,
       flags:    reward.flags,
       cost:     reward.cost,
       quantity: 1,
