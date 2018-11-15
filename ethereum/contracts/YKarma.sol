@@ -78,7 +78,7 @@ contract YKarma is Oracular, YKStructs {
     require(reward.ownerId == 0); // for now
     trancheData.spend(_buyerId, reward.cost, reward.tag);
     uint256 redeemedId = rewardData.redeem(_buyerId, reward.id);
-    accountData.redeem(_buyerId, redeemedId);
+    accountData.redeem(_buyerId, redeemedId, reward.vendorId, reward.quantity > 1);
   }
 
   function lastReplenished(uint256 _accountId) public view returns (uint256) {

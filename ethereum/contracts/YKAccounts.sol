@@ -119,8 +119,11 @@ contract YKAccounts is Oracular, YKStructs {
     accounts[_vendorId].offerIds.push(_rewardId);
   }
 
-  function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOracle {
+  function redeem(uint256 _spenderId, uint256 _rewardId, uint256 _vendorId, bool assignToVendor) public onlyOracle {
     accounts[_spenderId].rewardIds.push(_rewardId);
+    if (assignToVendor) {
+      accounts[_vendorId].offerIds.push(_rewardId);
+    }
   }
   
   function deleteRewardFromAccount(uint256 _vendorId, uint256 _rewardId) public onlyOracle {

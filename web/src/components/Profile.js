@@ -84,14 +84,14 @@ class Profile extends React.Component {
   }
   
   getTotalSoldRewards = (offered) => {
-    return offered.reduce((acc, offer) => {
-      return acc + offer.ownerId ? offer.quantity : 0;
+    return offered.filter(offer => offer.ownerId > 0).reduce((acc, offer) => {
+      return acc + offer.quantity;
     }, 0);
   }
 
   getTotalSoldKarma = (offered) => {
-    return offered.reduce((acc, offer) => {
-      return acc + offer.ownerId ? offer.cost : 0;
+    return offered.filter(offer => offer.ownerId > 0).reduce((acc, offer) => {
+      return acc + offer.cost;
     }, 0);
   }
 

@@ -142,19 +142,22 @@ router.post('/purchase', function(req, res, next) {
     return res.json({"success":false, "error": "Not logged in"});
   }
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
-  eth.doSend(method, res, 1, 2, () => {
-    if (req.session.email) {
-      var account = req.session.account || {};
-      account.metadata = account.metadata || {};
-      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-      // util.log("emailPrefs", account.metadata.emailPrefs);
-      if (account.metadata.emailPrefs.rw !== 0) {
-        sendRewardPurchasedEmail(req.session.email, reward);
+  getRewardFor(req.body.rewardId, (reward) => {
+    eth.doSend(method, res, 1, 2, () => {
+      util.log("reward purchased", reward);
+      if (req.session.email) {
+        var account = req.session.account || {};
+        account.metadata = account.metadata || {};
+        account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+        // util.log("emailPrefs", account.metadata.emailPrefs);
+        if (account.metadata.emailPrefs.rw !== 0) {
+          sendRewardPurchasedEmail(req.session.email, reward);
+        }
       }
-    }
-    eth.getAccountFor(req.body.vendorId, (vendor) => {
-      sendRewardSoldEmail(vendor, reward);
-      return res.json({"success":true, "result": reward});
+      eth.getAccountFor(req.body.vendorId, (vendor) => {
+        sendRewardSoldEmail(vendor, reward);
+        return res.json({"success":true, "result": reward});
+      });
     });
   });
 });
@@ -219,8 +222,8 @@ function sendRewardCreatedEmail(vendor, reward) {
     to: recipientEmail,
     from: 'karma@ykarma.com',
     subject: `You just created a reward!`,
-    text: `You should totally find out more! ${reward.metadata}`,
-    html: `<strong>You should totally find out more.</strong>  ${reward.metadata}`,
+    text: `You should totally find out more! ${JSON.stringify(reward)}`,
+    html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
   };
   sgMail.send(msg);  
 }
@@ -241,23 +244,23 @@ function sendRewardSoldEmail(vendor, reward) {
     to: recipientEmail,
     from: 'karma@ykarma.com',
     subject: `You just sold a reward!`,
-    text: `You should totally find out more! ${reward.metadata}`,
-    html: `<strong>You should totally find out more.</strong>  ${reward.metadata}`,
+    text: `You should totally find out more! ${JSON.stringify(reward)}`,
+    html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
   };
   sgMail.send(msg);
 }
 
 function sendRewardPurchasedEmail(purchaser, reward) {
   if (process.env.NODE_ENV === "test") return;
-  recipientMail = purchaser.replace("mailto:","");
-  // TODO check that the URL is an email address
+  var recipientEmail = purchaser.replace("mailto:","");
   const msg2 = {
     to: recipientEmail,
     from: 'karma@ykarma.com',
     subject: `You just bought a reward!`,
-    text: `You should totally find out more! ${reward.metadata}`,
-    html: `<strong>You should totally find out more.</strong>  ${reward.metadata}`,
+    text: `You should totally find out more! ${JSON.stringify(reward)}`,
+    html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
   };
+  util.log("really emailing now");
   sgMail.send(msg2);
 }
 
