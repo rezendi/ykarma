@@ -48,9 +48,8 @@ router.get('/setup', function(req, res, next) {
 /* GET account list */
 router.get('/for/:communityId', function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
-  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.communityAdminId !== communityId) {
+  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykcid !== communityId) {
     util.log("not allowed to get accounts for", communityId);
-    util.log("communityAdminId", req.session.communityAdminId);
     return res.json([]);
   }
   util.log("getting accounts for",communityId);
@@ -86,7 +85,7 @@ router.get('/account/:id', function(req, res, next) {
       util.warn('Unauthorized account request', req.session);
       return res.json({"success":false, "error": "Not authorized"});
     }
-    util.log('callback', account);
+    util.debug('account', account);
     res.json(account);
   });
 });
@@ -99,27 +98,41 @@ router.get('/me', function(req, res, next) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
 
-      // set account as active if not
+      // set account as active, and replenish, if not
       if (account.flags == '0x0000000000000000000000000000000000000000000000000000000000000001') {
-        util.log("Marking account active");
+        util.warn("Marking account active and replenishing");
         var method = eth.contract.methods.editAccount(
           account.id,
           account.userAddress,
           JSON.stringify(account.metadata),
           '0x00'
         );
-        eth.doSend(method, res, 1, 2, () => {});
+        eth.doSend(method, res, 1, 2, () => {
+          method = eth.contract.methods.replenish(account.id);
+          eth.doSend(method, res, 1, 2, () => {
+            // populate community and tranche data
+            eth.getCommunityFor(req.session.ykcid, (community) => {
+              account.community = community;
+              hydrateAccount(account, () => {
+                account.given = account.given.reverse();
+                account.received = account.received.reverse();
+                res.json(account);
+              });
+            });
+          });
+        });
+      } else {
+        // populate community and tranche data
+        eth.getCommunityFor(req.session.ykcid, (community) => {
+          account.community = community;
+          hydrateAccount(account, () => {
+            account.given = account.given.reverse();
+            account.received = account.received.reverse();
+            res.json(account);
+          });
+        });
       }
 
-      // populate community and tranche data
-      eth.getCommunityFor(req.session.ykid, (community) => {
-        account.community = community;
-        hydrateAccount(account, () => {
-          account.given = account.given.reverse();
-          account.received = account.received.reverse();
-          res.json(account);
-        });
-      });
     });
   } else {
   var url = req.session.email || req.session.handle;
@@ -131,7 +144,7 @@ router.get('/me', function(req, res, next) {
       //util.log("getting session from", account, 0);
       getSessionFromAccount(req, account);
       //util.log("me new session", req.session, 0);
-      eth.getCommunityFor(req.session.ykid, (community) => {
+      eth.getCommunityFor(req.session.ykcid, (community) => {
         //util.log("got community", community, 0);
         account.community = community;
         hydrateAccount(account, () => {

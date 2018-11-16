@@ -72,11 +72,13 @@ class Home extends React.Component {
       );
     }
 
-    if (this.props.location.search.indexOf("?first=true")===0) {
-      Api.replenish().then(result => {
-        console.log('replenish result', result);
-        window.location="/?";
-      });
+    if (this.props.user.flags === '0x0000000000000000000000000000000000000000000000000000000000000001') {
+      setTimeout(() => {
+        window.location="/";
+      }, 6000);
+      return (
+        <Grid><Row>First login detected, populating your account...</Row></Grid>
+      );
     }
 
     return (

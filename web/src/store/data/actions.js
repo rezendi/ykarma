@@ -201,6 +201,27 @@ export function loadVendedRewardsSuccess(rewards) {
   return { type: types.LOAD_VENDED_REWARDS_SUCCESS, rewards};
 }
 
+export function loadRewardsVendedBy(vendorId) {
+  return function(dispatch) {
+    return fbase.auth.onAuthStateChanged(user => {
+      return Api.loadRewardsVendedBy(vendorId).then(result => {
+        if (!result.ok) {
+          return loadRewardsVendedBySuccess([]);
+        }
+        return result.json().then(json => {
+          dispatch(loadRewardsVendedBySuccess(json.rewards));
+        });
+      }).catch(error => {
+        throw(error);
+      });
+    });
+  };
+}
+
+export function loadRewardsVendedBySuccess(rewards) {
+  return { type: types.LOAD_REWARDS_VENDED_BY_SUCCESS, rewards};
+}
+
 export function loadReward(rewardId) {
   return function(dispatch) {
     return Api.loadReward(rewardId).then(result => {

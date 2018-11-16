@@ -45,15 +45,19 @@ router.get('/vended', function(req, res, next) {
 /* GET rewards owned list */
 router.get('/ownedBy/:accountId', function(req, res, next) {
   const ownerId = parseInt(req.params.accountId);
+  if (req.session.ykid !== ownerId && req.session.email !== process.env.ADMIN_EMAIL) {
+    util.log("not allowed to get rewards owned by", ownerId);
+    return res.json({"success":false, "rewards":[]});
+  }
   util.log("getting rewards owned by", ownerId);
   return getListOfRewards(1, ownerId, res);
 });
 
 /* GET rewards vended list */
 router.get('/vendedBy/:accountId', function(req, res, next) {
-  const ownerId = parseInt(req.params.accountId);
-  util.log("getting rewards vended by", ownerId);
-  return getListOfRewards(2, ownerId, res);
+  const vendorId = parseInt(req.params.accountId);
+  util.log("getting rewards vended by", vendorId);
+  return getListOfRewards(2, vendorId, res);
 });
 
 function getListOfRewards(idType, id, res) {

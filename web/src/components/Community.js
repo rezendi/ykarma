@@ -35,7 +35,7 @@ class Community extends React.Component {
         console.log("res", res);
         if (++callbacks === Object.keys(values).length) {
           this.props.setLoading(false);
-          res.ok ? window.location.reload() : alert("Server error!");
+          res.ok ? window.location = "/" : alert("Server error!");
         }
       });
     }

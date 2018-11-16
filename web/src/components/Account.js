@@ -1,11 +1,13 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
-import { loadAccount } from '../store/data/actions'
+import { loadAccount, loadRewardsVendedBy } from '../store/data/actions'
+import RewardRow from './RewardRow';
 
 class Account extends React.Component {
   componentDidMount() {
     this.props.loadAccount(this.props.match.params.id);
+    this.props.loadRewardsVendedBy(this.props.match.params.id);
     this.setState({editing: false});
   }
   
@@ -15,6 +17,18 @@ class Account extends React.Component {
 
   getSecondUrlFrom = (urls) => {
     return (urls || '').split(',').length < 2 ? null : (urls || '').split(',')[1].replace("mailto:","").replace("https://www.twitter.com/","@")
+  }
+
+  getTotalSoldRewards = (offered) => {
+    return offered.filter(offer => offer.ownerId > 0).reduce((acc, offer) => {
+      return acc + offer.quantity;
+    }, 0);
+  }
+
+  getTotalSoldKarma = (offered) => {
+    return offered.filter(offer => offer.ownerId > 0).reduce((acc, offer) => {
+      return acc + offer.cost;
+    }, 0);
   }
 
   render() {
@@ -30,7 +44,7 @@ class Account extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                Community Member
+                Profile
               </Panel.Heading>
               <Panel.Body>
                 <Row>
@@ -54,6 +68,21 @@ class Account extends React.Component {
           </Col>
         </Row>
 
+        <Row>
+          <Col md={12}>
+            <Panel>
+              <Panel.Heading>
+                Rewards
+              </Panel.Heading>
+              <Panel.Body>
+                {this.props.vendedRewards.map(reward =>
+                  <RewardRow key={reward.id} reward={reward} showAvailable={true} />
+                )}
+                Has sold {this.getTotalSoldRewards(this.props.vendedRewards)} rewards for a total of {this.getTotalSoldKarma(this.props.vendedRewards)} karma.
+              </Panel.Body>
+            </Panel>
+          </Col>
+        </Row>
       </Grid>
     );
   }
@@ -62,13 +91,15 @@ class Account extends React.Component {
 function mapStateToProps(state, ownProps) {
   console.log("account", state.account);
   return {
-    account: state.account
+    account: state.account,
+    vendedRewards: state.account.vended || [],
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     loadAccount: (accountId) => dispatch(loadAccount(accountId)),
+    loadRewardsVendedBy: (vendorId) => dispatch(loadRewardsVendedBy(vendorId)),
   }
 }
 

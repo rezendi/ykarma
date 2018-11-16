@@ -39,7 +39,9 @@ export function accountsReducer(state = initialState.accounts, action) {
 export function accountReducer(state = initialState.account, action) {
   switch (action.type) {
     case types.LOAD_ACCOUNT_SUCCESS:
-      return action.account || { metadata: {}};
+      return action.account || { metadata: {}, vended: []};
+    case types.LOAD_REWARDS_VENDED_BY_SUCCESS:
+      return {...state, vended:action.rewards };
     default:
       return state
   }
@@ -69,6 +71,7 @@ export function userReducer(state = initialState.user, action) {
         isAdmin:        fbase.emailVerified && fbase.email === process.env.REACT_APP_ADMIN_EMAIL,
         ykid:           yk.id || 0,
         metadata:       yk.metadata || {},
+        flags:          yk.flags,
         urls:           yk.urls || '',
         handle:         getTwitterHandleFromUrls(yk.urls || ''),
         givable:        yk.givable  || 0,

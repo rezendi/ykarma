@@ -110,6 +110,17 @@ class Api {
     });
   }
 
+  static loadRewardsVendedBy(vendorId) {
+    return fetch('/api/rewards/vendedBy/'+vendorId, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
   static loadReward(rewardId) {
     return fetch('/api/rewards/reward/'+rewardId, {
       method: 'GET',
