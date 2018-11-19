@@ -1,23 +1,25 @@
 YKarma
 ======
 
-YKarma is an experimental project to model reputation as a spendable Ethereum token.
+YKarma is an experimental project to model reputation as a spendable currency.
 
 The basic concept: every person in a community or organization is allotted 100
-"karma" to distribute each week, which must be given away to other people before they
-can be used. The recipients can then spend these "karma coins," which serve as a measure
-of their reputation, on various rewards (a day off, a conference ticket, etc.)
+"karma coins" to distribute each week. These must be given away to other people
+before they can be used. The recipients can then spend these coins on various
+rewards (a day off, a conference ticket, a coffee with someone notable, etc.)
 
 ### What's the point?
 
-1. Quantifying reputation makes it possible to build a real reputation economy. That could benefit many people.
+1. Quantifying reputation makes it possible to build a real reputation economy.
+That could benefit many people.
+
 2. It's an experiment which could have a lot of interesting emergent properties.
 
 ### Giving people scores or ratings is a horrible idea! How can you say it would benefit people?
 
 Giving people public scores or ratings, like China's new "social credit" system or that
 Black Mirror episode, is indeed a dystopic concept. Fortunately this is quite different.
-People don't have a persistent YKarma *score*, they just have coins to spend in the
+People don't have a persistent YKarma _score_, they just have coins to spend in the
 notional reputation economy. If someone doesn't have many, that doesn't indicate
 unpopularity; it could well just mean they spent theirs on a reward recently.
 
@@ -44,7 +46,7 @@ influential. It would also make sense to e.g. offer them "perishable inventory,"
 empty hotel rooms or airplane seats, as doing so within a reputation economy wouldn't
 devalue that inventory's perceived monetary worth.
 
-There may also be a concept of *brand* reputation, wherein brands make goods or services
+There may also be a concept of _brand_ reputation, wherein brands make goods or services
 available in exchange for sizable amounts of YKarma, just as they comp celebrities today.
 The amount of YKarma spent on competing brands could then serve as a proof and/or
 quantitative measure of their relative values.
@@ -70,22 +72,26 @@ itself, the real value of YKarma savings decay steadily, making it difficult to 
 capital. That's one of the things thing which makes a reputation economy very different
 from a monetary one.
 
-### OK, I am cautiously amenable to the concept. But why is it on a blockchain?
+### OK, I am cautiously amenable to the concept. So how does it work?
+
+It's a web site backed by tokens on an Ethereum blockchain.
+
+### Seriously? Blockchains are so 2017. Why a blockchain?
 
 An actual reputation economy / currency must be usable by anyone, without having to ask
 permission. That's what a blockchain offers. A certain amount of gatekeeping will be
-required -- the on-ramps to the reputation economy must be watched -- but once a user
-or vendor is established as a participant, they have to be free to use or build atop
-the platform without requiring the approval of some central controller, or they will
-never choose to do so.
+required -- the on-ramps to the reputation economy must be watched -- but once a
+community, user or vendor is established as a participant, they have to be free to use
+or build atop the platform without requiring the approval of some central controller,
+or they will never choose to do so.
 
-Now that we've gotten that stirring speech out of the way: this is an experiment,
-and if it goes anywhere at all it will presumably require a lot of tweaking, which, at
-least initially, can't really be managed in an efficient manner via consensus or voting.
-Furthermore, participants must be verified as actual people, or the whole economy will
-be fatally vulnerable to sockpuppets/bots. So there'll be ongoing tension between
-initial control of the experimental parameters and the end goal of permissionlessness.
-It's on a blockchain, though, because that is the ultimate end goal.
+That said: this is an experiment, and if it goes anywhere at all it will presumably
+require a lot of tweaking, which, at least initially, can't really be managed
+efficiently via consensus or voting. Furthermore, participants must be verified as
+actual people, or the whole economy will be fatally vulnerable to sockpuppets/bots.
+So there'll be ongoing tension between initial control of the experimental parameters
+and the end goal of permissionlessness. It's on a blockchain, though, because that is
+the ultimate end goal.
 
 ### OK, but even granting the desire for an ultimately permissionless and hence blockchain solution, is Ethereum really the right platform?
 
@@ -162,26 +168,34 @@ sophisticated users / communities, but the possibility exists.
 
 ### What happens to coins after they're spent?
 
-Current thinking is that they're gone forever, because we're modeling reputation, which
-isn't really transferable. However a possible notion is for a small fraction e.g. one-
-eighth of the karma to be retained by the vendor, because there is such a thing as proxy
-reputation. This may be at the buyer's discretion independent of the transaction
-completing successfully -- i.e. you can always buy the reward whether or not you want to
-transfer some of the karma in question to the vendor.
+They're gone forever, because we're modeling reputation, which isn't really transferable.
 
-Another option is to track the total number of coins a vendor has ever received, which is
-another form of reputation. This is arguably a "score," of sorts, but one with many many
-confounds compared to e.g. "social credit", and also scoring vendors seems a reasonabl
-thing to do.
+However a possible experimental notion is for a small fraction, e.g. one-tenth of the
+karma spent, to be retained by the vendor, because there is such a thing as proxy
+reputation. This may be at the buyer's discretion independent of the transaction
+completing successfully -- i.e. you can always buy the reward whether or not you want
+to transfer some of the spent karma to the vendor.
+
+Furthermore, we track and display the total number of rewards a vendor has ever sold and
+the total karma they have received, which is another form of reputation. This is arguably
+a "score," of sorts, but one still very different from e.g. "social credit", and scoring
+vendors seems a reasonabl thing to do.
 
 ### What else is on the roadmap?
 
-Eventually rewards should be auctionable, as well as fixed-price; that's obviously much
-more complex to code, though, so it's not implemented right now.
+Lots of stuff. In particular, eventually rewards should be auctionable, as well as
+fixed-price. That's obviously much more complex to code, though, so it's not implemented
+right now.
 
-I also like the possibility of sending messages along with YKarma ("Thanks for the great
-essay!" etc.) but that leads to potential issues of spam, abuse, etc., so it might be
-best to tread cautiously there.
+Karma could also be used for governance; people who want to bring forth a proposal to a
+community would have to spend X karma to do so, where X is dissuasive but not
+preventative, and then the entire community would spend karma as votes, with Z net votes
+in favor required to pass. Coming up with X and Z is pretty complicated.
+
+I'd also like to implement some kind of "vouching" system wherein communities can agree
+on new members. Right now, as a quick hack, anyone who is sent karma by any community
+member becomes part of that community. One could also limit by domain, i.e. only email
+addresses which end in @mydomain.com can be added.
 
 ### Will there be an ICO?
 
