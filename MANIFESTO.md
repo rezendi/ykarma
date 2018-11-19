@@ -26,7 +26,7 @@ universally acknowledged that a blockchain should only be used to store hashes,
 account allocations, and other high-value, densely packed information, and
 must not be used to store inessential or low-value data. YKarma, by contrast,
 makes a point of using its blockchain as its _only_ datastore, aside from the
-use of Google Firebase for web authentication.
+use of Firebase for web authentication.
 
 7. This was, to understate, not done for the sake of development or
 implementation efficiency. I would estimate this as having taken 10x more time
@@ -66,9 +66,9 @@ its own private chain as an
 decide the other chains, if any, with which they want to federate their
 reputations.
 
-15. And also, while we're at it, to preserve the privacy of account balances,
-using SNARKs or what have you, to ensure that this reputation currency is not
-used as a reputation rating.
+15. And also to preserve the privacy of account balances, using SNARKs or what
+have you, to ensure that this reputation currency is not used as a reputation
+rating.
 
 16. That is of course all very handwavey, but it seems likely that in a year or
 two it will be technically feasible.
@@ -77,30 +77,30 @@ two it will be technically feasible.
 better if they're actually useful. Conveniently, I can at least conceive of a
 world in which people actually use this one.
 
-18. But before we get into that let me stress that what I _really_ want is a
-wave of experimentation with new economic structures and incentivization
-systems. This is something which blockchains enable, but which has not yet
-happened, largely because (most) blockchainers are more interested in getting
-rich in the cryptocurrency casino, and/or building decentralized versions of
-successful centralized services, rather than fundmental economic
+18. But before we get into that let me stress that what I'd _really_ like to
+see is a wave of experimentation with wholly new economic structures and
+incentivization systems. This is something which blockchains enable, but which
+has not yet happened, largely because (most) blockchainers are more interested
+in getting rich in the cryptocurrency casino, and/or building decentralized
+versions of successful centralized services, rather than fundamental economic
 experimentation.
 
 19. This isn't to reject capitalism, by the way. Well-regulated capitalism is
-great, up to a point, one which I think we in the rich world have now hit. And
-even if you don't think it's great, it's not going anywhere. Whatever supplants
+great, up to a point, one which I think we in the rich world have now hit. Even
+if you don't think it's great, it's not going anywhere. Whatever supplants
 capitalism is not going to violently overthrow it in some kind of dramatic
 post-capitalism revolution; it's going to subvert from within.
 
 20. Anyway. The fundamental sticking point for many people, I think, will be
 that this isn't just a reputation economy but a reputation _gift_ economy. It
-relies on people creating rewards, or else there will be nothing to spend the
-reputation currency _on_. However, one of its major differences from capitalism
-as we know it is that, when spent, the currency is burnt / taken out of the
-economy, rather than being transferred to the vendor. Yes, you read that
-correctly. You may ask: who would create a worthwhile reward when they will not
-receive the currency that is paid for it?
+relies on people creating and offering rewards, else there will be nothing to
+spend the reputation currency on. However, one of its major differences from
+capitalism as we know it is that, when spent, the currency is burnt / taken
+out of the economy forever, rather than being transferred to the vendor. Yes,
+you read that correctly.
 
-21. Who indeed.
+21. You may ask: who would create a worthwhile reward when they will not
+receive the currency that is paid for it? Who indeed.
 
 22. As tempting as it is to go all woo-woo Burning Man on you, that question
 actually has many sober and boring answers.
