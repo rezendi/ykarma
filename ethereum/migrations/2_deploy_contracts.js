@@ -26,7 +26,7 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(strings, {from : owner});
     await deployer.deploy(SafeMath, {from : owner});
     await deployer.deploy(YKStructs, {from : owner});
-    await deployer.deploy(YKTranches, {from : owner});
+    await deployer.deploy(YKTranches, 0, 0, 0, 0, {from : owner});
     await deployer.deploy(YKAccounts, {from : owner});
     await deployer.link(strings, YKTranches, YKAccounts);
     await deployer.link(SafeMath, YKTranches);

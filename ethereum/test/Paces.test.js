@@ -8,7 +8,7 @@ contract('Paces', function(accounts) {
   const deployer = accounts[0];
 
   it('should be put through its paces', async function() {
-    let trancheData = await YKTranches.new();
+    let trancheData = await YKTranches.new(0, 100, 0, 0);
     let accountData = await YKAccounts.new();
     let communityData = await YKCommunities.new();
     let rewardData = await YKRewards.new();
@@ -139,5 +139,38 @@ contract('Paces', function(accounts) {
     await ykarma.deleteCommunity(2);
     vals = await ykarma.communityForId(2);
     assert.equal(vals[0], 0, "Community deleted");
+    
+    // replenish should still fail
+    await ykarma.recalculateBalances(1);
+    await ykarma.replenish(1);
+    vals = await ykarma.accountForId(1);
+    assert.equal(""+vals[7], '0', "Account not replenished again after a bunch of blocks");
+
+    // wait a day and 
+    for (var i = 0; i< 100; i ++) {
+      await increaseBlock();
+    }
+
+    // now replenish should succeed
+    await ykarma.recalculateBalances(1);
+    await ykarma.replenish(1);
+    vals = await ykarma.accountForId(1);
+    assert.equal(""+vals[7], '100', "Account replenished again after 100 blocks");
   });
 });
+
+// tweaked from openzeppelin-solidity
+// Increases testrpc time by the passed duration (a moment.js instance)
+function increaseBlock() {
+  const id = Date.now()
+
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.sendAsync({
+      jsonrpc: '2.0',
+      method: 'evm_mine',
+      id: id+1,
+    }, (err2, res) => {
+      return err2 ? reject(err2) : resolve(res)
+    })
+  })
+}

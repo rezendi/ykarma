@@ -10,16 +10,23 @@ contract YKTranches is Oracular, YKStructs {
   using strings for *;
   using SafeMath for uint256;
 
-  uint256 EXPIRY_WINDOW = 20 * 60 * 24 * 120;
-  uint256 REFRESH_WINDOW = 20 * 60 * 24 * 7;
-  uint256 GIVING_AMOUNT = 100;
-  uint256 REWARD_AMOUNT = 10;
+  uint256 ExpiryBlocks  = 20 * 60 * 24 * 120;
+  uint256 RefreshBlocks = 20 * 60 * 24 * 7;
+  uint256 Replenish     = 100;
+  uint256 Bonus         = 10;
 
   mapping(uint256 => Giving) giving;
   mapping(uint256 => Tranche) tranches;
   mapping(uint256 => uint256[]) given;
   mapping(uint256 => uint256[]) received;
   uint256 maxTrancheId = 1;
+  
+  constructor(uint256 _expiry, uint256 _refresh, uint256 _replenish, uint256 _bonus) public Oracular() {
+    if (_expiry  > 0) { ExpiryBlocks = _expiry; }
+    if (_refresh  > 0) { RefreshBlocks = _refresh; }
+    if (_replenish  > 0) { Replenish = _replenish; }
+    if (_bonus  > 0) { Bonus = _bonus; }
+  }
   
   function availableToGive(uint256 _id) public view onlyOracle returns (uint256) {
     uint256 total = 0;
@@ -72,8 +79,8 @@ contract YKTranches is Oracular, YKStructs {
     Tranche memory tranche = Tranche({
       sender:     _id,
       recipient:  _id,
-      amount:     REWARD_AMOUNT,
-      available:  REWARD_AMOUNT,
+      amount:     Bonus,
+      available:  Bonus,
       block:      block.number,
       tags:       _tags,
       message:    ''
@@ -125,20 +132,20 @@ contract YKTranches is Oracular, YKStructs {
   
   function replenish(uint256 _id) public onlyOracle {
     uint256 mostRecent = lastReplenished(_id);
-    if (mostRecent > 0 && block.number - mostRecent < REFRESH_WINDOW) {
+    if (mostRecent > 0 && block.number - mostRecent < RefreshBlocks) {
       return;
     }
     Giving storage recipient = giving[_id];
     recipient.blocks.push(block.number);
-    recipient.amounts.push(GIVING_AMOUNT);
+    recipient.amounts.push(Replenish);
   }
   
   function recalculateBalances(uint256 _id) public onlyOracle {
     Giving storage available = giving[_id];
-    if (available.blocks.length == 0 || block.number < EXPIRY_WINDOW) {
+    if (available.blocks.length == 0 || block.number < ExpiryBlocks) {
       return;
     }
-    uint256 cutoffBlock = block.number.sub(EXPIRY_WINDOW);
+    uint256 cutoffBlock = block.number.sub(ExpiryBlocks);
     for (uint256 i=0; i < available.blocks.length; i++ ) {
       if (available.blocks[i] < cutoffBlock) {
         available.amounts[i] = 0;
@@ -147,10 +154,10 @@ contract YKTranches is Oracular, YKStructs {
 
     // catch up on any replenish calls we might have missed, basically
     uint256 lastBlock = available.blocks[available.blocks.length.sub(1)];
-    while (block.number.sub(lastBlock) > REFRESH_WINDOW) {
-      available.blocks.push(lastBlock.add(REFRESH_WINDOW));
-      available.amounts.push(GIVING_AMOUNT);
-      lastBlock = lastBlock.add(REFRESH_WINDOW);
+    while (block.number.sub(lastBlock) > RefreshBlocks) {
+      available.blocks.push(lastBlock.add(RefreshBlocks));
+      available.amounts.push(Replenish);
+      lastBlock = lastBlock.add(RefreshBlocks);
     }
   }
   
