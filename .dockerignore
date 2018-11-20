@@ -1,6 +1,7 @@
 .env
 .git
 .gitignore
+.DS_Store
 /server/.env.production
 */.env
 */.git
