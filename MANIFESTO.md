@@ -2,8 +2,10 @@
 The YKarma Manifesto
 ====================
 
-or, 25 Theses Regarding an Experimental Performance-Art Reputation Cryptocurrency
----------------------------------------------------------------------------------
+or,
+---
+25 Theses Regarding an Experimental Performance-Art Reputation Cryptocurrency
+-----------------------------------------------------------------------------
 
 1. Ten years ago the person(s) known as Satoshi Nakamoto introduced a novel
 solution to the Byzantine Generals Problem, one which can be used to
