@@ -2,8 +2,8 @@
 The YKarma Manifesto
 ====================
 
-25 Theses Regarding an Experimental Performance-Art Reputation Cryptocurrency
------------------------------------------------------------------------------
+25 Theses Regarding Reputation Cryptocurrencies
+-----------------------------------------------
 
 1. Ten years ago the person(s) known as Satoshi Nakamoto introduced a novel
 solution to the Byzantine Generals Problem, one which can be used to
@@ -13,7 +13,7 @@ monetary systems in slightly new forms.
 
 2. This is boring.
 
-3. Programmable money gives us the ability to build whole new _categories_
+3. Programmable currencies give us the ability to build whole new _categories_
 of economies, ones which reject all traditional assumptions about how value
 is generated, transferred, or stored.
 
@@ -25,15 +25,15 @@ and implicitly decays in value as its network scales.
 
 5. YKarma is also an example of software as performance art. It is a truth
 universally acknowledged that a blockchain should only be used to store
-dense, high-value information such as hashes, URLs, and account allocations.
+dense, high-value information such as hashes, URLs, account allocations, etc.
 YKarma, by contrast, makes a point of using its blockchain as its _only_
 datastore.
 
 6. This was, to drily understate, not done for the sake of efficiency. I would
 estimate this as having taken 10x more development time than it would have
-using a basic database, except I suspect the real number is more like 20x when
-configuration / devops are taken into account. Its performance is similarly at
-least that much worse.
+using a basic database, except I suspect the real multiple is more like 20x
+when configuration / devops are taken into account. Its performance is
+similarly at least that much worse.
 
 7. While this was all devised with tongue in cheek, it was also written with
 (some) serious intent. As we reach the point of diminishing and/or negative
@@ -47,7 +47,7 @@ The latter is a dystopia waiting to happen. The two are _very_ different.
 
 9. YKarma is intended both as an implementation of a single, potentially
 useful flavor of an experimental reputation economy, and as an open-source
-example of an end-to-end, web-to-Ethereum-blockchain, fairly complex system,
+example of an end-to-end, web-to-API-to-blockchain, fairly complex system,
 to be forked / mutated / built upon by others.
 
 10. Let a thousand weird cryptoflowers bloom!
@@ -57,22 +57,21 @@ to be forked / mutated / built upon by others.
 12. For technical details regarding how to clone/run YKarma locally, see the
 [project HOWTO](./HOWTO.md).
 
-13. Running it on the public Ethereum mainnet would be punitively expensive,
+13. Running it on the public Ethereum blockchain would be punitively expensive,
 due to its data storage requirements, and also impossible, due to its sheer
 number of transactions, if it were to scale at all. As such it currently runs
 on a private Proof-of-Authority blockchain.
 
-14. The eventual intent is for each community to run its private chain as an
+14. The eventual intent is for each community to run its own chain as an
 [Ethermint zone](https://blog.cosmos.network/a-beginners-guide-to-ethermint-38ee15f8a6f4)
-(or equivalent, on some other pan-chain system), and for each community to
-decide on the other chains, if any, with which they want to federate their
-reputations.
+(or equivalent, on some other pan-chain system), and to decide on the other
+chains, if any, with which they want to federate their reputations.
 
-15. Another goal is to preserve the privacy of account balances, using SNARKs
-or what have you, to ensure that this reputation currency is not used as a
-reputation rating.
+15. Another objective is to preserve the privacy of account balances, using
+SNARKs or what have you, to ensure that this reputation currency is not used as
+a reputation rating.
 
-16. That is of course all very handwavey, but it seems likely that in a year or
+16. That's admittedly all very handwavey, but it seems likely that in a year or
 two it will be technically feasible.
 
 17. Weird performance-art experiments are all well and good, but they're even

@@ -21,8 +21,8 @@ Giving people public scores or ratings, like China's new "social credit"
 system or that Black Mirror episode, is indeed a dystopic concept. Fortunately
 this is quite different. People don't have a persistent YKarma _score_, they
 just have coins to spend in the notional reputation economy. If someone doesn't
-have many, that doesn't indicate unpopularity; it could well just mean they
-spent theirs on a reward recently.
+have many, that doesn't indicate unpopularity; it could just mean they recently
+spent theirs on a reward.
 
 The general hope/notion is for people who excel in fields and communities which
 don't see much in the way of monetary compensation -- poetry, art, music, open-
@@ -32,22 +32,23 @@ which must be given away, transactions are no longer zero-sum. People can be
 recognized and rewarded without it costing the giving individuals anything ...
 as long as rewards are available for people who accumulate enough karma.
 
-### OK, but why would anyone exchange any valuable reward for a reputation currency like this?
+### OK, but why would anyone make any valuable reward available for purchase with a reputation currency like this?
 
-The most obvious and most boring use is within a company, wherein employee
-rewards like a day off, a course, a conference, or a social event at company
-expense, would a) be good for morale, b) identify those people most highly
-thought of by their fellow workers. In that case the company would be the
-"vendor" of rewards for their employees.
+The most obvious and most boring use is within a company, wherein offering
+employee rewards -- a day off, a course, a conference, a social event at
+company expense, etc. -- would a) be good for morale, b) identify those people
+most highly thought of by their fellow workers. In that case the company would
+be the"vendor" of rewards for their employees.
 
 It's also easy to envision why external vendors would want to offer rewards to
 people who have established themselves as high-reputation within a particular
 community. The immediate value for conferences etc. would be simply having them
 present. The longer-term value would be establishing relationships with people
-who are, definitionally, influential. It would also make sense to e.g. offer
-them "perishable inventory," e.g. empty hotel rooms or airplane seats, as doing
-so within a reputation economy wouldn't devalue that inventory's perceived
-monetary worth.
+who are, definitionally, influential.
+
+It could also make sense to offer "perishable inventory," e.g. empty hotel
+rooms or airplane seats, as doing so within a reputation economy wouldn't
+devalue that inventory's perceived monetary worth.
 
 There may also be a concept of _brand_ reputation, wherein brands make goods or
 services available in exchange for sizable amounts of YKarma, just as they comp
@@ -60,12 +61,12 @@ rewards away to strangers who have been shown to be deserving.
 ### But how can a single measure of reputation be meaningful across these different fields and communities?
 
 It probably can't -- though, again, this is all very experimental! -- so when
-coins are minted, they can be "tagged" with the set of interests/fields for the
+coins are minted, they are "tagged" with the set of interests/fields for the
 community in question, ranging from fairly specific ("Ethereum", "Consensys")
 to somewhat generic ("blockchain", "open source") to very generic ("tech").
-Then, when vendors make rewards available, they can require coins with a
-given tag, e.g. "tech" coins to acquire tickets to a generic tech conference,
-or "blockchain" coins for a more specific conference.
+Then, when vendors make rewards available, they can require payment in karma
+coins with a given tag -- "tech" coins to acquire tickets to a generic tech
+conference, or "open source" coins for something more specific.
 
 ### Hang on. You're literally printing new money every week. Won't that lead to runaway inflation?
 
@@ -79,8 +80,9 @@ design. Like reputation itself, the real value of YKarma savings decay
 steadily, making it difficult to hoard capital. That's one of the things
 which makes a reputation economy very different from a monetary one.
 
-(At one point I was going to build sizable demurrage into the system, but on
-reflection decided that wasn't needed, or at least not yet.)
+(At one point I was going to build significant
+[demurrage](https://en.wikipedia.org/wiki/Demurrage_(currency)) into the
+system, but on reflection decided that wasn't needed, or at least not yet.)
 
 ### OK, I am cautiously amenable to the concept. So how does it work?
 
@@ -101,11 +103,9 @@ permissionlessness. It's on a blockchain, though, because that is the end goal.
 ### OK, but even granting the desire for an ultimately permissionless and hence blockchain solution, is Ethereum really the right platform?
 
 It's the right platform right now. Maybe in some distant future it will be
-migrated to a different platform or a custom blockchain. But in the here and
-now, Ethereum is running, battle-tested code with a maturing software toolset
-for its smart-contract system, which is flexible and powerful enough for this
-experiment. It's arguably a kludge, don't get me wrong -- see also the next
-question -- but it's a highly expedient one.
+migrated to a different one. But in the here and now, Ethereum is running,
+battle-tested code with a maturing software toolset for its smart-contract
+system, which is flexible and powerful enough for this experiment.
 
 ### But how can this possibly work on the Ethereum blockchain, with its high gas costs and low transaction bandwidth?
 
@@ -116,7 +116,6 @@ blockchain, just like the Rinkeby testnet, with an eye towards one day
 federating together multiple blockchains -- each supporting one or more
 community -- as
 [Ethermint zones](https://blog.cosmos.network/a-beginners-guide-to-ethermint-38ee15f8a6f4).
-
 
 ### All right. So who administers communities, tags, users, and vendors?
 
@@ -135,6 +134,10 @@ only go to people with @company.com email addresses.
 Users who never want to deal with the blockchain won't have to -- that's the
 whole point of all the web code in this repo -- but users who want to become
 "free agents" may do so at the cost of additional complexity.
+
+Ultimately each individual community will validate its own users, vendors, and
+which other communities they include in their reputation economy. In the very
+long term I can envision networks of networks of federated communities.
 
 ### This is all getting pretty abstract. Can we talk concrete examples and scenarios?
 
@@ -188,8 +191,8 @@ another significant divergence from traditional money.)
 
 Furthermore, we track and display the total number of rewards a vendor has ever
 sold, and the total karma they have received, as another form of reputation.
-This is admittedly a "score" of sorts, but one still very different from e.g.
-"social credit", and scoring vendors seems a reasonable thing to do.
+This is admittedly a "rating", but one still very different from e.g. "social
+credit", and rating vendors as opposed to users seems a reasonable thing to do.
 
 ### What else is on the notional roadmap?
 
@@ -198,33 +201,30 @@ Lots of stuff, including:
 * Rewards should be auctionable as well as fixed-price. That's obviously much
 more complex to code, though, so it's not yet implemented.
 
-* Karma used for governance; people who want to bring forth a proposal to a
-community must spend X karma to do so, where X is dissuasive but not
+* Karma used for governance / voting; people who want to bring forth a proposal
+to a community must spend X karma to do so, where X is dissuasive but not
 preventative, and then the entire community can spend karma as votes, with Z
-net votes in favor required to pass. Interesting but again, complex.
+net votes in favor required to pass. Interesting, but again, complex.
 
-* I'd also like to implement some kind of "vouching" system wherein communities
-can agree on new members. For the alpha test, anyone who is sent karma by any
-community member becomes part of that community. One could also limit by domain,
-e.g.. only email addresses which end in @mydomain.com can be added.
+* I'd also like to implement a "vouching" system wherein communities can agree
+on new members, eg "5 existing members much vouch for you before you can become
+a member and start giving out karma yourself." One could also limit by domain,
+e.g. "only email addresses which end in @company.com can be added." For the
+alpha test, anyone who is sent karma becomes part of the "alpha test" community. 
 
-* In a better world the web site would be less janky (the results of the
-interaction between React, Firebase, and the blockchain's relatively slow read
-times are ... suboptimal, he understated) and look-and-flow much less like it
-was designed by an engineer.
+* In a better world the web site would be less janky (the interactions between
+React, Firebase, and the blockchain's relatively slow read times make the site
+behavior and performance ... suboptimal) and would look-and-flow much less like
+it was designed by an engineer.
 
 ### Will there be an ICO?
 
 You're kidding, right?
 
-### Why is it called "YKarma"?
-
-Mostly because the domain contained the word "karma" and was available.
-
-### What happens next?
+### So what happens next?
 
 That's slightly unclear. Right now I just want to get the code into a stable
-and reliable state, and I _think_ it's ready for alpha testing, which means it
+and reliable state, and I _think_ it's ready for alpha testing. Which means it
 probably isn't, but that's the chance that alpha testers take. So, most
 immediately, I'm looking for volunteers to take part in that testing.
 
@@ -236,16 +236,17 @@ publicly.
 
 ### What's the technical architecture here, and how might it change?
 
-The hard parts, technically, are yet to come, but I think I've done much of
-the tedious work now. (Not counting the inevitable bug fixes and/or design
-changes which will necessitate the updating of smart-contract data in
-production, but we'll burn those bridges when we come to them.)
+The hard parts, technically, are yet to come, but much of the tedious work is
+now done. (Not counting the inevitable bug fixes and/or design changes which
+will necessitate the hair-tearing idea of updating smart contracts and data in
+a production blockchain, but we'll burn those bridges when we come to them.)
 
 It's a basic three-layer web service: React/Redux front end talking to a Node
-API which uses web3 to talk to a Geth PoA blockchain, all (optionally) running
-inside Docker containers. I was tempted to add more layers of abstraction, but
-the idea was for this to be illustrative as well as useful, so I went with just
-trying to make the code simple, readable, and straightforward.
+API which uses web3 to talk to a Geth PoA blockchain, using Firebaase for user
+authentication and Sendgrid for email, all (optionally) running inside Docker.
+I was tempted to add more layers of abstraction, but the idea was for this to
+be illustrative as well as useful, so I went with just trying to make the code
+simple, readable, and straightforward.
 
 I'm a polyglot programmer and neither Javascript nor Solidity is my first or
 even my fifth language of choice (though like many I have warmed to JS over the
@@ -257,4 +258,8 @@ blockchain. Given its necessity, I'd probably add some kind of data layer
 between the API and the blockchain to cache data for reads, and a messaging
 queue for writes, and then worry about how/when to invalidate that cache ...
 but obviously that would add a great deal of complexity to the system.
+(There's a little Redis caching in there now, but only a little.)
 
+### Why is it called "YKarma"?
+
+Mostly because the domain contained the word "karma" and was available.
