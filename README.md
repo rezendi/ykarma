@@ -179,11 +179,12 @@ Currently they are gone forever, because we're modeling reputation, which isn't
 really transferable, and because money has to leave the system <i>somehow</i>
 or we'll have runaway inflation.
 
-However a possible experimental notion is for a small fraction, e.g. one-tenth
-of the karma spent, to be retained by the vendor, because there is such a thing
-as proxy reputation. This may be at the buyer's discretion, independent of the
-transaction completing successfully -- i.e. you can always buy the reward,
-whether or not you want to transfer some of the spent karma to the vendor.
+However one possible experimental notion is for e.g. 10% of the spent karma to
+be retained by the vendor, because there is such a thing as proxy reputation.
+This may be at the buyer's discretion, independent of the transaction
+completing successfully -- i.e. you can always buy the reward, whether or not
+you want to transfer some of the spent karma to the vendor. (Yes, this is yet
+another significant divergence from traditional money.)
 
 Furthermore, we track and display the total number of rewards a vendor has ever
 sold, and the total karma they have received, as another form of reputation.
@@ -207,8 +208,10 @@ can agree on new members. For the alpha test, anyone who is sent karma by any
 community member becomes part of that community. One could also limit by domain,
 e.g.. only email addresses which end in @mydomain.com can be added.
 
-* In a better world the web site would be less janky and look-and-flow much
-less like it was designed by an engineer.
+* In a better world the web site would be less janky (the results of the
+interaction between React, Firebase, and the blockchain's relatively slow read
+times are ... suboptimal, he understated) and look-and-flow much less like it
+was designed by an engineer.
 
 ### Will there be an ICO?
 
@@ -220,9 +223,38 @@ Mostly because the domain contained the word "karma" and was available.
 
 ### What happens next?
 
-That's slightly unclear. I'm looking for volunteers to take part in the initial
-alpha testing, and interested in talking to people who find the concept
-intriguing, whether they be potential collaborators, parallel experimenters,
-angry critics, or something else. If you're any of those, please feel free
-to reach out to me at info@ykarma.com to converse privately, or @rezendi on
-Twitter to discuss publicly.
+That's slightly unclear. Right now I just want to get the code into a stable
+and reliable state, and I _think_ it's ready for alpha testing, which means it
+probably isn't, but that's the chance that alpha testers take. So, most
+immediately, I'm looking for volunteers to take part in that testing.
+
+I'm also interested in talking to people who find the concept intriguing,
+whether they be potential collaborators, parallel experimenters, angry critics,
+or anything else. If you're any of those, please feel free to reach out to me
+at info@ykarma.com to converse privately, or @rezendi on Twitter to discuss
+publicly.
+
+### What's the technical architecture here, and how might it change?
+
+The hard parts, technically, are yet to come, but I think I've done much of
+the tedious work now. (Not counting the inevitable bug fixes and/or design
+changes which will necessitate the updating of smart-contract data in
+production, but we'll burn those bridges when we come to them.)
+
+It's a basic three-layer web service: React/Redux front end talking to a Node
+API which uses web3 to talk to a Geth PoA blockchain, all (optionally) running
+inside Docker containers. I was tempted to add more layers of abstraction, but
+the idea was for this to be illustrative as well as useful, so I went with just
+trying to make the code simple, readable, and straightforward.
+
+I'm a polyglot programmer and neither Javascript nor Solidity is my first or
+even my fifth language of choice (though like many I have warmed to JS over the
+years) which will probably be very apparent to serious JS developers when they
+look at the code.
+
+If I was building this to seriously scale I ... well, I wouldn't have used a
+blockchain. Given its necessity, I'd probably add some kind of data layer
+between the API and the blockchain to cache data for reads, and a messaging
+queue for writes, and then worry about how/when to invalidate that cache ...
+but obviously that would add a great deal of complexity to the system.
+
