@@ -3,11 +3,15 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { Field, reduxForm } from 'redux-form';
-import { setLoading } from '../store/data/actions'
+import { setLoading, loadAvailableRewards } from '../store/data/actions'
 import Api from '../store/Api';
 import Tranche from './Tranche';
 
 class Home extends React.Component {
+
+  componentDidMount() {
+    this.props.loadAvailableRewards();
+  }
 
   submitForm = async (values) => {
     // console.log("Submitting form", values);
@@ -27,32 +31,10 @@ class Home extends React.Component {
     return total;
   }
 
-  karmaBreakdown() {
-    var myTags = {};
-    const spendable = this.props.user.received || [];
-    for (var i=0; i < spendable.length; i++) {
-      const tags = spendable[i].tags.split(",");
-      for (var j in tags) {
-        var tag = tags[j];
-        myTags[tag] = myTags[tag] ? myTags[tag] + spendable[i].available : spendable[i].available;
-      }
-    }
-
-    var sortedTags = [];
-    for (var key in myTags) {
-      sortedTags.push({tag: key, avail: myTags[key]});
-    }
-    sortedTags = sortedTags.sort(function(a,b) {return (a.avail > b.avail) ? 1 : ((b.avail > a.avail) ? -1 : 0);} );
-    sortedTags = sortedTags.reverse();
-
-    var retval = "";
-    for (var k in sortedTags) {
-      retval+= `${sortedTags[k].avail} "${sortedTags[k].tag}"`;
-      retval += k < sortedTags.length - 1 ? ", " : "";
-    }
-    return retval;
+  getTopReward() {
+    return this.props.rewards.length > 0 ? this.props.rewards[0] : null;
   }
-
+  
   render() {
    if (!this.props.user || Object.keys(this.props.user).length === 0) {
       return (
@@ -115,17 +97,17 @@ class Home extends React.Component {
                   </Row>
                   <form onSubmit={this.props.handleSubmit(this.submitForm)}>
                     <Row>
-                      <b>Give</b>
+                      <b>Send</b>
                       &nbsp;
                       <Field name="coins" component="input" type="text" size="3" placeholder="?"/>
                       &nbsp;
-                      <label htmlFor="coins">coins</label>
+                      <label htmlFor="coins">karma</label>
                       &nbsp;
                       <label htmlFor="recipient">to</label>
                       &nbsp;
                       <Field name="recipient" component="input" type="text" size="12" placeholder="Email / Twitter"/>
                       &nbsp;
-                      <label htmlFor="message">saying</label>
+                      <label htmlFor="message">because</label>
                       &nbsp;
                       <Field name="message" component="input" type="text" size="16" maxLength="128" placeholder="Optional message"/>
                       &nbsp;
@@ -146,13 +128,22 @@ class Home extends React.Component {
                 <Col md={12}>
                   <Row>
                     You have { this.totalSpendable() } total karma available to spend.
+                    <Link className="pull-right" to="/profile">view details</Link>
                     <hr/>
                   </Row>
+                  { this.getTopReward() &&
                   <Row>
-                    <Link to="/user/rewards">View Available Rewards</Link>
+                    Top reward:
+                    &nbsp;
+                    <Link to={`/reward/${this.getTopReward().id}`}>{this.getTopReward().metadata.name || 'n/a'}</Link>
+                    ,
+                    <span> {this.getTopReward().cost}</span>
+                    {this.getTopReward().tag && <span> <em>{this.getTopReward().tag}</em> </span>}
+                    <span> karma</span>
                   </Row>
+                  }
                   <Row>
-                    Your karma by flavor: { this.karmaBreakdown() }
+                    <Link className="pull-right" to="/user/rewards">View All Available Rewards</Link>
                   </Row>
                 </Col>
               </Panel.Body>
@@ -196,12 +187,14 @@ class Home extends React.Component {
 function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
+    rewards: state.rewards.available || [],
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     setLoading: (active) => dispatch(setLoading(active)),
+    loadAvailableRewards: () => dispatch(loadAvailableRewards()),
   }
 }
 

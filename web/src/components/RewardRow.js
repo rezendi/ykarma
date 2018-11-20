@@ -12,7 +12,7 @@ class RewardRow extends React.Component {
           <span>cost: {this.props.reward.cost}</span>
           {this.props.reward.tag && <span> "{this.props.reward.tag}" </span>}
           <span> karma</span>
-          { this.props.showAvailable && this.props.reward.ownerId == 0 &&
+          { this.props.showAvailable && this.props.reward.ownerId === 0 &&
           <span>, {this.props.reward.quantity} available</span> }
           { this.props.reward.ownerId > 0 && <span>, sold</span> }
         </Col>

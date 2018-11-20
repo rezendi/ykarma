@@ -83,6 +83,32 @@ class Profile extends React.Component {
     return user.metadata.name;
   }
   
+  karmaBreakdown() {
+    var myTags = {};
+    const spendable = this.props.user.received || [];
+    for (var i=0; i < spendable.length; i++) {
+      const tags = spendable[i].tags.split(",");
+      for (var j in tags) {
+        var tag = tags[j];
+        myTags[tag] = myTags[tag] ? myTags[tag] + spendable[i].available : spendable[i].available;
+      }
+    }
+
+    var sortedTags = [];
+    for (var key in myTags) {
+      sortedTags.push({tag: key, avail: myTags[key]});
+    }
+    sortedTags = sortedTags.sort(function(a,b) {return (a.avail > b.avail) ? 1 : ((b.avail > a.avail) ? -1 : 0);} );
+    sortedTags = sortedTags.reverse();
+
+    var retval = "";
+    for (var k in sortedTags) {
+      retval+= `${sortedTags[k].avail} "${sortedTags[k].tag}"`;
+      retval += k < sortedTags.length - 1 ? ", " : "";
+    }
+    return retval;
+  }
+  
   getTotalSoldRewards = (offered) => {
     return offered.filter(offer => offer.ownerId > 0).reduce((acc, offer) => {
       return acc + offer.quantity;
@@ -116,7 +142,10 @@ class Profile extends React.Component {
                     <div>
                       <i>@{ this.props.user.handle}</i>
                     </div> }
-                    You have { this.props.user.givable } karma available to give.
+                    <div>
+                      You have { this.props.user.givable } karma available to give.
+                    </div>
+                    You have { this.karmaBreakdown() } karma to spend.
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
