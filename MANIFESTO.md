@@ -27,13 +27,13 @@ and implicitly decays in value as its network scales.
 universally acknowledged that a blockchain should only be used to store
 dense, high-value information such as hashes, URLs, and account allocations.
 YKarma, by contrast, makes a point of using its blockchain as its _only_
-datastore, including e.g. user profiles and preferences.
+datastore.
 
 6. This was, to drily understate, not done for the sake of efficiency. I would
 estimate this as having taken 10x more development time than it would have
-using a standard database back end, except I suspect the real number is more
-like 20x when configuration / devops are taken into account. Its performance
-is similarly at least that much worse.
+using a basic database, except I suspect the real number is more like 20x when
+configuration / devops are taken into account. Its performance is similarly at
+least that much worse.
 
 7. While this was all devised with tongue in cheek, it was also written with
 (some) serious intent. As we reach the point of diminishing and/or negative
