@@ -2,8 +2,6 @@
 The YKarma Manifesto
 ====================
 
-or,
----
 25 Theses Regarding an Experimental Performance-Art Reputation Cryptocurrency
 -----------------------------------------------------------------------------
 
@@ -25,36 +23,36 @@ monetary value; is minted and airdropped to all users every week; is worthless
 until given to another user; is destroyed rather than transferred when spent;
 and implicitly decays in value as its network scales.
 
-5. For details on how it works, see the [project README](./README.md).
-
-6. YKarma is also an example of software as performance art. It is a truth
+5. YKarma is also an example of software as performance art. It is a truth
 universally acknowledged that a blockchain should only be used to store
 dense, high-value information such as hashes, URLs, and account allocations.
 YKarma, by contrast, makes a point of using its blockchain as its _only_
 datastore, including e.g. user profiles and preferences.
 
-7. This was, to drily understate, not done for the sake of efficiency. I would
+6. This was, to drily understate, not done for the sake of efficiency. I would
 estimate this as having taken 10x more development time than it would have
 using a standard database back end, except I suspect the real number is more
 like 20x when configuration / devops are taken into account. Its performance
 is similarly at least that much worse.
 
-8. While this was all devised with tongue in cheek, it was also written with
+7. While this was all devised with tongue in cheek, it was also written with
 (some) serious intent. As we reach the point of diminishing and/or negative
 returns to traditional capitalism, alternative economic structures will grow in
 importance. Such structures will almost certainly include reputation economies.
 
-9. Please note: reputation _economies_, i.e. modeling reputation as a spendable
+8. Please note: reputation _economies_, i.e. modeling reputation as a spendable
 currency, not, repeat not, reputation _systems_, i.e. some kind of "social
 credit rating." The former is an interesting idea worthy of experimentation.
 The latter is a dystopia waiting to happen. The two are _very_ different.
 
-10. YKarma is intended both as an implementation of a single, potentially
+9. YKarma is intended both as an implementation of a single, potentially
 useful flavor of an experimental reputation economy, and as an open-source
 example of an end-to-end, web-to-Ethereum-blockchain, fairly complex system,
 to be forked / mutated / built upon by others.
 
-11. Let a thousand weird cryptoflowers bloom!
+10. Let a thousand weird cryptoflowers bloom!
+
+11. For details on how it works, see the [project README](./README.md).
 
 12. For technical details regarding how to clone/run YKarma locally, see the
 [project HOWTO](./HOWTO.md).
@@ -81,13 +79,12 @@ two it will be technically feasible.
 better if they're actually useful. Conveniently, I can at least conceive of a
 world in which people actually use this one.
 
-18. But before we get into that, let me stress that what I'd _really_ like to
-see is a wave of experimentation with wholly new economic structures and
-incentivization systems. This is something which blockchains enable, but which
-has not yet happened, largely because (most) blockchainers are more interested
-in getting rich in the cryptocurrency casino, and/or building decentralized
-versions of successful centralized services, rather than fundamental economic
-experimentation.
+18. Before we get into that, let me stress: what I'd _really_ like to see is a
+wave of experimentation with wholly new economic structures and incentivization
+systems. This is something which blockchains enable, but which has not yet
+happened, largely because (most) people cannot think outside the box in which
+they live, and/or are more interested in getting rich in the cryptocurrency casino
+or building decentralized versions of existing centralized services.
 
 19. This isn't to reject capitalism, by the way. Well-regulated capitalism is
 great, up to a point, one which I think we in the rich world have now hit. Even
@@ -95,13 +92,13 @@ if you don't think it's great, it's not going anywhere. Whatever supplants
 capitalism will not violently overthrow it in some kind of dramatic post-
 capitalist revolution; it will subvert from within.
 
-20. Anyway. The fundamental sticking point for many people, I think, will be
+20. Anyway. The fundamental sticking point for many people, I expect, will be
 that YKarma isn't just a reputation economy but a reputation _gift_ economy. It
 relies on people creating and offering rewards, else there will be nothing on
 which to spend the reputation currency. However, one of its major differences
-from capitalism as we know it is that, when spent, the currency is _burnt_,
-i.e. taken out of the economy forever, rather than being transferred to the
-vendor. Yes, you read that correctly.
+from capitalism as we know it is that, when spent, the currency is _burnt_ i.e.
+taken out of the economy forever, rather than being transferred to the vendor.
+Yes, you read that correctly.
 
 21. You may ask: who would create a worthwhile reward when they will not
 receive the currency that is paid for it?
@@ -117,7 +114,7 @@ to particularly interesting people; brands offering freebies to very-high-
 reputation people, just as they do today, except quantified; etc etc etc.
 
 23. Whether people will want to participate in a given reputation currency
-depends mostly on the incentives. If the perceived rewards are valuable enough,
+depends mostly on incentives. If the perceived rewards are valuable enough,
 and/or the community is important enough to them, then they will participate.
 That said, the complexity, design, and user experience of the currency will, as
 ever, be extremely important factors in its adoption or lack thereof.
