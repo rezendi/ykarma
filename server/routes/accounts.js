@@ -3,6 +3,7 @@ const router = express.Router();
 const bodyParser = require("body-parser");
 const eth = require('./eth');
 const util = require('./util');
+const email = require('./emails');
 const firebase = require('./firebase');
 const redisService = require("redis");
 var redis = redisService.createClient({host:"redis", port: 6379});
@@ -11,9 +12,6 @@ redis.on('error', function (err) {
     console.log('Something went wrong with Redis', err);
   }
 });
-
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 var accountCache = {}
 
@@ -309,7 +307,7 @@ router.post('/give', function(req, res, next) {
       if (sendEmail) {
         util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
-        sendKarmaSentEmail(senderName, recipient, req.body.amount);
+        email.sendKarmaSentEmail(senderName, recipient, req.body.amount);
         if (account.metadata.emailPrefs.kr && account.metadata.emailPrefs.kr !== 0) {
           return res.json( { "success":true } );
         }
@@ -570,20 +568,6 @@ function getLongUrlFromShort(shortUrl) {
     return 'error Bad URL';
   }
   return url;
-}
-
-function sendKarmaSentEmail(sender, recipient, amount) {
-  if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = recipient.replace("mailto:","");
-  // TODO check that the URL is an email address
-  const msg = {
-    to: recipientEmail,
-    from: 'karma@ykarma.com',
-    subject: `${sender} just sent you ${amount} YKarma!`,
-    text: 'You should totally find out more!',
-    html: '<strong>You should totally find out more.</strong>',
-  };
-  sgMail.send(msg);  
 }
 
 

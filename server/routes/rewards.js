@@ -3,9 +3,7 @@ const router = express.Router();
 const bodyParser = require("body-parser");
 const eth = require('./eth');
 const util = require('./util');
-
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const email = require('./emails');
 
 var fromAccount = null;
 eth.getFromAccount().then(address => {
@@ -102,7 +100,7 @@ router.post('/create', function(req, res, next) {
       account.metadata.emailPrefs = account.metadata.emailPrefs || {};
       // util.log("emailPrefs", account.metadata.emailPrefs);
       if (account.metadata.emailPrefs.rw !== 0) {
-        sendRewardCreatedEmail(req.session.email, reward);
+        email.sendRewardCreatedEmail(req.session.email, reward);
       }
     }
     util.log("reward created", reward);
@@ -155,11 +153,11 @@ router.post('/purchase', function(req, res, next) {
         account.metadata.emailPrefs = account.metadata.emailPrefs || {};
         // util.log("emailPrefs", account.metadata.emailPrefs);
         if (account.metadata.emailPrefs.rw !== 0) {
-          sendRewardPurchasedEmail(req.session.email, reward);
+          email.sendRewardPurchasedEmail(req.session.email, reward);
         }
       }
       eth.getAccountFor(reward.vendorId, (vendor) => {
-        sendRewardSoldEmail(vendor, reward);
+        email.sendRewardSoldEmail(vendor, reward);
         return res.json({"success":true, "result": reward});
       });
     });
@@ -218,54 +216,6 @@ function getRewardFromResult(result) {
   };
 }
 
-function sendRewardCreatedEmail(vendor, reward) {
-  if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = vendor.replace("mailto:","");
-  // TODO check that the URL is an email address
-  const msg = {
-    to: recipientEmail,
-    from: 'karma@ykarma.com',
-    subject: `You just created a reward!`,
-    text: `You should totally find out more! ${JSON.stringify(reward)}`,
-    html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
-  };
-  sgMail.send(msg);  
-}
-
-function sendRewardSoldEmail(vendor, reward) {
-  if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = "";
-  if (vendor.urls && vendor.urls.indexOf("mailto") > 0) {
-    const urls = vendor.urls.split(",");
-    for (var url in urls) {
-      if (url.startsWith("mailto:")) {
-        recipientEmail = url.replace("mailto:","");
-      }
-    }
-  }
-  if (recipientEmail === "") return;
-  const msg = {
-    to: recipientEmail,
-    from: 'karma@ykarma.com',
-    subject: `You just sold a reward!`,
-    text: `You should totally find out more! ${JSON.stringify(reward)}`,
-    html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
-  };
-  sgMail.send(msg);
-}
-
-function sendRewardPurchasedEmail(purchaser, reward) {
-  if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = purchaser.replace("mailto:","");
-  const msg2 = {
-    to: recipientEmail,
-    from: 'karma@ykarma.com',
-    subject: `You just bought a reward!`,
-    text: `You should totally find out more! ${JSON.stringify(reward)}`,
-    html: `<strong>You should totally find out more.</strong> ${JSON.stringify(reward)}`,
-  };
-  sgMail.send(msg2);
-}
 
 
 module.exports = router;
