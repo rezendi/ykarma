@@ -96,7 +96,7 @@ export function fetchYkUser(user) {
     return userFetched({fbase:{}, yk:{}});
   }
   return function(dispatch, getState) {
-    var forceRefresh = sessionStorage.getItem("currentToken") == null;
+    var forceRefresh = sessionStorage.getItem("currentToken") === null;
     if ( (new Date()).getTime() - (sessionStorage.getItem("currentTokenSet") || 0) > 60000) {
       forceRefresh = true;
     }

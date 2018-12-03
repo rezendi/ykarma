@@ -192,13 +192,14 @@ router.put('/addUrl', function(req, res, next) {
   }
 
   if (req.session.ykid) {
-    addUrlToAccount(req.session.ykid, url, (result) => {
+    var method = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
+    eth.doSend(method, res, 1, 2, () => {
       if (req.body.url.indexOf("@") > 0) {
         req.session.email = req.body.url;
       } else {
         req.session.handle = req.body.url;
       }
-      res.json({"success":result});
+      res.json({"success":req.body.url});
     });
     return;
   }
@@ -211,13 +212,14 @@ router.put('/addUrl', function(req, res, next) {
   }
   getAccountForUrl(url, (account) => {
     getSessionFromAccount(req, account);
-    addUrlToAccount(req.session.ykid, url, (result) => {
+    var method = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
+    eth.doSend(method, res, 1, 2, () => {
       if (req.body.url.indexOf("@") > 0) {
         req.session.email = req.body.url;
       } else {
         req.session.handle = req.body.url;
       }
-      res.json({"success":result});
+      res.json({"success":req.body.url});
     });
   });
 });
@@ -237,9 +239,8 @@ router.put('/removeUrl', function(req, res, next) {
   if (url.startsWith("error")) {
     return res.json({"success":false, "error": "Invalid URL"});
   }
-  removeUrlFromAccount(req.session.ykid, url, (result) => {
-    res.json({"success":result});
-  });
+  var method = eth.contract.methods.removeUrlFromExistingAccount(req.session.ykid, url);
+  eth.doSend(method, res, 1, 2, null);
 });
 
 
@@ -414,44 +415,6 @@ function getAccountWithinCommunity(communityId, idx, callback) {
   .catch(function(error) {
     util.warn('accountWithinCommunity call error ' + id, error);
     callback({});
-  });
-}
-
-function addUrlToAccount(id, url, callback) {
-  util.log("adding url "+url, id);
-  var notifying = false;
-  var method = eth.contract.methods.addUrlToExistingAccount(id, url);
-  method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
-    method.send({from:fromAccount, gas: gasAmount * 2}).on('error', (error) => {
-      util.warn('addUrlToAccount error', error);
-      callback(false);
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= 1 && !notifying) {
-        //console.log('addUrlToAccount result', receipt);
-        notifying = true;
-        callback(true);
-      }
-    });
-  });
-}
-
-function removeUrlFromAccount(id, url, callback) {
-  util.log("removing url "+url, id);
-  var notifying = false;
-  var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
-  method.estimateGas({gas: eth.GAS}, function(error, gasAmount) {
-    method.send({from:fromAccount, gas: gasAmount * 4}).on('error', (error) => {
-      util.warn('removeUrlFromAccount error', error);
-      callback(false);
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= 1 && !notifying) {
-        // console.log('removeUrlFromAccount result', receipt);
-        notifying = true;
-        return callback(true);
-      }
-    });
   });
 }
 
