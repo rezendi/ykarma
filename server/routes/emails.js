@@ -33,7 +33,7 @@ function sendRewardSoldEmail(vendor, reward) {
   if (process.env.NODE_ENV === "test") return;
   var recipientEmail = "";
   if (vendor.urls && vendor.urls.indexOf("mailto") > 0) {
-    const urls = vendor.urls.split(",");
+    const urls = vendor.urls.split("||");
     for (var url in urls) {
       if (url.startsWith("mailto:")) {
         recipientEmail = url.replace("mailto:","");

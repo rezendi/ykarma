@@ -224,22 +224,18 @@ router.put('/addUrl', function(req, res, next) {
 
 /* PUT remove URL */
 router.put('/removeUrl', function(req, res, next) {
-  var url = getLongUrlFromShort(req.body.url);
+  var type = req.body.type;
+  var url = req.body.url || "error";
+  util.log("removing url type", type);
+  if (type === "twitter") {
+    url = getLongUrlFromShort(req.session.handle);
+  }
+  if (type === "email") {
+    url = getLongUrlFromShort(req.session.email);
+  }
+  util.log("removing url", url);
   if (url.startsWith("error")) {
-    util.log("removing url type", type);
-    var type = req.body.type;
-    if (type=="twitter") {
-      if (!req.session.handle) {
-        return res.json({"success":false, "error": "No handle to remove"});      
-      }
-      url = getLongUrlFromShort(req.session.handle);
-    }
-    if (type=="email") {
-      if (!req.session.email) {
-        res.json({"success":false, "error": "No email to remove"});
-      }
-      url = getLongUrlFromShort(req.session.email);
-    }
+    return res.json({"success":false, "error": "Invalid URL"});
   }
   removeUrlFromAccount(req.session.ykid, url, (result) => {
     res.json({"success":result});
@@ -352,12 +348,13 @@ router.post('/token/set', function(req, res, next) {
     req.session.uid = decodedToken.uid;
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
-    req.session.handle = null;
-    //util.log("decoded", JSON.stringify(decodedToken.firebase.identities));
+    // util.log("decoded", JSON.stringify(decodedToken.firebase.identities));
     const twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
     if (twitterIdentities.length > 0) {
       req.session.twitter_id = twitterIdentities[0];
       req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
+    } else {
+      req.session.handle = null;      
     }
     util.log("post token session", req.session, 0);
     res.json({"success":true});
@@ -536,13 +533,14 @@ function getSessionFromAccount(req, account) {
   req.session.ykcid = parseInt(account.communityId);
   req.session.name = account.metadata.name;
   req.session.account = account;
-  var urls = account.urls.split(",");
-  for (var url in urls) {
-    if (url.startsWith("mailto:")) {
-      req.session.email = url.substring(7);
+  var urls = account.urls.split("||");
+  util.debug("urls", urls);
+  for (var i in urls) {
+    if (urls[i].startsWith("mailto:")) {
+      req.session.email = urls[i].replace("mailto:", "");
     }
-    if (url.startsWith("https://twitter.com/")) {
-      req.session.handle = url.substring(20);
+    if (urls[i].startsWith("https://twitter.com/")) {
+      req.session.handle = "@" + urls[i].replace("https://twitter.com/","");
     }
   }
 }

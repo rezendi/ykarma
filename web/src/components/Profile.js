@@ -34,13 +34,17 @@ class Profile extends React.Component {
 
   removeTwitter = () => {
     firebase.auth().currentUser.unlink("twitter.com").then(function(result) {
-      localStorage.setItem("additionalTwitterInfo", "{}");
+      localStorage.removeItem("additionalTwitterInfo");
       Api.removeUrl("twitter").then(() => {
         window.location.reload();
       });
     }).catch(function(error) {
       var errorMessage = error.message;
       console.log("twitter error", errorMessage);
+      localStorage.removeItem("additionalTwitterInfo");
+      Api.removeUrl("twitter").then(() => {
+        window.location.reload();
+      });
     });
   }
   
