@@ -32,7 +32,11 @@ class Home extends React.Component {
   }
 
   getTopReward() {
-    return this.props.rewards.length > 0 ? this.props.rewards[0] : null;
+    for (var i in this.props.rewards) {
+      if (this.props.rewards[i].ownerId === 0)
+        return this.props.rewards[i];
+    }
+    return null;
   }
   
   render() {
