@@ -87,6 +87,15 @@ class Profile extends React.Component {
     return user.metadata.name;
   }
   
+  totalSpendable() {
+    var total = 0;
+    const spendable = this.props.user.received || [];
+    for (var i=0; i < spendable.length; i++) {
+      total += parseInt(spendable[i].available, 10);
+    }
+    return total;
+  }
+
   karmaBreakdown() {
     var myTags = {};
     const spendable = this.props.user.received || [];
@@ -149,7 +158,7 @@ class Profile extends React.Component {
                     <div>
                       You have { this.props.user.givable } karma available to give.
                     </div>
-                    You have { this.karmaBreakdown() } karma to spend.
+                    You have { this.totalSpendable() } karma to spend. ({ this.karmaBreakdown() })
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
