@@ -1,3 +1,5 @@
+const util = require('./util');
+
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -30,16 +32,18 @@ function sendRewardCreatedEmail(vendorEmail, reward) {
 }
 
 function sendRewardSoldEmail(vendor, reward) {
+  util.debug("Sending selling email to", vendor);
   if (process.env.NODE_ENV === "test") return;
   var recipientEmail = "";
-  if (vendor.urls && vendor.urls.indexOf("mailto") > 0) {
+  if (vendor.urls && vendor.urls.indexOf("mailto") >= 0) {
     const urls = vendor.urls.split("||");
-    for (var url in urls) {
-      if (url.startsWith("mailto:")) {
-        recipientEmail = url.replace("mailto:","");
+    for (var i in urls) {
+      if (urls[i].startsWith("mailto:")) {
+        recipientEmail = urls[i].replace("mailto:","");
       }
     }
   }
+  util.log("Sending selling email to", recipientEmail);
   if (recipientEmail === "") return;
   const msg = {
     to: recipientEmail,
