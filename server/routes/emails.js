@@ -1,9 +1,9 @@
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-function sendKarmaSentEmail(sender, recipient, amount) {
+function sendKarmaSentEmail(sender, recipientEmail, amount) {
   if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = recipient.replace("mailto:","");
+  var recipientEmail = recipientEmail.replace("mailto:","");
   // TODO check that the URL is an email address
   const msg = {
     to: recipientEmail,
@@ -15,9 +15,9 @@ function sendKarmaSentEmail(sender, recipient, amount) {
   sgMail.send(msg);  
 }
 
-function sendRewardCreatedEmail(vendor, reward) {
+function sendRewardCreatedEmail(vendorEmail, reward) {
   if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = vendor.replace("mailto:","");
+  var recipientEmail = vendorEmail.replace("mailto:","");
   // TODO check that the URL is an email address
   const msg = {
     to: recipientEmail,
@@ -51,9 +51,9 @@ function sendRewardSoldEmail(vendor, reward) {
   sgMail.send(msg);
 }
 
-function sendRewardPurchasedEmail(purchaser, reward) {
+function sendRewardPurchasedEmail(purchaserEmail, reward) {
   if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = purchaser.replace("mailto:","");
+  var recipientEmail = purchaserEmail.replace("mailto:","");
   const msg2 = {
     to: recipientEmail,
     from: 'karma@ykarma.com',

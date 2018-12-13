@@ -1,2 +1,2 @@
 0 0 1 * * docker run --rm -v "/root/letsencrypt/log:/var/log/letsencrypt" -v "/var/www/html/shared:/var/www/" -v "/etc/letsencrypt:/etc/letsencrypt" -v "/root/letsencrypt/lib:/$
-1 1 * * * cd /ykarma/server && npm run cron
+1 1 * * * docker exec ykarma_node_1 sh -c "cd server && npm run cron"

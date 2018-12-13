@@ -281,20 +281,20 @@ router.delete('/destroy/:id', function(req, res, next) {
 /* POST give coins */
 router.post('/give', function(req, res, next) {
   var sender = req.session.email === process.env.ADMIN_EMAIL ? req.body.id || req.session.ykid : req.session.ykid;
-  var recipient = getLongUrlFromShort(req.body.recipient);
-  if (recipient.startsWith('error')) {
-    return res.json({"success":false, "error": recipient});
+  var recipientUrl = getLongUrlFromShort(req.body.recipient);
+  if (recipientUrl.startsWith('error')) {
+    return res.json({"success":false, "error": recipientUrl});
   }
-  util.warn(`About to give ${req.body.amount} from id ${sender} to ${recipient}`, req.body.message);
+  util.warn(`About to give ${req.body.amount} from id ${sender} to ${recipientUrl}`, req.body.message);
   var method = eth.contract.methods.give(
     sender,
-    recipient,
+    recipientUrl,
     req.body.amount,
     req.body.message || '',
   );
   eth.doSend(method, res, 1, 4, function() {
     util.log("karma sent to", req.body.recipient);
-    if (recipient.startsWith("mailto:")) {
+    if (recipientUrl.startsWith("mailto:")) {
       var account = req.session.account || {};
       account.metadata = account.metadata || {};
       account.metadata.emailPrefs = account.metadata.emailPrefs || {};
@@ -304,7 +304,7 @@ router.post('/give', function(req, res, next) {
       if (sendEmail) {
         util.log("sending mail", req.body.recipient);
         const senderName = req.session.name || req.session.email;
-        email.sendKarmaSentEmail(senderName, recipient, req.body.amount);
+        email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount);
         if (account.metadata.emailPrefs.kr && account.metadata.emailPrefs.kr !== 0) {
           return res.json( { "success":true } );
         }

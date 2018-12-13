@@ -120,8 +120,8 @@ function sendReplenishEmail(account) {
   console.log("sending email to", account.urls);
   if (process.env.NODE_ENV === "test") return;
   var recipientEmail = "";
-  if (vendor.urls && account.urls.indexOf("mailto") > 0) {
-    const urls = account.urls.split(",");
+  if (account.urls && account.urls.indexOf("mailto") > 0) {
+    const urls = account.urls.split("||");
     for (var url in urls) {
       if (url.startsWith("mailto:")) {
         recipientEmail = url.replace("mailto:","");
