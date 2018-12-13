@@ -22,18 +22,18 @@ function verifyURLs(urlsString) {
 }
 
 // TODO: real logging
-function warn(a, b, c=null) {
+function warn(a, b) {
   b ? console.warn(a,b) : console.warn(a);
 }
 
-function log(a, b, c=null) {
-  if (!c && (""+process.env.LOG_LEVEL).indexOf("LOG") < 0) { // if (!c) for logging
+function log(a, b) {
+  if ((""+process.env.LOG_LEVEL).indexOf("LOG") >= 0) {
     b ? console.log(a,b) : console.log(a);
   }
 }
 
-function debug(a, b, c=null) {
-  if (c && (""+process.env.LOG_LEVEL).indexOf("DEBUG") < 0) { // if (!c) for verbose logging
+function debug(a, b) {
+  if ((""+process.env.LOG_LEVEL).indexOf("DEBUG") >= 0) {
     b ? console.log(a,b) : console.log(a);
   }
 }

@@ -91,7 +91,7 @@ router.get('/account/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/me', function(req, res, next) {
-  util.log("me session", req.session, 0);
+  util.log("me session", req.session);
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
@@ -139,14 +139,10 @@ router.get('/me', function(req, res, next) {
       return res.json({"success":false, "error": url});
     }
     getAccountForUrl(url, (account) => {
-      //util.log("getting session from", account, 0);
       getSessionFromAccount(req, account);
-      //util.log("me new session", req.session, 0);
       eth.getCommunityFor(req.session.ykcid, (community) => {
-        //util.log("got community", community, 0);
         account.community = community;
         hydrateAccount(account, () => {
-          //util.log("hydrated", account, 0);
           res.json(account);
         });
       });
@@ -333,7 +329,7 @@ router.post('/give', function(req, res, next) {
 
 /* POST set token */
 router.post('/token/set', function(req, res, next) {
-  util.log("token set", req.body, 0);
+  util.debug("token set", req.body);
   if (!req.body.token) {
     req.session.uid = null;
     req.session.name = null;
@@ -357,7 +353,7 @@ router.post('/token/set', function(req, res, next) {
     } else {
       req.session.handle = null;      
     }
-    util.log("post token session", req.session, 0);
+    util.debug("post token session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
     res.json({"success":false, "error":error});
@@ -390,7 +386,7 @@ function getAccountForUrl(url, callback) {
     if (error) {
       util.warn('getAccountForUrl error', error);
     } else {
-      util.debug('getAccountForUrl result', result, 0);
+      util.debug('getAccountForUrl result', result);
       var account = eth.getAccountFromResult(result);
       callback(account);
     }

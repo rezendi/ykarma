@@ -34,7 +34,7 @@ Quick Launch
 ------------
  - pull code from github
  - populate .firebase.json and fbase.js
- - cd server && cp .example.env .env.production
+ - cd server && cp .example.env.production .env.production
  - cd web && cp .example.env .env.production
  - docker-compose build
  - docker-compose up
