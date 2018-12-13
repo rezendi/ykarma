@@ -38,6 +38,7 @@ Quick Launch
  - cd web && cp .example.env .env.production
  - docker-compose build
  - docker-compose up
+ - note you'll need to rebuild after any code changes
 
 
 Smart Contract Development
@@ -73,7 +74,6 @@ In Production
  - populate .env.production in server and web
  - docker-compose build & docker-compose up -d
  - set up cron job
- - write ykarma address to .env.production to avoid deploying to a new contract next time
  - note chain data in /cbdata; delete if you want to start from scratch
  - Let's Encrypt and nginx.conf.ssl https://medium.com/bros/enabling-https-with-lets-encrypt-over-docker-9cad06bdb82b
  - Firewalls on DO https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands

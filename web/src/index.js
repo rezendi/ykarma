@@ -3,7 +3,6 @@ import { render } from 'react-dom'
 import './index.css';
 import { BrowserRouter } from 'react-router-dom'
 import App from './components/App';
-import registerServiceWorker from './registerServiceWorker';
 
 // Redux Store
 import { Provider } from 'react-redux'
@@ -18,4 +17,3 @@ render((
     </BrowserRouter>
   </Provider>
 ), document.getElementById('root'));
-registerServiceWorker();

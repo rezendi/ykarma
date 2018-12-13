@@ -86,15 +86,15 @@ function getAdminEmail(data) {
 
 function setEnvAddress(address) {
   // update .env if appropriate
-  console.log("setting env address");
+  console.log("setting env address in", envFile);
   if (!fs.existsSync(envFile)) {
-    console.log("file does not exist: " + envFile);
+    console.log("file does not exist:", envFile);
     return;
 }
   fs.readFile(envFile, "utf8", (err, data) => {
     if (err) throw err;
     var s = ""+data;
-    var idx = s.indexOf('YKARMA_ADDRESS');
+    var idx = s.indexOf('YKARMA_ADDRESS=');
     if (idx > 0) {
       var start = s.indexOf('=', idx+1);
       var end = s.indexOf('\n', start+1);
@@ -105,7 +105,7 @@ function setEnvAddress(address) {
     }
     fs.writeFile(envFile, s, 'utf8', (err2) => {
       if (err2) throw err2;
-      console.log("Address written");
+      console.log("Address written", address);
     });
   });
 }
