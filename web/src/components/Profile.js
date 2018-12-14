@@ -97,6 +97,9 @@ class Profile extends React.Component {
   }
 
   karmaBreakdown() {
+    if (this.totalSpendable() == 0) {
+      return 0;
+    }
     var myTags = {};
     const spendable = this.props.user.received || [];
     for (var i=0; i < spendable.length; i++) {

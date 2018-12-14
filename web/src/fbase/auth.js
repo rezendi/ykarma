@@ -1,30 +1,16 @@
 import firebase from 'firebase/app'
 import { auth } from './fbase';
 
-// Action code settings
-var devActionCodeSettings = {
-  url: 'http://localhost:3000/finishSignIn',
+// Action and link code settings
+const actionCodeSettings = {
+  url: `${process.env.REACT_APP_ROOT}/finishSignIn`,
   handleCodeInApp: true,
 };
 
-const prodActionCodeSettings = {
-  url: `${process.env.REACT_APP_PRODUCTION_ROOT}/finishSignIn`,
+const linkCodeSettings = {
+  url: `${process.env.REACT_APP_ROOT}/linkEmail`,
   handleCodeInApp: true,
 };
-
-// Link code settings
-var devLinkCodeSettings = {
-  url: 'http://localhost:3000/linkEmail',
-  handleCodeInApp: true,
-};
-
-const prodLinkCodeSettings = {
-  url: `${process.env.REACT_APP_PRODUCTION_ROOT}/linkEmail`,
-  handleCodeInApp: true,
-};
-
-const actionCodeSettings = process.env.NODE_ENV === 'production' ? prodActionCodeSettings : devActionCodeSettings;
-const linkCodeSettings = process.env.NODE_ENV === 'production' ? prodLinkCodeSettings : devLinkCodeSettings;
 
 // Send sign in link
 export const sendSignInLinkToEmail = (email, onSuccess, onError) => {

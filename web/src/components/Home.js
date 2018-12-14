@@ -69,7 +69,10 @@ class Home extends React.Component {
         window.location="/";
       }, 6000);
       return (
-        <Grid><Row>First login detected, populating your account...</Row></Grid>
+        <Grid>
+          <Row>First login detected, populating your account...</Row>
+          <Row>Please wait while we pile another block or two on the blockchain...</Row>
+        </Grid>
       );
     }
 
@@ -103,6 +106,7 @@ class Home extends React.Component {
                 <Col md={12}>
                   <Row>
                     You have { this.props.user.givable } karma available to give.
+                    <br/>For every 100 you give, you get 10 to spend.
                     <hr/>
                   </Row>
                   <form onSubmit={this.props.handleSubmit(this.submitForm)}>
