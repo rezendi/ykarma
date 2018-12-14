@@ -52,6 +52,12 @@ class Home extends React.Component {
       );
     }
 
+    if (!this.props.user.community || !this.props.user.community.id) {
+      return (
+        <Grid><Row>{ this.props.user.displayName || this.props.user.email } is not (yet) a member of any YKarma community.</Row></Grid>
+      );
+    }
+
     if (!this.props.user.ykid) {
       return (
         <Grid><Row>Fetching account for { this.props.user.displayName || this.props.user.email }...</Row></Grid>

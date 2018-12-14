@@ -21,8 +21,11 @@ class Header extends React.Component {
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
-            { !this.props.user || !this.props.user.uid ?
-                <NavItem key='login' href='/login'> Login</NavItem>
+            { !this.props.user || !this.props.user.uid || !this.props.user.community || !this.props.user.community.id ?
+                (this.props.user.community && this.props.user.community.id===0
+                 ? <NavItem key='signout' href='/signOut'>Sign Out</NavItem>
+                 : <NavItem key='login' href='/login'> Login</NavItem>
+                )
             : [
                 <NavItem key='profile' href='/profile'>Profile</NavItem>,
                 <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>,
