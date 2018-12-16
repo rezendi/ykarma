@@ -40,14 +40,14 @@ Quick Launch with Docker
 1. Ensure you have the prerequisites mentioned above.
 
 2. Populate the two Firebase config files: one for the React front end, one for the API service
-  1. Firebase configuration for React
-    1. There exists a file "web/src/fbase/example.fbase.js"
-    2. Rename it to "web/src/fbase/fbase.js"
-    3. Get the Firebase web config values per the [Firebase documentation](https://firebase.google.com/docs/web/setup)
-    4. Replace the placeholder values in the fbase.js file with those real ones.
-  2. Firebase configuration for the API service
-    1. Get the JSON file containing your Firebase service account's credentials per the [Firebase documentation](https://firebase.google.com/docs/admin/setup)
-    2. Save that file as ".firebase.json" inside the "server" top-level directory for this project (the one that also contains eg "nginx.conf")
+    1. Firebase configuration for React
+        1. There exists a file "web/src/fbase/example.fbase.js"
+        2. Rename it to "web/src/fbase/fbase.js"
+        3. Get the Firebase web config values per the [Firebase documentation](https://firebase.google.com/docs/web/setup)
+        4. Replace the placeholder values in the fbase.js file with those real ones.
+    2. Firebase configuration for the API service
+        1. Get the JSON file containing your Firebase service account's credentials per the [Firebase documentation](https://firebase.google.com/docs/admin/setup)
+        2. Save that file as ".firebase.json" inside the "server" top-level directory for this project (the one that also contains eg "nginx.conf")
 
 3. Populate the YKarma configuration files -- again, one for the React front end, one for the API service
   1. YKarma configuration for React
