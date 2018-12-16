@@ -47,20 +47,20 @@ Quick Launch with Docker
         4. Replace the placeholder values in the fbase.js file with those real ones.
     2. Firebase configuration for the API service
         1. Get the JSON file containing your Firebase service account's credentials per the [Firebase documentation](https://firebase.google.com/docs/admin/setup)
-        2. Save that file as ".firebase.json" inside the "server" top-level directory for this project (the one that also contains eg "nginx.conf")
+        2. Save that file as ".firebase.json" inside the "server" top-level directory for this project
 
 3. Populate the YKarma configuration files -- again, one for the React front end, one for the API service
     1. YKarma configuration for React
-        1. Copy the ".example.env.production" file in the "web" top-level directory to ".env.production" (Docker builds use this file for env variables)
+        1. Copy the ".example.env.production" file in the "web" top-level directory to ".env.production"
         2. Edit the values there per your needs. In particular, change the admin email to your email address.
     1. YKarma configuration for the API service
-        1. Copy the ".example.env.production" file in the "server" top-level directory to ".env.production" (Docker builds use this file for env variables)
-        2. Edit the values there per your needs. In particular, change the admin email to your email address; the rest is effectively optional.
+        1. Copy the ".example.env.production" file in the "server" top-level directory to ".env.production"
+        2. Edit the values there per your needs. In particular, *change the admin email to your email address*.
         3. Note that the Sendgrid API key goes there too, if you want to be able to send emails.
 
 4. Build the app with docker-compose
     1. From a shell in the project root directory, run "docker-compose build"
-    2. Note that you'll need to repeat this step after any code changes in order for those to be promoted into the containers.
+    2. Note you'll need to repeat this step after code changes for those to be promoted into the containers.
 
 5. Run the app with docker-compose
     1. From a shell in the project root directory, run "docker-compose up"
