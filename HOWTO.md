@@ -23,23 +23,58 @@ the various tiers of the app below.
 
 Prerequisites
 -------------
- - code from github
- - docker and docker-compose to launch
- - node / truffle to develop
- - Firebase project for auth
- - Sengrid to send emails
+
+To get this code up and running locally, you're going to need:
+1. The code, obviously, cloned from this repo.
+2. [Docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/) installed locally, to run it in containers, or
+3. [Node](https://nodejs.org/en/) and [truffle](https://truffleframework.com/) installed locally, to run it directly
+4. To create a [new Firebase project](https://console.firebase.google.com/) (this is essential in order to log in)
+5. A [Sendgrid](https://signup.sendgrid.com/) API key to send emails (this is not essential, skip it for quick launch)
+
+Note also that the instructions here assume a Unix environment (and it was developed in OS X) so any necessary
+operating-system adjustments are, I'm afraid, left as an exercise for the reader.
+
+Quick Launch with Docker
+------------------------
+
+1. Ensure you have the prerequisites mentioned above.
+
+2. Populate the two Firebase config files: one for the React front end, one for the API service
+  1. Firebase configuration for React
+    1. There exists a file "web/src/fbase/example.fbase.js"
+    2. Rename it to "web/src/fbase/fbase.js"
+    3. Get the Firebase web config values per the [Firebase documentation](https://firebase.google.com/docs/web/setup)
+    4. Replace the placeholder values in the fbase.js file with those real ones.
+  2. Firebase configuration for the API service
+    1. Get the JSON file containing your Firebase service account's credentials per the [Firebase documentation](https://firebase.google.com/docs/admin/setup)
+    2. Save that file as ".firebase.json" inside the "server" top-level directory for this project (the one that also contains eg "nginx.conf")
+
+3. Populate the YKarma configuration files -- again, one for the React front end, one for the API service
+  1. YKarma configuration for React
+    1. Copy the ".example.env.production" file in the "web" top-level directory to ".env.production" (Docker builds use this file for env variables)
+    2. Edit the values there per your needs. In particular, change the admin email to your email address.
+  1. YKarma configuration for the API service
+    1. Copy the ".example.env.production" file in the "server" top-level directory to ".env.production" (Docker builds use this file for env variables)
+    2. Edit the values there per your needs. In particular, change the admin email to your email address; the rest is effectively optional.
+    3. Note that the Sendgrid API key goes there too, if you want to be able to send emails.
+
+4. Build the app with docker-compose
+  1. From a shell in the project root directory, run "docker-compose build"
+  2. Note that you'll need to repeat this step after any code changes in order for those to be promoted into the containers.
+
+5. Run the app with docker-compose
+  1. From a shell in the project root directory, run "docker-compose up"
+
+6. Profit!
+  1. Not really.
 
 
-Quick Launch
-------------
- - pull code from github
- - populate .firebase.json and fbase.js
- - cd server && cp .example.env.production .env.production
- - cd web && cp .example.env .env.production
- - docker-compose build
- - docker-compose up
- - note you'll need to rebuild after any code changes
+Local Development
+=================
 
+Docker deployment is relatively fast (other than the configuration-file dance, but that's software for you these days)
+but is a little too arms-length for a development environment. If you want to build on this code, or if for some reason
+Docker isn't cooperating, here's how you can get it up and running directly on your machine, with no container abstraction:
 
 Smart Contract Development
 --------------------------
@@ -50,7 +85,7 @@ Smart Contract Development
 
 API Development
 ---------------
- - cd server && cp .example.env .env.production
+ - cd server && cp .example.env.production .env.production
  - change admin email etc.
  - ganache-cli -u 0
  - cd ethereum && truffle deploy (this should set the YKarma address)
