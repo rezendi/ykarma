@@ -17,6 +17,7 @@ node_modules
 .env*
 *.pwd
 .firebase.json
+fbase.js
 cbdata
 
 npm-debug.log*

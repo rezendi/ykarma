@@ -3,12 +3,12 @@ import 'firebase/auth';
 
 // General config
 const devConfig = {
-  apiKey: "AIzaSyBqXixksYzRQD8M2s947cfCQaTLOhZopmE",
-  authDomain: "y-karma.firebaseapp.com",
-  databaseURL: "https://y-karma.firebaseio.com",
-  projectId: "y-karma",
-  storageBucket: "y-karma.appspot.com",
-  messagingSenderId: "904793566960"
+  apiKey: "YOUR-FIREBASE-API-KEY",
+  authDomain: "your-domain.firebaseapp.com",
+  databaseURL: "https://your-domain.firebaseio.com",
+  projectId: "your-domain",
+  storageBucket: "your-domain.appspot.com",
+  messagingSenderId: "1234567890"
 };
 
 const prodConfig = devConfig; // for now
