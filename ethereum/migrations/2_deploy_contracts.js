@@ -10,6 +10,8 @@ const YKarma = artifacts.require('YKarma.sol');
 const fs = require('fs');
 const envFile = '../server/.env';
 
+const isTesting = process.argv.slice(-1)[0] === 'test';
+
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
   var adminEmail = '';
@@ -45,7 +47,9 @@ module.exports = (deployer, network, accounts) => {
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
     await yk.replenish(1);
-    setEnvAddress(YKarma.address);
+    if (!isTesting) {
+      setEnvAddress(YKarma.address);
+    }
     
     // add test data if appropriate
     if (process.env.TRUFFLE_ENV !== 'production') {

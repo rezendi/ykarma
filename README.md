@@ -234,32 +234,6 @@ or anything else. If you're any of those, please feel free to reach out to me
 at info@ykarma.com to converse privately, or @rezendi on Twitter to discuss
 publicly.
 
-### What's the technical architecture here, and how might it change?
-
-The hard parts, technically, are yet to come, but much of the tedious work is
-now done. (Not counting the inevitable bug fixes and/or design changes which
-will necessitate the hair-tearing idea of updating smart contracts and data in
-a production blockchain, but we'll burn those bridges when we come to them.)
-
-It's a basic three-layer web service: React/Redux front end talking to a Node
-API which uses web3 to talk to a Geth PoA blockchain, using Firebaase for user
-authentication and Sendgrid for email, all (optionally) running inside Docker.
-I was tempted to add more layers of abstraction, but the idea was for this to
-be illustrative as well as useful, so I went with just trying to make the code
-simple, readable, and straightforward.
-
-I'm a polyglot programmer and neither Javascript nor Solidity is my first or
-even my fifth language of choice (though like many I have warmed to JS over the
-years) which will probably be very apparent to serious JS developers when they
-look at the code.
-
-If I was building this to seriously scale I ... well, I wouldn't have used a
-blockchain. Given its necessity, I'd probably add some kind of data layer
-between the API and the blockchain to cache data for reads, and a messaging
-queue for writes, and then worry about how/when to invalidate that cache ...
-but obviously that would add a great deal of complexity to the system.
-(There's a little Redis caching in there now, but only a little.)
-
 ### Why is it called "YKarma"?
 
 Mostly because the domain contained the word "karma" and was available.
