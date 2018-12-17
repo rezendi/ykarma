@@ -56,7 +56,7 @@ Quick Launch with Docker
         2. Edit the values there per your needs. In particular, *change the admin email to your email address*.
         3. Note that the Sendgrid API key goes there too, if you want to be able to send emails.
 
-4. Breathe a sigh of relief that all the annoying config-file stuff is now done with and you shouldn't need to deal with it again.
+4. Breathe a sigh of relief that the annoying config-file stuff is now done and you shouldn't need to deal with it again.
 
 5. Build the app with docker-compose
     1. From a shell in the project root directory, run `docker-compose build`
@@ -91,7 +91,9 @@ get a local blockchain up and running. For extra debug info you may wish to
 run `ganache-cli -u 0 --noVMErrorsOnRPCResponse`
 
 2. Open another shell, navigate to the "ethereum" top-level directory of this
-repo, and run `truffle test` -- this should compile the YKarma smart contracts
+repo, and run `truffle test`
+
+This should compile the YKarma smart contracts
 write them to the local blockchain, and run some JavaScript test code against
 them. The result should output the admin email in the file `server/.env` and
 also the results of the "Paces" integration test, which should pass.
@@ -121,9 +123,9 @@ and save that file as `.firebase.json` inside the "server" top-level directory f
 5. Open a shell and run `ganache-cli -u 0` as above.
 
 6. Open another shell, navigate to the "ethereum" top-level directory of this
-repo, and run `truffle deploy` -- this should compile and write the smart
+repo, and run `truffle deploy` (this should compile and write the smart
 contracts, again, and write the address of the resulting YKarma interface
-contract to `server/.env` for use by the Node code.
+contract to `server/.env` for use by the Node code.)
 
 7. Open a third shell, navigate to the "server" top-level directory of this
 repo, and run `npm run test` to get the API running in test mode
@@ -132,7 +134,7 @@ repo, and run `npm run test` to get the API running in test mode
 repo, and run `mocha` to run the API tests. They should pass.
 
 9. Once you've established that tests are passing, stop `npm run test` and
-instead just run `npm test`. Voila! The API is running locally on port 3001.
+instead just run `npm start`. Voila! The API is running locally on port 3001.
 
 
 Web Development
