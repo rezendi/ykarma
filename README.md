@@ -221,6 +221,14 @@ it was designed by an engineer.
 
 You're kidding, right?
 
+### I'm a developer. Tell me about the tech stack and what I would need to do to get it up and running?
+
+You want the [project HOWTO](./HOWTO.md).
+
+### Tell me more about the large vision/purpose here?
+
+You want the [project MANIFESTO](./MANIFESTO.md).
+
 ### So what happens next?
 
 That's slightly unclear. Right now I just want to get the code into a stable

@@ -56,15 +56,17 @@ Quick Launch with Docker
         2. Edit the values there per your needs. In particular, *change the admin email to your email address*.
         3. Note that the Sendgrid API key goes there too, if you want to be able to send emails.
 
-4. Build the app with docker-compose
+4. Breathe a sigh of relief that all the annoying config-file stuff is now done with and you shouldn't need to deal with it again.
+
+5. Build the app with docker-compose
     1. From a shell in the project root directory, run `docker-compose build`
     2. Note you'll need to repeat this step after code changes for those to be promoted into the containers.
 
-5. Run the app with docker-compose
+6. Run the app with docker-compose
     1. From a shell in the project root directory, run `docker-compose up`
     2. Open a browser and point it to "localhost"
 
-6. Profit!
+7. Profit!
     1. Log in with your admin email
     2. Send karma to other email addresses / Twitter handles to add them to the built-in test community
     3. Create rewards, purchase rewards, etc.
