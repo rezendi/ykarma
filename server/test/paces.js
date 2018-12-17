@@ -27,7 +27,7 @@ describe('Account', function () {
             .set('Cookie', TestCookies).expect(200)
             .end(function (err, res) {
               if (err) done (err);
-              expect(JSON.parse(res.text).success).to.equal(true);
+              expect(JSON.parse(res.text).success).to.equal('@testuser');
               api.get('/api/accounts/url/test@example.com')
                 .set('Cookie', TestCookies).expect(200)
                 .end(function (err, res) {
@@ -45,6 +45,7 @@ describe('Account', function () {
                         .end(function (err, res) {
                           if (err) done (err);
                           var acct = JSON.parse(res.text);
+                          expect(acct.urls).to.equal("mailto:test@example.com");
                           done();
                         });
                     });

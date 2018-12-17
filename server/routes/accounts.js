@@ -225,11 +225,14 @@ router.put('/removeUrl', function(req, res, next) {
   var type = req.body.type;
   var url = req.body.url || "error";
   util.log("removing url type", type);
-  if (type === "twitter") {
-    url = getLongUrlFromShort(req.session.handle);
+  if (!type) {
+    type = url.indexOf("@") > 0 ? "email" : "twitter";
+    util.log("removing url implied type", type);
   }
   if (type === "email") {
     url = getLongUrlFromShort(req.session.email);
+  } else {
+    url = getLongUrlFromShort(req.session.handle);
   }
   util.log("removing url", url);
   if (url.startsWith("error")) {
