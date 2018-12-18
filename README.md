@@ -225,7 +225,7 @@ You're kidding, right?
 
 You want the [project HOWTO](./HOWTO.md).
 
-### Tell me more about the large vision/purpose here?
+### Tell me more about the larger vision/purpose here?
 
 You want the [project MANIFESTO](./MANIFESTO.md).
 

@@ -53,7 +53,7 @@ Quick Launch with Docker
         2. Edit the values there per your needs. In particular, change the admin email to your email address.
     1. YKarma configuration for the API service
         1. Copy the `.example.env.production` file in the "server" top-level directory to `.env.production`
-        2. Edit the values there per your needs. In particular, *change the admin email to your email address*.
+        2. Edit the values there per your needs. In particular, **change the admin email to your email address**.
         3. Note that the Sendgrid API key goes there too, if you want to be able to send emails.
 
 4. Breathe a sigh of relief that the annoying config-file stuff is now done and you shouldn't need to deal with it again.
@@ -71,6 +71,12 @@ Quick Launch with Docker
     2. Send karma to other email addresses / Twitter handles to add them to the built-in test community
     3. Create rewards, purchase rewards, etc.
     4. Use this code as a basis for your own experimentation!
+
+Note that when running the blockchain via Docker, the actual data directory is
+the "geth/cbdata" directory under the project root, which is shared with (and
+written to by) Docker as a volume. If you want to restart with a brand-new,
+unsullied blockchain, just delete that directory.
+
 
 
 Local Development
@@ -101,7 +107,6 @@ also the results of the "Paces" integration test, which should pass.
 Note that the fundamental smart contract interface with which the JavaScript
 code interfaces, YKarma.sol, is very nearly at the maximum size limit for an
 Ethereum smart contract; if you want to add to it you may need to split it up.
-
 
 API Development
 ---------------
@@ -180,10 +185,22 @@ If you want to run this in production, eg on a DigitalOcean droplet, you should
 obviously use the Docker configuration. You should be able to run it well on a
 fairly small instance (eg 4GB memory). All of the Quick Launch instructions
 above apply, along with a few other notes:
- - set up cron job
- - note chain data in /cbdata; delete if you want to start from scratch
- - Let's Encrypt and nginx.conf.ssl https://medium.com/bros/enabling-https-with-lets-encrypt-over-docker-9cad06bdb82b
- - Firewalls on DO https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands
+
+* Again, when running under Docker the actual blockchain data is the local "geth/cbdata"
+directory, shared with and written to by Docker as a volume
+
+* To run on Linux behind Nginx, there's a line you'll want to uncomment in docker-compose.yml
+
+* If you want your site secured via TLS, you probably want to use Let's Encrypt via docker;
+here's a [good guide](https://medium.com/bros/enabling-https-with-lets-encrypt-over-docker-9cad06bdb82b)
+to doing that. If you have SSL set up, you want to replace nginx.conf in "server" with nginx.conf.https,
+and there are two more lines to uncomment in docker-compose.yml
+
+* You'll want to set up a cron job to refresh users' karma every week, and another to refresh the
+Let's Encrypt cert. An example crontab for your server can be found in the "cron" directory under "server".
+
+* One gotcha on Digital Ocean: don't use their UFW firewall, as Docker containers ignore UFW rules(!)
+per https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands
 
 
 Some Notes On The Architecture
