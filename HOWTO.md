@@ -35,7 +35,7 @@ operating-system adjustments are, I'm afraid, left as an exercise for the reader
 Quick Launch with Docker
 ------------------------
 
-1. Ensure you have the prerequisites mentioned above.
+1. Ensure you have the prerequisites mentioned above -- Docker, docker-compose, and your new Firebase project.
 
 2. Populate the two Firebase config files: one for the React front end, one for the API service
     1. Firebase configuration for React
@@ -64,7 +64,10 @@ Quick Launch with Docker
 
 6. Run the app with docker-compose
     1. From a shell in the project root directory, run `docker-compose up`
-    2. Open a browser and point it to "localhost"
+    2. A lot of stuff happens on first run: launching the blockchain, compiling all the smart contracts and
+    migrating them into the blockchain, communicating the contract address to the API server, etc. This can
+    take a minute or two. Wait for it to settle down into a steady stream of mining empty blocks before you...
+    3. Open a browser and point it to "localhost"
 
 7. Profit!
     1. Log in with your admin email
@@ -99,10 +102,10 @@ run `ganache-cli -u 0 --noVMErrorsOnRPCResponse`
 2. Open another shell, navigate to the "ethereum" top-level directory of this
 repo, and run `truffle test`
 
-This should compile the YKarma smart contracts
-write them to the local blockchain, and run some JavaScript test code against
-them. The result should output the admin email in the file `server/.env` and
-also the results of the "Paces" integration test, which should pass.
+This should compile the YKarma smart contracts, write them to the local blockchain,
+and run some JavaScript test code against them. The result should output the admin
+email in the file `server/.env` and also the results of the "Paces" integration
+test, which should pass.
 
 Note that the fundamental smart contract interface with which the JavaScript
 code interfaces, YKarma.sol, is very nearly at the maximum size limit for an
