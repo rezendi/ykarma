@@ -31,6 +31,7 @@ class Header extends React.Component {
                 <NavItem key='rewards' href='/user/rewards'>Rewards</NavItem>,
                 <NavItem key='community' href={'/community/'+this.props.user.community.id}>Community</NavItem>,
                 <NavItem key='signout' href='/signOut'>Sign Out</NavItem>,
+                <NavItem key='about' href='/about'>About</NavItem>,
             ]}
             { this.props.user && this.props.user.isAdmin ?
               [

@@ -7,6 +7,7 @@ import Login from './Login';
 import FinishSignIn from './FinishSignIn';
 import LinkEmail from './LinkEmail';
 import SignOut from './SignOut';
+import About from './About';
 import Admin from './Admin';
 import Community from './Community';
 import CommunityForm from './CommunityForm';
@@ -30,6 +31,7 @@ class Main extends React.Component {
             <Route exact path='/finishSignIn' component={FinishSignIn}/>
             <Route exact path='/linkEmail' component={LinkEmail}/>
             <Route exact path='/signOut' component={SignOut}/>
+            <Route exact path='/about' component={About}/>
             <Route exact path='/profile' component={Profile}/>
             <Route exact path='/admin' component={Admin}/>
             <Route exact path='/community/new' component={CommunityForm}/>

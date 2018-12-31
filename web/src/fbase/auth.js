@@ -35,7 +35,7 @@ export const signInViaEmailLink = async (href) => {
     auth.signInWithEmailLink(email, href)
       .then(function(result) {
         window.localStorage.removeItem('emailForSignIn');
-        console.log("Logged in as user", result.user);
+        console.log("Logged in as user", result.user ? result.user.providerData : "n/a");
         console.log("Additional info", result.additionalUserInfo);
         localStorage.setItem("additionalEmailInfo", JSON.stringify(result.additionalUserInfo));
       })
