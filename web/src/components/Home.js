@@ -6,6 +6,7 @@ import { Field, reduxForm } from 'redux-form';
 import { setLoading, loadAvailableRewards } from '../store/data/actions'
 import Api from '../store/Api';
 import Tranche from './Tranche';
+import Readme from './Readme';
 
 class Home extends React.Component {
 
@@ -42,19 +43,26 @@ class Home extends React.Component {
   render() {
    if (!this.props.user || Object.keys(this.props.user).length === 0) {
       return (
-        <Grid><Row>Loading...</Row></Grid>
+        <Grid>
+          <Row>Loading...</Row><
+        /Grid>
       );
     }
 
    if (!this.props.user.uid) {
       return (
-        <Grid><Row>Welcome to YKarma!</Row></Grid>
+        <Grid>
+          <Readme/>
+        </Grid>
       );
     }
 
     if (!this.props.user.community || !this.props.user.community.id) {
       return (
-        <Grid><Row>{ this.props.user.displayName || this.props.user.email } is not (yet) a member of any YKarma community.</Row></Grid>
+        <Grid>
+          <Row>Hi, { this.props.user.displayName || this.props.user.email }! You are not (yet) a member of any YKarma community.</Row>
+          <Readme/>
+        </Grid>
       );
     }
 

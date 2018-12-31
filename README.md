@@ -182,7 +182,7 @@ Currently they are gone forever, because we're modeling reputation, which isn't
 really transferable, and because money has to leave the system <i>somehow</i>
 or we'll have runaway inflation.
 
-However one possible experimental notion is for e.g. 10% of the spent karma to
+However one possible experimental notion is for a fraction of the spent karma to
 be retained by the vendor, because there is such a thing as proxy reputation.
 This may be at the buyer's discretion, independent of the transaction
 completing successfully -- i.e. you can always buy the reward, whether or not
@@ -244,4 +244,4 @@ publicly.
 
 ### Why is it called "YKarma"?
 
-Mostly because the domain contained the word "karma" and was available.
+Mostly because the domain seemed vaguely descriptive and was available.

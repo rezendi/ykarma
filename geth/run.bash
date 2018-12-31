@@ -10,7 +10,7 @@ export RPCARGS='--rpc --rpcaddr 0.0.0.0 --rpccorsdomain=* --rpcapi "debug,eth,ne
 export DEFAULT_PASSWORD_PATH=${DEFAULT_PASSWORD_PATH:-"/cliquebait/default-password"}
 export ACCOUNTS_TO_CREATE=${ACCOUNTS_TO_CREATE:-"1"}
 export EXTERNAL_ALLOCS=${EXTERNAL_ALLOCS:-""}
-export ALLOC_WEI=${ALLOC_WEI:-"0x3635C9ADC5DEA0000000000000"}
+export ALLOC_WEI=${ALLOC_WEI:-"0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"}
 
 function make_account() {
 	mkdir -p /tmp/cliquebait/make_account

@@ -224,17 +224,19 @@ the old data over, and transform it en route. Even fetching data from the chain
 can be surprisingly convoluted. Etc etc etc.
 
 I was tempted to add more abstraction layers beyond React / API / blockchain,
-but the idea was for this to be illustrative as well as useful, so I went with
-just trying to make the code simple, readable, and straightforward.
+eg some kind of ORM data layer between the API and the blockchain, but the idea
+was for this to be illustrative as well as useful, so I went with just trying
+to make the code simple, readable, and straightforward.
 
 I'm a polyglot programmer and neither Javascript nor Solidity is my first or
 even my fifth language of choice (though like many I have warmed to JS over the
-years) which will probably be very apparent to serious JS developers when they
-look at the code.
+years) which will probably be very apparent to serious JS/React/Node developers
+when they look at the code.
 
 If I was building this to seriously scale I ... well, I wouldn't have used a
-blockchain. Given its necessity, I'd probably add some kind of data layer
-between the API and the blockchain to cache data for reads, and a messaging
-queue for writes, and then worry about how/when to invalidate that cache ...
-but obviously that would add a great deal of complexity to the system.
-(There's a little Redis caching in there now, but only a little.)
+blockchain. Given its necessity, I'd probably add that ORM data layer use
+also use it to cache data for reads, along with a messaging queue for writes,
+and maybe Kubernetes to support an arbitrary number of blockchain nodes and web
+servers, and then worry about how/when to invalidate the cache(s) ... but
+obviously caching would add a great deal of complexity to the system. (There's
+a little Redis caching in there now, but only a little.)
