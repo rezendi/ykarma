@@ -105,10 +105,10 @@ receive the currency that is paid for it?
 22. As tempting as it is to go all woo-woo Burning Man on you, that question
 actually has many sober and prosaic answers. Companies offering rewards to
 their employees; nonprofits offering rewards to their volunteers; gatherings
-offering free attendance or benefits to people whose presence would burnish
-their own public image; individuals offering a free lunch in exchange for
-meeting and picking the brains of high-reputation people; altruists offering
-gifts to those collectively deemed most deserving; hosts offering couchsurfing
+offering attendance or benefits to people whose presence would burnish their
+quality or public image; individuals offering lunch in exchange for meeting
+and picking the brains of high-reputation people; altruists offering gifts to
+those collectively deemed most deserving; hosts offering couchsurfing
 to particularly interesting people; brands offering freebies to very-high-
 reputation people, just as they do today, except quantified; etc etc etc.
 
