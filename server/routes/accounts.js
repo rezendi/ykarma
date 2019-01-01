@@ -297,31 +297,35 @@ router.post('/give', function(req, res, next) {
       var account = req.session.account || {};
       account.metadata = account.metadata || {};
       account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-      // util.log("emailPrefs", account.metadata.emailPrefs);
-      var sendEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
-      // TODO: send mail based on recipient's "kr" email pref if they exist
-      if (sendEmail) {
-        util.log("sending mail", req.body.recipient);
-        const senderName = req.session.name || req.session.email;
-        email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount);
-        if (account.metadata.emailPrefs.kr && account.metadata.emailPrefs.kr !== 0) {
+      util.log("emailPrefs", account.metadata.emailPrefs);
+      let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
+      getAccountForUrl(recipientUrl, (recipient) => {
+        util.debug("recipient", recipient);
+        let dontSendMemberEmail = recipient.metadata.emailPrefs && recipient.metadata.emailPrefs.kr === 0;
+        let sendEmail = recipient.id ? !dontSendMemberEmail : sendNonMemberEmail;
+        if (sendEmail) {
+          util.log("sending mail", req.body.recipient);
+          const senderName = req.session.name || req.session.email;
+          email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount, req.body.message);
+          if (recipient.id) {
+            return res.json( { "success":true } );
+          }
+  
+          // make sure we don't send karma-received email more than once unless explicitly desired
+          account.metadata.emailPrefs[req.body.recipient] = 0;
+          util.log("updated metadata", account.metadata);
+          var method2 = eth.contract.methods.editAccount(
+            account.id,
+            account.userAddress,
+            JSON.stringify(account.metadata),
+            account.flags
+          );
+          eth.doSend(method2, res, 1, 4);
+        } else {
+          util.log("not sending email", account.metadata.emailPrefs);
           return res.json( { "success":true } );
         }
-
-        // make sure we don't send karma-received email more than once unless explicitly desired
-        account.metadata.emailPrefs[req.body.recipient] = 0;
-        util.log("updated metadata", account.metadata);
-        var method2 = eth.contract.methods.editAccount(
-          account.id,
-          account.userAddress,
-          JSON.stringify(account.metadata),
-          account.flags
-        );
-        eth.doSend(method2, res, 1, 4);
-      } else {
-        util.log("not sending email", account.metadata.emailPrefs);
-        return res.json( { "success":true } );
-      }
+      });
     } else {
       // TODO: Twitter notifications
       return res.json( { "success":true } );

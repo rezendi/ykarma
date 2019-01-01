@@ -94,15 +94,7 @@ router.post('/create', function(req, res, next) {
   var reward = req.body.reward;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag || '', JSON.stringify(reward.metadata), reward.flags || '0x00');
   eth.doSend(method, res, 1, 2, () => {
-    if (req.session.email) {
-      var account = req.session.account || {};
-      account.metadata = account.metadata || {};
-      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-      // util.log("emailPrefs", account.metadata.emailPrefs);
-      if (account.metadata.emailPrefs.rw !== 0) {
-        email.sendRewardCreatedEmail(req.session.email, reward);
-      }
-    }
+    email.sendRewardCreatedEmail(req.session.account, reward);
     util.log("reward created", reward);
     return res.json({"success":true, "result": reward});
   });
@@ -146,18 +138,10 @@ router.post('/purchase', function(req, res, next) {
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
   getRewardFor(req.body.rewardId, (reward) => {
     eth.doSend(method, res, 1, 2, () => {
-      util.log("reward purchased", reward);
-      if (req.session.email) {
-        var account = req.session.account || {};
-        account.metadata = account.metadata || {};
-        account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-        // util.log("emailPrefs", account.metadata.emailPrefs);
-        if (account.metadata.emailPrefs.rw !== 0) {
-          email.sendRewardPurchasedEmail(req.session.email, reward);
-        }
-      }
       eth.getAccountFor(reward.vendorId, (vendor) => {
-        email.sendRewardSoldEmail(vendor, reward);
+        util.log("reward purchased", reward);
+        email.sendRewardPurchasedEmail(reward, req.session.account, vendor);
+        email.sendRewardSoldEmail(reward, req.session.account, vendor);
         return res.json({"success":true, "result": reward});
       });
     });

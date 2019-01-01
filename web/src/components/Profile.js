@@ -64,7 +64,6 @@ class Profile extends React.Component {
     toSubmit.name = values.name;
     toSubmit.prefs = {
       kr: values.kr ? 1 : 0,
-      rw: values.rw ? 1 : 0,
       wk: values.wk ? 1 : 0,
     };
     console.log("Submitting form", toSubmit);
@@ -226,8 +225,6 @@ class Profile extends React.Component {
                         <br/>
                         <Field name='kr' id='kr' component="input" type="checkbox"/>Whenever you receive karma
                         <br/>
-                        <Field name='rw' id='rw' component="input" type="checkbox"/>Whenever you create, buy, or sell a reward
-                        <br/>
                         <Field name='wk' id='wk' component="input" type="checkbox"/>Weekly updates, when your karma is replenished
                         <br/>
                         <Button bsStyle="info" type="submit">Edit</Button>
@@ -313,7 +310,6 @@ function mapStateToProps(state, ownProps) {
     {
       name: state.user.metadata ? state.user.metadata.name : undefined,
       kr: prefs.kr !== 0,
-      rw: prefs.rw !== 0,
       wk: prefs.wk !== 0
     } : undefined,
     ownedRewards: state.rewards.owned || [],
