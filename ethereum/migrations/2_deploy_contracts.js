@@ -25,6 +25,7 @@ module.exports = (deployer, network, accounts) => {
       if (data.indexOf("YKARMA_ADDRESS=") >= 0) return;
     }
 
+    console.log("deploying new contracts");
     await deployer.deploy(strings, {from : owner});
     await deployer.deploy(SafeMath, {from : owner});
     await deployer.deploy(YKStructs, {from : owner});
