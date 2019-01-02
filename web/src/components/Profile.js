@@ -28,6 +28,8 @@ class Profile extends React.Component {
     }).catch(function(error) {
       var errorMessage = error.message;
       console.log("twitter error", errorMessage);
+      localStorage.removeItem("additionalTwitterInfo");
+      firebase.auth().currentUser.unlink("twitter.com");
       alert("Error: " + errorMessage);
     });
   }
@@ -45,6 +47,7 @@ class Profile extends React.Component {
       Api.removeUrl("twitter").then(() => {
         window.location.reload();
       });
+      alert("Error: " + errorMessage);
     });
   }
   

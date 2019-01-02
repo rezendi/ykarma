@@ -185,11 +185,13 @@ router.put('/replenish', function(req, res, next) {
 // and if one of those _is_ spoofed, that just means they they get the ability to hijack the spoofer's YK account
 router.put('/addUrl', function(req, res, next) {
   var url = getLongUrlFromShort(req.body.url);
+  util.debug("adding url", url);
   if (url.startsWith('error')) {
     return res.json({"success":false, "error": url});
   }
 
   if (req.session.ykid) {
+    util.debug("adding url to existing account");
     var method = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
     eth.doSend(method, res, 1, 2, () => {
       if (req.body.url.indexOf("@") > 0) {
@@ -241,7 +243,14 @@ router.put('/removeUrl', function(req, res, next) {
     return res.json({"success":false, "error": "Invalid URL"});
   }
   var method = eth.contract.methods.removeUrlFromExistingAccount(req.session.ykid, url);
-  eth.doSend(method, res, 1, 2, null);
+  eth.doSend(method, res, 1, 2, () => {
+    if (type === "email") {
+      req.session.email = null;
+    } else {
+      req.session.handle = null;
+      req.session.twitter_id = null;
+    }
+  });
 });
 
 

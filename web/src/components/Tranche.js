@@ -7,7 +7,8 @@ class Tranche extends React.Component {
   getDetailString = (dict) => {
     var name = dict.name ? dict.name : 'unknown';
     var url = (dict.urls || '').split("||")[0];
-    url = url.substring(url.indexOf(":")+1);
+    url = url.replace("mailto:",'');
+    url = url.replace("https://twitter.com/","@");
     return `${name} (${url})`;
   };
 

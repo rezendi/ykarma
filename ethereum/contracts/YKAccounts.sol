@@ -52,7 +52,7 @@ contract YKAccounts is Oracular, YKStructs {
   
   function addUrlToAccount(uint256 _accountId, string _url) public onlyOracle returns (bool) {
     require(urlIsValid(_url));
-    require(accountIdForUrl(_url)==0);
+    require(accountIdForUrl(_url)==0); // TODO: merge two URLs into one account
     string memory urls = accounts[_accountId].urls;
     if (bytes(urls).length > 0) {
       string memory commaUrl = DELIM.toSlice().concat(_url.toSlice());

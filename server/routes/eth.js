@@ -52,12 +52,12 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
     })
     .catch(function(error) {
       util.warn('send call error ' + error);
-      res.json({"success":false, "error": error});
+      return res.json({"success":false, "error": error});
     });
   })
   .catch(function(error) {
     util.warn('gas estimation call error', error);
-    res.json({"success":false, "error": error});
+    return res.json({"success":false, "error": error});
   });
 };
 
