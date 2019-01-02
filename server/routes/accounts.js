@@ -107,6 +107,7 @@ router.get('/me', function(req, res, next) {
           '0x00'
         );
         eth.doSend(method, res, 1, 2, () => {
+          redis.del(`account-${account.id}`); // clear our one redis cache
           method = eth.contract.methods.replenish(account.id);
           eth.doSend(method, res, 1, 2, () => {
             // populate community and tranche data
@@ -262,6 +263,7 @@ router.put('/update', function(req, res, next) {
     account.flags || '0x00'
   );
   eth.doSend(method, res);
+  redis.del(`account-${account.id}`); // clear our one cache
 });
 
 

@@ -226,7 +226,7 @@ class Profile extends React.Component {
                         <Field name='kr' id='kr' component="input" type="checkbox"/>Whenever you receive karma
                         <br/>
                         <Field name='wk' id='wk' component="input" type="checkbox"/>Weekly updates, when your karma is replenished
-                        <br/>
+                        <hr/>
                         <Button bsStyle="info" type="submit">Edit</Button>
                     </form>
                   </Col>
