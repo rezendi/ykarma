@@ -97,7 +97,7 @@ router.get('/me', function(req, res, next) {
       getSessionFromAccount(req, account);
 
       // set account as active, and replenish, if not
-      if (account.flags == '0x0000000000000000000000000000000000000000000000000000000000000001') {
+      if (hasNeverLoggedIn(account)) {
         util.warn("Marking account active and replenishing");
         var method = eth.contract.methods.editAccount(
           account.id,
@@ -300,14 +300,13 @@ router.post('/give', function(req, res, next) {
       util.log("emailPrefs", account.metadata.emailPrefs);
       let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
       getAccountForUrl(recipientUrl, (recipient) => {
-        util.debug("recipient", recipient);
-        let dontSendMemberEmail = recipient.metadata.emailPrefs && recipient.metadata.emailPrefs.kr === 0;
-        let sendEmail = recipient.id ? !dontSendMemberEmail : sendNonMemberEmail;
+        // util.debug("recipient", recipient);
+        let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : recipient.metadata.emailPrefs.kr !== 0;
         if (sendEmail) {
           util.log("sending mail", req.body.recipient);
           const senderName = req.session.name || req.session.email;
           email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount, req.body.message);
-          if (recipient.id) {
+          if (!hasNeverLoggedIn(recipient)) {
             return res.json( { "success":true } );
           }
   
@@ -534,5 +533,8 @@ function getLongUrlFromShort(shortUrl) {
   return url;
 }
 
+function hasNeverLoggedIn(account) {
+  return account.id === 0 || account.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
+}
 
 module.exports = router;
