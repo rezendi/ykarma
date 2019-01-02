@@ -314,7 +314,7 @@ router.post('/give', function(req, res, next) {
       let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
       getAccountForUrl(recipientUrl, (recipient) => {
         // util.debug("recipient", recipient);
-        let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : recipient.metadata.emailPrefs.kr !== 0;
+        let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : recipient.metadata.emailPrefs && recipient.metadata.emailPrefs.kr !== 0;
         if (sendEmail) {
           util.log("sending mail", req.body.recipient);
           const senderName = req.session.name || req.session.email;
