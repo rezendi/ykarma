@@ -19,13 +19,13 @@ class Profile extends React.Component {
 
   addTwitter = () => {
     var provider = new firebase.auth.TwitterAuthProvider();
-    firebase.auth().currentUser.linkWithPopup(provider).then(function(result) {
+    firebase.auth().currentUser.linkWithPopup(provider).then((result) => {
       console.log("result", result);
       localStorage.setItem("additionalTwitterInfo", JSON.stringify(result.additionalUserInfo));
       this.props.setLoading(true);
       Api.addUrl(result.additionalUserInfo.username).then(() => {
-        this.props.setLoading(false);
         window.location.reload();
+        this.props.setLoading(false);
       });
     }).catch(function(error) {
       var errorMessage = error.message;
@@ -37,7 +37,7 @@ class Profile extends React.Component {
   }
 
   removeTwitter = () => {
-    firebase.auth().currentUser.unlink("twitter.com").then(function(result) {
+    firebase.auth().currentUser.unlink("twitter.com").then((result) => {
       localStorage.removeItem("additionalTwitterInfo");
       this.props.setLoading(true);
       Api.removeUrl("twitter").then(() => {
@@ -48,9 +48,9 @@ class Profile extends React.Component {
       var errorMessage = error.message;
       console.log("twitter error", errorMessage);
       localStorage.removeItem("additionalTwitterInfo");
+      alert("Error: " + errorMessage);
       Api.removeUrl("twitter").then(() => {
         window.location.reload();
-        alert("Error: " + errorMessage);
       });
     });
   }
