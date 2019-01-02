@@ -66,7 +66,8 @@ Quick Launch with Docker
     1. From a shell in the project root directory, run `docker-compose up`
     2. A lot of stuff happens on first run: launching the blockchain, compiling all the smart contracts and
     migrating them into the blockchain, communicating the contract address to the API server, etc. This can
-    take a minute or two. Wait for it to settle down into a steady stream of mining empty blocks before you...
+    take a few minutes. Wait for it to settle down into a steady stream of mining empty blocks, and/or
+    wait for a "hostname" log message from the "node_1" container, before you...
     3. Open a browser and point it to "localhost"
 
 7. Profit!

@@ -96,7 +96,7 @@ class Home extends React.Component {
                 <Row>
                   <Col md={12}>
                     Howdy, { this.props.user.email || this.props.user.handle }!
-                    You are a member of { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } which has { this.props.user.community.accounts } members.
+                    You are a member of { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } which has { this.props.user.community.accounts } members and invitees.
                   </Col>
                 </Row>
               </Panel.Body>

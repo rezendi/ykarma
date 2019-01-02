@@ -64,7 +64,8 @@ router.get('/for/:communityId', function(req, res, next) {
           accounts.push(account);
           if (accounts.length >= result) {
             // console.log('accounts', accounts);
-            return res.json(accounts);
+            var activeAccounts = accounts.filter(acct => !hasNeverLoggedIn(acct));
+            return res.json(activeAccounts);
           }
         });
       }
