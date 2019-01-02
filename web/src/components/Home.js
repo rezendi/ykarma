@@ -60,7 +60,7 @@ class Home extends React.Component {
     if (!this.props.user.community || !this.props.user.community.id) {
       return (
         <Grid>
-          <Row>Hi, { this.props.user.displayName || this.props.user.email }! You are not (yet) a member of any YKarma community.</Row>
+          <Row><Col md={12}>Hi, { this.props.user.displayName || this.props.user.email }! You are not (yet) a member of any YKarma community.</Col></Row>
           <Readme/>
         </Grid>
       );
@@ -96,7 +96,7 @@ class Home extends React.Component {
                 <Row>
                   <Col md={12}>
                     Howdy, { this.props.user.email || this.props.user.handle }!
-                    You are a member of { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } which has { this.props.user.community.accounts } members and invitees.
+                    You are a member of { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } which has { this.props.user.community.accounts } members / invitees.
                   </Col>
                 </Row>
               </Panel.Body>
