@@ -12,11 +12,11 @@ class Account extends React.Component {
   }
   
   getFirstUrlFrom = (urls) => {
-    return (urls || '').split(',')[0].replace("mailto:","").replace("https://www.twitter.com/","@")
+    return (urls || '').split('||')[0].replace("mailto:","").replace("https://www.twitter.com/","@")
   }
 
   getSecondUrlFrom = (urls) => {
-    return (urls || '').split(',').length < 2 ? null : (urls || '').split(',')[1].replace("mailto:","").replace("https://www.twitter.com/","@")
+    return (urls || '').split('||').length < 2 ? null : (urls || '').split('||')[1].replace("mailto:","").replace("https://www.twitter.com/","@")
   }
 
   getTotalSoldRewards = (offered) => {

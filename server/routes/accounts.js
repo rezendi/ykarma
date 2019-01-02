@@ -250,6 +250,7 @@ router.put('/removeUrl', function(req, res, next) {
       req.session.handle = null;
       req.session.twitter_id = null;
     }
+    res.json({"success":true});
   });
 });
 
@@ -527,6 +528,7 @@ function getLongUrlFromShort(shortUrl) {
   if (!url || url.length === 0) {
     return 'error No URL';
   }
+  url = url.toLowerCase();
   if (url.indexOf("@") > 0) {
     if (!url.startsWith("mailto:")) {
       url = "mailto:" + url;
