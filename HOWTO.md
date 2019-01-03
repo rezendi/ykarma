@@ -79,7 +79,8 @@ Quick Launch with Docker
 Note that when running the blockchain via Docker, the actual data directory is
 the "geth/cbdata" directory under the project root, which is shared with (and
 written to by) Docker as a volume. If you want to restart with a brand-new,
-unsullied blockchain, just delete that directory.
+unsullied blockchain, just delete that directory, delete the YKARMA_ADDRESS
+line in server/.env.production, and run "docker-compose up" again.
 
 
 
@@ -235,7 +236,7 @@ years) which will probably be very apparent to serious JS/React/Node developers
 when they look at the code.
 
 If I was building this to seriously scale I ... well, I wouldn't have used a
-blockchain. Given its necessity, I'd probably add that ORM data layer use
+blockchain. Given its necessity, I'd probably add that ORM data layer and
 also use it to cache data for reads, along with a messaging queue for writes,
 and maybe Kubernetes to support an arbitrary number of blockchain nodes and web
 servers, and then worry about how/when to invalidate the cache(s) ... but
