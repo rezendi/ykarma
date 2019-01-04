@@ -3,12 +3,17 @@ const util = require('./util');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-function sendKarmaSentEmail(sender, recipientEmail, amount, message) {
+function sendKarmaSentEmail(sender, recipientEmail, amount, message, hasNeverLoggedIn) {
   if (process.env.NODE_ENV === "test") return;
   var recipientEmail = recipientEmail.replace("mailto:","");
   if (recipientEmail.indexOf("@") < 0) {
     util.warn("Unable to send email to", recipientEmail);
   }
+  const dontWorry = hasNeverLoggedIn ? `
+(Don't worry, we don't want to spam you; you won't get emails about ${sender} sending you YKarma again unless you choose to log in.)
+` : `
+(Don't like getting these emails? You can control your email settings on your YKarma profile page.)
+`;
   const msg = {
     to: recipientEmail,
     from: 'do-not-respond@ykarma.com',
@@ -16,15 +21,14 @@ function sendKarmaSentEmail(sender, recipientEmail, amount, message) {
     text: `
 Hello! You were just sent ${amount} YKarma by ${sender}, with the message: ${message}.
 You should log into https://www.ykarma.com/ to find out more and/or use this karma to purchase rewards.
-(Don't worry, we don't want to spam you; you won't get emails about ${sender} sending you YKarma again unless you choose to log in.)
-
+${dontWorry}
 YKarma
 https://www.ykarma.com/
 `,
     html: `
 <p>Hello! You were just sent <b>${amount}</b> YKarma by <b>${sender}</b>, with the message: <i>${message}</i>.</p>
 <p>You should <a href="https://www.ykarma.com/">log in to YKarma</a> to find out more and/or use this karma to purchase rewards.</p>
-<p>(Don't worry, we don't want to spam you; you won't get emails about ${sender} sending you YKarma again unless you choose to log in.)</p>
+<p>${dontWorry}</p>
 <hr/>
 <a href="https://www.ykarma.com/">YKarma</a>
 
