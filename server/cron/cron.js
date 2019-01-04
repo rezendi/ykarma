@@ -131,10 +131,21 @@ function sendReplenishEmail(account) {
   if (recipientEmail === "") return;
   const msg = {
     to: recipientEmail,
-    from: 'karma@ykarma.com',
-    subject: `Your YKarma was just replenished!`,
-    text: `You should totally find out more!`,
-    html: `<strong>You should totally find out more.</strong>`,
+    from: 'do-not-respond@ykarma.com',
+    subject: `Your YKarma has been replenished!`,
+    text: `
+You now have 100 more YKarma to give away!
+Log into https://www.ykarma.com/ to give it to the deserving or even the not-so-deserving.
+
+YKarma
+https://www.ykarma.com/
+`,
+    html: `
+<p>You now have 100 more YKarma to give away!</p>
+<p><a href="https://www.ykarma.com/">Log in to YKarma</a> to give it to the deserving or even the not-so-deserving.</p>
+<hr/>
+<a href="https://www.ykarma.com/">YKarma</a>
+`,
   };
   sgMail.send(msg);
 }

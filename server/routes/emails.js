@@ -45,10 +45,15 @@ function sendRewardCreatedEmail(vendor, reward) {
     text: `
 You just created the reward ${JSON.stringify(reward)}
 Well done! Your community thanks you.
+
+YKarma
+https://www.ykarma.com/
 `,
     html: `
 <p>You just created the reward ${JSON.stringify(reward)}</p>
 <p>Well done! Your community thanks you.</p>
+<hr/>
+<a href="https://www.ykarma.com/">YKarma</a>
 `,
   };
   sgMail.send(msg);  
@@ -67,11 +72,16 @@ function sendRewardSoldEmail(reward, buyer, vendor) {
 Your reward ${JSON.stringify(reward)}
 was just sold to ${JSON.stringify(buyer.urls)}
 You should connect with them to give them the reward!
+
+YKarma
+https://www.ykarma.com/
 `,
     html: `
 <p>Your reward ${JSON.stringify(reward)}</p>
 <p>was just sold to ${JSON.stringify(buyer.urls)}</p>
 <p>You should connect with them to give them the reward!</p>
+<hr/>
+<a href="https://www.ykarma.com/">YKarma</a>
 `,
   };
   sgMail.send(msg);
@@ -88,11 +98,16 @@ function sendRewardPurchasedEmail(reward, buyer, vendor) {
 You just purchased the reward ${JSON.stringify(reward)}
 from vendor ${JSON.stringify(vendor.urls)}
 You should connect with them to claim the reward!
+
+YKarma
+https://www.ykarma.com/
 `,
     html: `
 <p>You just purchased the reward ${JSON.stringify(reward)}</p>
 <p>from vendor ${JSON.stringify(vendor.urls)}</p>
 <p>You should connect with them to claim the reward!</p>
+<hr/>
+<a href="https://www.ykarma.com/">YKarma</a>
 `,
   };
   sgMail.send(msg);
