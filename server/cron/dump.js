@@ -2,12 +2,18 @@
 
 require('dotenv').config();
 
-var eth = require('../routes/eth');
+const fs = require('fs');
+const eth = require('../routes/eth');
+const dumpFile = __dirname + "/ykdump" + (new Date()).getMilliseconds() +".json";
 
 // dump all data from the YKarma contracts into a JSON file, so we can recreate it in new contracts
 // this beats trying to write a custom ALTER TABLE equivalent each time the contracts change...
 
+doDump();
+
 function doDump() {
+  console.log("dumping to", dumpFile);
+  var communities = [];
   var method = eth.contract.methods.getCommunityCount();
   method.call(function(error, result) {
     if (error) {
@@ -16,27 +22,50 @@ function doDump() {
       console.log('getCommunityCount result', result);
       for (var i = 0; i < result; i++) {
         eth.getCommunityFor(i+1, (community) => {
-          dumpCommunity(community);
+          console.log("community", community.metadata ? community.metadata.name : 'n/a');
+          getCommunityData(community, function(hydratedCommunity) {
+            communities.push(hydratedCommunity);
+            console.log("result", parseInt(result));
+            if (communities.length === parseInt(result)) {
+              const json = "{'communities': " + JSON.stringify(communities) + "}";
+              console.log("writing dump", json);
+              fs.writeFileSync(dumpFile, json, 'utf8', (err2) => {
+                if (err2) throw err2;
+                console.log("Dump written", json);
+              });
+            }
+          });
         });
       }
     }
   });
 }
 
-function dumpCommunity(community) {
+function getCommunityData(community, callback) {
+  community.accounts = [];
   // dump accounts
-  var method = eth.contract.methods.getAccountCount(community.id);
+  const method = eth.contract.methods.getAccountCount(community.id);
   method.call(function(error, result) {
+    console.log("account count", result);
     if (error) {
       console.log('getAccountCount error', error);
+    } else if (parseInt(result) === 0) {
+      callback(community);
     } else {
       for (var i = 0; i < result; i++) {
-        var method2 = eth.contract.methods.accountWithinCommunity(community.id, i+1, 0);
-        method2.call(function(error2, account) {
+        const method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
+        method2.call(function(error2, result2) {
           if (error2) {
             console.log('accountWithinCommunity error', error2);
           } else {
-            dumpAccount(account);
+            const account = eth.getAccountFromResult(result2);
+            getAccountData(account, function(hydratedAccount) {
+              // console.log("hydrated", hydratedAccount);
+              community.accounts.push(hydratedAccount);
+              if (community.accounts.length === parseInt(result)) {
+                callback(community);
+              }
+            });
           }
         });
       }
@@ -44,32 +73,36 @@ function dumpCommunity(community) {
   });
 }
 
-function dumpAccount(account) {
+function getAccountData(account, callback) {
+  console.log("account id", account.id);
   // dump account basics
   // dump account availableToGive, lastReplenished
   // TODO: add accessors in YKAccounts to get full giving data
   // dump account tranches sent
 
   // get/dump rewards vended
-  var method = eth.contract.methods.getRewardsCount(account.id, 2);
+  account.rewards = [];
+  const method = eth.contract.methods.getRewardsCount(account.id, 2);
   method.call(function(error, result) {
     if (error) {
-      console.log('getAccountCount error', error);
+      console.log('getRewardsCount error', error);
+    }
+    else if (parseInt(result) === 0) {
+      callback(account);
     } else {
       for (var i = 0; i < result; i++) {
-        var method2 = eth.contract.methods.rewardByIdx(account.id, i+1, 2);
+        const method2 = eth.contract.methods.rewardByIdx(account.id, i, 2);
         method2.call(function(error2, reward) {
           if (error2) {
-            console.log('accountWithinCommunity error', error2);
+            console.log('rewardByIdx error', error2);
           } else {
-            dumpReward(reward);
+            account.rewards.push(reward);
+            if (account.rewards.length == parseInt(result)) {
+              callback(account);
+            }
           }
         });
       }
     }
   });
-}
-
-function dumpReward(reward) {
-  // just dump the data
 }
