@@ -122,9 +122,9 @@ function sendReplenishEmail(account) {
   var recipientEmail = "";
   if (account.urls && account.urls.indexOf("mailto") > 0) {
     const urls = account.urls.split("||");
-    for (var url in urls) {
-      if (url.startsWith("mailto:")) {
-        recipientEmail = url.replace("mailto:","");
+    for (var i in urls) {
+      if (urls[i].startsWith("mailto:")) {
+        recipientEmail = urls[i].replace("mailto:","");
       }
     }
   }
