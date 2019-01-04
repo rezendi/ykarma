@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const fs = require('fs');
 const eth = require('../routes/eth');
-const dumpFile = __dirname + "/ykdump" + (new Date()).getMilliseconds() +".json";
+const dumpFile = __dirname + "/ykdump" + Date.now() +".json";
 
 // dump all data from the YKarma contracts into a JSON file, so we can recreate it in new contracts
 // this beats trying to write a custom ALTER TABLE equivalent each time the contracts change...
@@ -28,10 +28,9 @@ function doDump() {
             console.log("result", parseInt(result));
             if (communities.length === parseInt(result)) {
               const json = "{'communities': " + JSON.stringify(communities) + "}";
-              console.log("writing dump", json);
-              fs.writeFileSync(dumpFile, json, 'utf8', (err2) => {
+              fs.writeFile(dumpFile, json, 'utf8', (err2) => {
                 if (err2) throw err2;
-                console.log("Dump written", json);
+                console.log("Dump written", dumpFile);
               });
             }
           });
@@ -92,11 +91,11 @@ function getAccountData(account, callback) {
     } else {
       for (var i = 0; i < result; i++) {
         const method2 = eth.contract.methods.rewardByIdx(account.id, i, 2);
-        method2.call(function(error2, reward) {
+        method2.call(function(error2, result2) {
           if (error2) {
             console.log('rewardByIdx error', error2);
           } else {
-            account.rewards.push(reward);
+            account.rewards.push(eth.getRewardFromResult(result2));
             if (account.rewards.length == parseInt(result)) {
               callback(account);
             }

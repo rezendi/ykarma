@@ -169,7 +169,7 @@ function getRewardFor(id, callback) {
       callback({});
     } else {
       //console.log('getRewardFor result', result);
-      var reward = getRewardFromResult(result);
+      var reward = eth.getRewardFromResult(result);
       callback(reward);
     }
   })
@@ -185,7 +185,7 @@ function getRewardByIndex(idType, accountId, idx, callback) {
     if (error) {
       util.warn('getRewardByIndex error', error);
     } else {
-      var reward = getRewardFromResult(result);
+      var reward = eth.getRewardFromResult(result);
       callback(reward);
     }
   })
@@ -193,20 +193,6 @@ function getRewardByIndex(idType, accountId, idx, callback) {
     util.warn('getRewardByIndex call error ' + id, error);
     callback({});
   });
-}
-
-function getRewardFromResult(result) {
-  // console.log("result",result);
-  return {
-    id:       parseInt(result[0], 10),
-    vendorId: parseInt(result[1], 10),
-    ownerId:  parseInt(result[2], 10),
-    cost:     parseInt(result[3], 10),
-    quantity: parseInt(result[4], 10),
-    flags:    result[5],
-    tag:      result[6],
-    metadata: JSON.parse(result[7] || '{}'),
-  };
 }
 
 

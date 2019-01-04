@@ -94,6 +94,20 @@ function getAccountFromResult(result) {
   };
 }
 
+function getRewardFromResult(result) {
+  // console.log("result",result);
+  return {
+    id:       parseInt(result[0], 10),
+    vendorId: parseInt(result[1], 10),
+    ownerId:  parseInt(result[2], 10),
+    cost:     parseInt(result[3], 10),
+    quantity: parseInt(result[4], 10),
+    flags:    result[5],
+    tag:      result[6],
+    metadata: JSON.parse(result[7] || '{}'),
+  };
+}
+
 const getCommunityFor = function (id, callback) {
   var method = contract.methods.communityForId(id);
   method.call(function(error, result) {
@@ -128,5 +142,6 @@ module.exports = {
     getFromAccount:        getFromAccount,
     getAccountFor:         getAccountFor,
     getAccountFromResult:  getAccountFromResult,
+    getRewardFromResult:   getRewardFromResult,
     getCommunityFor:       getCommunityFor,
 };
