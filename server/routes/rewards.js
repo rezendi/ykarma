@@ -25,7 +25,7 @@ router.get('/reward/:id', function(req, res, next) {
 // for now just their community's rewards, if any
 router.get('/available', function(req, res, next) {
   util.log("getting rewards available to community", req.session.ykcid);
-  if (req.session.ykcid===0) {
+  if (!req.session.ykcid) {
     return res.json({"success":true, "rewards":[]});
   }
   return getListOfRewards(0, req.session.ykcid, res);
@@ -34,7 +34,7 @@ router.get('/available', function(req, res, next) {
 /* GET my rewards owned list */
 router.get('/my', function(req, res, next) {
   util.log("getting rewards owned by", req.session.ykid);
-  if (req.session.ykid===0) {
+  if (!req.session.ykid) {
     return res.json({"success":true, "rewards":[]});
   }
   return getListOfRewards(1, req.session.ykid, res);
@@ -43,7 +43,7 @@ router.get('/my', function(req, res, next) {
 /* GET my rewards vended list */
 router.get('/vended', function(req, res, next) {
   util.log("getting rewards vended by", req.session.ykid);
-  if (req.session.ykid===0) {
+  if (!req.session.ykid) {
     return res.json({"success":true, "rewards":[]});
   }
   return getListOfRewards(2, req.session.ykid, res);
