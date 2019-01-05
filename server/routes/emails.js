@@ -40,7 +40,7 @@ https://www.ykarma.com/
 }
 
 function sendRewardCreatedEmail(vendor, reward) {
-  util.debug("Sending created email to", vendor.urls);
+  util.debug("Sending created email to", vendor ? vendor.urls : 'n/a');
   if (process.env.NODE_ENV === "test") return;
   var vendorEmail = getEmailFrom(vendor.urls);
   if (vendorEmail === "") return;

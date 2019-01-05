@@ -79,10 +79,10 @@ function getListOfRewards(idType, id, res) {
       if (parseInt(totalRewards)===0) {
         return res.json({"success":true, "rewards":[]});
       }
-      for (var i = 0; i < totalRewards; i++) {
+      for (var i = 0; i < parseInt(totalRewards); i++) {
         getRewardByIndex(idType, id, i, (reward) => {
           rewards.push(reward);
-          if (rewards.length >= totalRewards) {
+          if (rewards.length >= parseInt(totalRewards)) {
             // console.log('rewards', rewards);
             return res.json({"success":true, "rewards":rewards});
           }

@@ -27,13 +27,13 @@ function warn(a, b) {
 }
 
 function log(a, b) {
-  if ((""+process.env.LOG_LEVEL).indexOf("LOG") >= 0) {
+  if (process.env.NODE_ENV==="test" || (""+process.env.LOG_LEVEL).indexOf("LOG") >= 0) {
     b ? console.log(a,b) : console.log(a);
   }
 }
 
 function debug(a, b) {
-  if ((""+process.env.LOG_LEVEL).indexOf("DEBUG") >= 0) {
+  if (process.env.NODE_ENV==="test" || (""+process.env.LOG_LEVEL).indexOf("DEBUG") >= 0) {
     b ? console.log(a,b) : console.log(a);
   }
 }
