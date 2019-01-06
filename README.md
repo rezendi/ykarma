@@ -204,13 +204,13 @@ credit", and rating vendors as opposed to users seems a reasonable thing to do.
 
 ### Can't I just make multiple accounts and funnel their weekly allocation to myself?
 
-This is known in the infosec biz as a "sibyl attack" and fortunately there are
+This is known in the infosec biz as a "sibyl attack." Fortunately, there are
 a lot of notional ways for communities to prevent sibyls: two-factor
-authentication so ensure each account has a phone associated with it, making
-sibyls both inconvenient and expensive; only allowing accounts with emails from
-a particular domain;  requiring X established accounts to vouch for any new
-one before it can join; simply having trusted administrator accounts approve
-each new account; etcetera.
+authentication to ensure each account has a phone associated with it, making
+sibyls both inconvenient and expensive; only allowing accounts with emails at
+a particular domain; requiring X established accounts to vouch for any new one
+before they can join; simply having trusted administrator accounts approve each
+new account; etcetera.
 
 ### What else is on the notional roadmap?
 
