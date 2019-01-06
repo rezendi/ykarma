@@ -176,6 +176,14 @@ receive "YKEther" from a tap, and directly create / interact with communities,
 accounts, and vendors. This will obviously only be appealing to technically
 sophisticated users / communities, but the possibility exists.
 
+### Where can I see this all up and running?
+
+It's deployed at [https://www.ykarma.com/](https://www.ykarma.com/) -- but you
+won't be able to do much there until/unless you're invited to join a community.
+Email info@ykarma.com if you want to join the alpha-test community. (Note that,
+currently, if you do join, then your email address will be visible to other
+community members. I might change that if people seem dismayed by it.)
+
 ### What happens to coins after they're spent?
 
 Currently they are gone forever, because we're modeling reputation, which isn't
