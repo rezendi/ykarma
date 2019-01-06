@@ -171,7 +171,7 @@ then it's up to them to then arrange the dinner.
 
 A note to decentralization devotees: this is all described as happening through
 the YKarma site, because that is the easiest solution -- but behind the scenes,
-this is all blockchain-based. Anyone can create an address on the blockchain,
+this is all blockchain-based. Anyone could create an address on the blockchain,
 receive "YKEther" from a tap, and directly create / interact with communities,
 accounts, and vendors. This will obviously only be appealing to technically
 sophisticated users / communities, but the possibility exists.
