@@ -257,7 +257,7 @@ immediately, I'm looking for volunteers to take part in that testing.
 I'm also interested in talking to people who find the concept intriguing,
 whether they be potential collaborators, parallel experimenters, angry critics,
 or anything else. If you're any of those, please feel free to reach out to me
-at info@ykarma.com to converse privately, or @rezendi on Twitter to discuss
+at info@ykarma.com to converse privately, or [@rezendi](https://twitter.com/rezendi) on Twitter to discuss
 publicly.
 
 ### Why is it called "YKarma"?
