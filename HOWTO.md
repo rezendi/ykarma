@@ -26,7 +26,7 @@ To get this code up and running locally, you're going to need:
 1. The code, obviously, cloned from this repo.
 2. [Docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/) installed locally, to run it in containers, or
 3. [Node](https://nodejs.org/en/) and [truffle](https://truffleframework.com/) installed locally, to run it directly
-4. A [new Firebase project](https://console.firebase.google.com/) with `Email/Password` enabled as [authentication provider](`https://console.firebase.google.com/project/_/authentication/providers`)
+4. A [new Firebase project](https://console.firebase.google.com/) with `Email/Password` enabled as [authentication provider](https://console.firebase.google.com/project/_/authentication/providers)
 5. A [Sendgrid](https://signup.sendgrid.com/) API key to send emails (this is not essential, skip it for quick launch)
 
 Note also that the instructions here assume a Unix environment (and it was developed in OS X) so any necessary
