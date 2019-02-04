@@ -39,14 +39,20 @@ contract YKTranches is Oracular, YKStructs {
   function performGive(Account sender, Account recipient, uint256 _amount, string _tags, string _message) public onlyOracle {
     require (recipient.id > 0);
     require (sender.id != recipient.id);
+    require (_message.toSlice()._len < 256);
+    require (_tags.toSlice()._len < 256);
+
     uint256 accumulated;
     uint256[] storage amounts = giving[sender.id].amounts;
     uint256 rewardsToGive = 0;
     for (uint256 i=0; i < amounts.length; i++) {
+      if (amounts[i] <= 0) {
+        continue;
+      }
       if (accumulated.add(amounts[i]) >= _amount) {
         amounts[i] = amounts[i].sub(_amount.sub(accumulated));
         accumulated = _amount;
-        rewardsToGive += (amounts[i]) == 0 ? 1 : 0;
+        rewardsToGive += (amounts[i] == 0 ? 1 : 0);
         break;
       } else {
         accumulated = accumulated.add(amounts[i]);
@@ -55,8 +61,6 @@ contract YKTranches is Oracular, YKStructs {
       }
     }
     
-    require (_message.toSlice()._len < 256);
-    require (_tags.toSlice()._len < 256);
     Tranche memory tranche = Tranche({
       sender:     sender.id,
       recipient:  recipient.id,

@@ -2,9 +2,11 @@
 
 require('dotenv').config();
 
+const timestamp = Date.now();
 const fs = require('fs');
 const eth = require('../routes/eth');
-const dumpFile = __dirname + "/ykdump" + Date.now() +".json";
+const dumpFile = __dirname + "/ykdump" +timestamp +".json";
+const VERSION = 1;
 
 // dump all data from the YKarma contracts into a JSON file, so we can recreate it in new contracts
 // this beats trying to write a custom ALTER TABLE equivalent each time the contracts change...
@@ -27,7 +29,7 @@ function doDump() {
             communities.push(hydratedCommunity);
             console.log("result", parseInt(result));
             if (communities.length === parseInt(result)) {
-              const json = "{'communities': " + JSON.stringify(communities) + "}";
+              const json = '{"version": "' + VERSION + '", "timestamp": " '+ timestamp + '", "communities": ' + JSON.stringify(communities) + '}';
               fs.writeFile(dumpFile, json, 'utf8', (err2) => {
                 if (err2) throw err2;
                 console.log("Dump written", dumpFile);
@@ -74,12 +76,48 @@ function getCommunityData(community, callback) {
 
 function getAccountData(account, callback) {
   console.log("account id", account.id);
-  // dump account basics
-  // dump account availableToGive, lastReplenished
-  // TODO: add accessors in YKAccounts to get full giving data
-  // dump account tranches sent
 
-  // get/dump rewards vended
+  // TODO: add accessors in YKAccounts to get full giving data
+  const method = eth.contract.methods.lastReplenished(account.id);
+  method.call(function(error, result) {
+    if (error) {
+      console.log('lastReplenished error', error);
+    } else {
+      account.lastReplenished = result;
+      getTranchesData(account, callback);
+    }
+  });
+}
+
+function getTranchesData(account, callback) {
+  // TODO: add accessors in YKAccounts to get full giving data
+  const method = eth.contract.methods.trancheTotalsForId(account.id);
+  method.call(function(error, totals) {
+    if (error) {
+      console.log('trancheTotalsForId error', error);
+    } else {
+      const method2 = eth.contract.methods.tranchesForId(account.id, 1, totals[0], true);
+      method2.call(function(error2, result2) {
+        if (error2) {
+          console.log('tranchesForId sent error', error2);
+        } else {
+          account.given = JSON.parse(result2);
+          const method3 = eth.contract.methods.tranchesForId(account.id, 1, totals[1], false);
+          method3.call(function(error3, result3) {
+            if (error3) {
+              console.log('tranchesForId received error', error2);
+            } else {
+              account.received = JSON.parse(result3);
+              getRewardsData(account, callback);
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+function getRewardsData(account, callback) {
   account.rewards = [];
   const method = eth.contract.methods.getRewardsCount(account.id, 2);
   method.call(function(error, result) {
