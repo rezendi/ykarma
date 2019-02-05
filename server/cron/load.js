@@ -196,9 +196,9 @@ async function addGivable(account) {
 // then, if reward has an owner, perform purchase of reward
 // and remember that account IDs may have changed during the load
 async function addRewards(rewards) {
-  for (var i =0; i<rewards.length; i++) {
+  for (var i=0; i<rewards.length; i++) {
     var reward = rewards[i];
-    var rewardId = await addReward(reward, i+1);
+    var rewardId = await addReward(reward, i);
     if (reward.ownerId) {
       await performPurchase(reward);
     }
@@ -207,7 +207,6 @@ async function addRewards(rewards) {
 
 function addReward(reward, idx) {
   var newVendorId = ids[reward.vendorId];
-  console.log("reward", reward);
   return new Promise((resolve, reject) => {
     const method = eth.contract.methods.addNewReward(
       newVendorId,
@@ -225,7 +224,7 @@ function addReward(reward, idx) {
         if (error2) {
           reject(error2);
         } else {
-          console.log("reward added", result2);
+          // console.log("reward added", result2);
           resolve(result2[0]);
         }
       });
