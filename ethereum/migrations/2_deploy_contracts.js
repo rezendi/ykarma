@@ -11,6 +11,7 @@ const fs = require('fs');
 const envFile = '../server/.env';
 
 const isTesting = process.argv.slice(-1)[0] === 'test';
+const isInitialGeneration = false; // set false for the chain to be empty of initial community/account
 
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
@@ -47,8 +48,12 @@ module.exports = (deployer, network, accounts) => {
     const yk = await YKarma.deployed();
     if (!isTesting) {
       setEnvAddress(YKarma.address);
+      if (!isInitialGeneration) {
+        return;
+      }
     }
-    // return; // uncomment if we're loading from a dump
+
+    // set up initial values
     await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
     await yk.replenish(1);
