@@ -9,7 +9,18 @@ const util = require('../routes/util');
 
 // Load all data from a YKarma dump file back into a brand new blockchain
 
-doLoad();
+var checkLoadMode = eth.contract.methods.loadMode();
+checkLoadMode.call(function(error, result) {
+  if (error) {
+    console.log("loadMode error");
+    return;
+  }
+  if (result == false) {
+    console.log("loadMode false");
+    return;
+  }
+  doLoad();
+});
 
 function doLoad() {
   // open the file from the command-line arg, parse the JSON, get the version
@@ -18,7 +29,7 @@ function doLoad() {
   if (!fs.existsSync(fileToLoad)) {
     console.log("file does not exist:", fileToLoad);
     return;
-}
+  }
   fs.readFile(fileToLoad, "utf8", (err, data) => {
     if (err) throw err;
     //console.log("data", data);
@@ -27,8 +38,6 @@ function doLoad() {
     console.log("timestamp", vals.timestamp);
     console.log("communities", vals.communities.length);
 
-    // TODO: check on-chain load timestamp to see if already loaded
-    
     if (vals.version === '1') {
       loadV1(vals.communities);
     }
@@ -42,16 +51,17 @@ async function loadV1(communities) {
     var communityId = await addCommunity(community);
     community.id = communityId;
     console.log("community added", communityId);
-    for (var j in community.accounts) {
-      var account = community.accounts[j];
+    var accounts = community.accounts.sort(function(a, b){return parseInt(a.id) - parseInt(b.id)});
+    for (var j in accounts) {
+      var account = accounts[j];
       var urls = account.urls.split(util.separator);
       var accountId = await addAccount(account, community.id, urls[0]);
       for (var k = 1; k < urls.length; k++) {
         addUrl(accountId, urls[k]);
       }
       account.id = accountId;
-      await addTranches(account);
-      await addGivable(account);
+      var balance = await addTranches(account);
+      await addGivable(account, balance);
       await addOffers(account);
     }
     
@@ -60,6 +70,10 @@ async function loadV1(communities) {
       await addPurchases(account);
     }
   }
+  
+  // load complete, switch load mode off
+  const loadModeOff = eth.contract.methods.loadModeOff();
+  doSend(loadModeOff);
 }
 
 function addCommunity(community) {
@@ -102,7 +116,7 @@ function addAccount(account, communityId, url) {
         if (error2) {
           reject(error2);
         } else {
-          resolve(result2);
+          resolve(result2[0]);
         }
       });
     });
@@ -114,16 +128,55 @@ function addUrl(accountId, url) {
   doSend(method);
 }
 
-function addTranches(account) {
-      // for each sent tranche:
-      // - add giving, 100 at a time, until we have enough to send
-      // - recapitulate the send
+// for each sent tranche:
+// - add giving, 100 at a time, until we have enough to send
+// - then get the url for the recipient
+// - then recapitulate the send
+async function addTranches(account) {
+  var tranches = account.given.sort(function(a, b){return parseInt(a.block) - parseInt(b.block)});
+  var balance = 0;
+  for (var i in tranches) {
+    var tranche = tranches[i];
+    var amount = parseInt(tranche.amount);
+    while (balance < amount) {
+      const replenish = eth.contract.methods.forceReplenish(accountId);
+      await doSend(replenish);
+      balance += 100;
+    }
+    var recipientUrl = await getUrlFor(tranche.recipient);
+    const give = eth.contract.methods.give(accountId, recipientUrl, amount, tranche.message);
+    await doSend(give);
+  }
+  return balance;
 }
 
-function addGivable(account) {
-      // now add giving tranches until we're up to "givable"
-      // TODO: make lastReplenished settable
-  
+// TODO: possibly cache these for performance's sake
+function getUrlFor(recipientId) {
+  return new Promise((resolve, reject) => {
+    const method = eth.contract.methods.accountForId(tranche.recipient);
+    method.call(function(error, result) {
+      if (error) {
+        reject(error);
+      } else {
+        const account = eth.getAccountFromResult(result2);
+        const url = account.urls.split(util.separator)[0];
+        resolve(url);
+      }
+    });
+  });
+}
+
+// add giving tranches until we're up to "givable"
+async function addGivable(account, balance) {
+  var toGive = parseInt(amount.givable) - balance;
+  if (toGive <= 0) {
+    return;
+  }
+  while (toGive > 0) {
+    const replenish = eth.contract.methods.forceReplenish(accountId);
+    await doSend(replenish);
+    toGive -= 100;
+  }
 }
 
 function addOffers(account) {

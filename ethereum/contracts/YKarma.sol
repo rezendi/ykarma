@@ -15,12 +15,14 @@ contract YKarma is Oracular, YKStructs {
   YKAccounts accountData;
   YKCommunities communityData;
   YKRewards rewardData;
+  bool public loadMode;
 
   constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKRewards _rewards) public Oracular() {
     trancheData = _tranches;
     accountData = _accounts;
     communityData = _communities;
     rewardData = _rewards;
+    loadMode = true;
   }
   
   function updateTrancheContract(YKTranches _tranches) onlyOracle public {
@@ -37,6 +39,10 @@ contract YKarma is Oracular, YKStructs {
 
   function updateRewardsContract(YKRewards _rewards) onlyOracle public {
     rewardData = _rewards;
+  }
+  
+  function loadModeOff() onlyOracle public {
+    loadMode = false;
   }
 
   /**
@@ -126,7 +132,7 @@ contract YKarma is Oracular, YKStructs {
   }
 
   function replenish(uint256 _accountId) public onlyOracle {
-    trancheData.replenish(_accountId);
+    trancheData.replenish(_accountId, loadMode);
   }
 
   function recalculateBalances(uint256 _id) public onlyOracle {
