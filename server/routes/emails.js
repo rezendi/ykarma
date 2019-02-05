@@ -72,7 +72,7 @@ function sendRewardSoldEmail(reward, buyer, vendor) {
   if (vendorEmail === "") return;
   var buyerInfo = getEmailFrom(buyer.urls);
   if (!buyerInfo) {
-    buyerInfo = buyer.urls ? buyer.urls.split("||")[0] : 'n/a';
+    buyerInfo = buyer.urls ? buyer.urls.split(util.separator)[0] : 'n/a';
   }
   const msg = {
     to: vendorEmail,
@@ -103,7 +103,7 @@ function sendRewardPurchasedEmail(reward, buyer, vendor) {
   if (buyerEmail === "") return;
   var vendorInfo = getEmailFrom(vendor.urls);
   if (!vendorInfo) {
-    vendorInfo = vendor.urls ? vendor.urls.split("||")[0] : 'n/a';
+    vendorInfo = vendor.urls ? vendor.urls.split(util.separator)[0] : 'n/a';
   }
   const msg = {
     to: buyerEmail,
@@ -130,7 +130,7 @@ https://www.ykarma.com/
 
 function getEmailFrom(urls) {
   if (urls && urls.indexOf("mailto") >= 0) {
-    const urlArray = urls.split("||");
+    const urlArray = urls.split(util.separator);
     for (var i in urlArray) {
       if (urlArray[i].startsWith("mailto:")) {
         return urlArray[i].replace("mailto:","");

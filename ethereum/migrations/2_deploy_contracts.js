@@ -45,12 +45,13 @@ module.exports = (deployer, network, accounts) => {
     const ykv = await YKRewards.deployed();
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
-    await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
-    await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
-    await yk.replenish(1);
     if (!isTesting) {
       setEnvAddress(YKarma.address);
     }
+    // return; // uncomment if we're loading from a dump
+    await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
+    await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
+    await yk.replenish(1);
     
     // add test data if appropriate
     if (process.env.TRUFFLE_ENV !== 'production') {

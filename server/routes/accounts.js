@@ -512,7 +512,7 @@ function getSessionFromAccount(req, account) {
   req.session.ykcid = parseInt(account.communityId);
   req.session.name = account.metadata.name;
   req.session.account = account;
-  var urls = account.urls.split("||");
+  var urls = account.urls.split(util.separator);
   util.debug("urls", urls);
   for (var i in urls) {
     if (urls[i].startsWith("mailto:")) {
