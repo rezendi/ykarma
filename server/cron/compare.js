@@ -66,8 +66,8 @@ function doCompare(v1, v2) {
       a1.givable      === a2.givable ? noop() : nope("userAddress givable mismatch", a1, a2);
       JSON.stringify(a1.metadata) === JSON.stringify(a2.metadata) ? noop() : nope("Account metadata mismatch", a1, a2);
 
-      var gs1 = a1.given.sort((a,b) => { return a.block - b.block});;
-      var gs2 = a2.given.sort((a,b) => { return a.block - b.block});;
+      var gs1 = a1.given.sort((a,b) => { return a.block - b.block}).filter((a,b) => { return a.sender != a.receiver });
+      var gs2 = a2.given.sort((a,b) => { return a.block - b.block}).filter((a,b) => { return a.sender != a.receiver });
       for (var k=0; k<gs1.length; k++) {
         var t1 = gs1[k];
         var t2 = gs2[k];
@@ -77,8 +77,8 @@ function doCompare(v1, v2) {
         t1.tags       === t2.tags ? noop() : nope("Tranchegiven  tags mismatch", t1, t2);
       }
 
-      var rs1 = a1.received.sort((a,b) => { return a.block - b.block});;;
-      var rs2 = a2.received.sort((a,b) => { return a.block - b.block});;;
+      var rs1 = a1.received.sort((a,b) => { return a.block - b.block}).filter((a,b) => { return a.sender != a.receiver });
+      var rs2 = a2.received.sort((a,b) => { return a.block - b.block}).filter((a,b) => { return a.sender != a.receiver });
       for (var k=0; k<rs1.length; k++) {
         var t1 = rs1[k];
         var t2 = rs2[k];
@@ -88,8 +88,8 @@ function doCompare(v1, v2) {
         t1.tags       === t2.tags ? noop() : nope("Tranche received tags mismatch", t1, t2);
       }
 
-      var os1 = a1.rewards.sort((a,b) => { return a.created - b.created});;;
-      var os2 = a2.rewards.sort((a,b) => { return a.created - b.created});;;
+      var os1 = a1.rewards.sort((a,b) => { return a.created - b.created});
+      var os2 = a2.rewards.sort((a,b) => { return a.created - b.created});
       for (var k=0; k<os1.length; k++) {
         var r1 = os1[k];
         var r2 = os2[k];
@@ -100,8 +100,8 @@ function doCompare(v1, v2) {
         JSON.stringify(r1.metadata) === JSON.stringify(r2.metadata) ? noop() : nope("Reward offered metadata mismatch", r1, r2);
       }
 
-      var rws1 = a1.rewards.sort((a,b) => { return a.created - b.created});;;
-      var rws2 = a2.rewards.sort((a,b) => { return a.created - b.created});;;
+      var rws1 = a1.rewards.sort((a,b) => { return a.created - b.created});
+      var rws2 = a2.rewards.sort((a,b) => { return a.created - b.created});
       for (var k=0; k<rws1.length; k++) {
         var r1 = rws1[k];
         var r2 = rws2[k];

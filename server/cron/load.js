@@ -84,6 +84,7 @@ async function loadV1(communities) {
       await addGivable(account);
       await addRewards(account.rewards);
     }
+    console.log("Rewards added");
   }
   
   // load complete, switch load mode off
@@ -147,6 +148,10 @@ function addUrl(accountId, url) {
 // - then get the url for the recipient
 // - then recapitulate the send
 async function addTranche(tranche) {
+  // don't regenerate reward tranches
+  if (tranche.sender === tranche.receiver) {
+    return;
+  }
   // console.log("tranche", tranche);
   var balance = balances[tranche.sender] || 0;
   while (balance < tranche.amount) {
@@ -200,7 +205,7 @@ async function addRewards(rewards) {
     var reward = rewards[i];
     var rewardId = await addReward(reward, i);
     if (reward.ownerId) {
-      await performPurchase(reward);
+      await performPurchase(reward, rewardId);
     }
   }
 }
@@ -217,8 +222,6 @@ function addReward(reward, idx) {
       reward.flags || '0x00'
     );
     doSend(method, () => {
-      console.log("idx", idx);
-      console.log("newVendorId", newVendorId);
       const method2 = eth.contract.methods.rewardByIdx(newVendorId, idx, 2);
       method2.call(function(error2, result2) {
         if (error2) {
@@ -234,7 +237,7 @@ function addReward(reward, idx) {
   });
 }
 
-function performPurchase(reward) {
+function performPurchase(reward, rewardId) {
   var newOwnerId = ids[reward.ownerId];
   return new Promise((resolve, reject) => {
     const method = eth.contract.methods.purchase(newOwnerId, rewardId);
