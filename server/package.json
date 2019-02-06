@@ -7,7 +7,8 @@
     "test": "NODE_ENV=test node ./bin/www",
     "cron": "node ./cron/cron.js",
     "dump": "node ./cron/dump.js",
-    "load": "node ./cron/load.js"
+    "load": "node ./cron/load.js",
+    "compare": "node ./cron/compare.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
