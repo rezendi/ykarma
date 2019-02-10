@@ -75,7 +75,7 @@ function getCommunityData(community, callback) {
 }
 
 function getAccountData(account, callback) {
-  console.log("account id", account.id);
+  // console.log("account id", account.id);
 
   // TODO: add accessors in YKAccounts to get full giving data
   const method = eth.contract.methods.lastReplenished(account.id);
@@ -117,6 +117,7 @@ function getTranchesData(account, callback) {
   });
 }
 
+// TODO get reward parentId, created, and sold -- especially the first is important, but currently breaks the EVM stack limit
 function getRewardsData(account, callback) {
   account.rewards = [];
   const method = eth.contract.methods.getRewardsCount(account.id, 2);

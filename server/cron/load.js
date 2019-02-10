@@ -68,6 +68,7 @@ async function loadV1(communities) {
       account.id = accountId;
       account.given.forEach(function(e) { e.sender - account.id; });
       tranches.push.apply(tranches, account.given);
+      await sleep(3000);
     }
     console.log("Accounts added", accounts.length);
 
@@ -75,6 +76,7 @@ async function loadV1(communities) {
     var tranches = tranches.sort(function(a, b){return a.block - b.block});
     for (var k=0; k<tranches.length; k++) {
       await addTranche(tranches[k]);
+      await sleep(3000);
     }
     console.log("Tranches added", tranches.length);
 
@@ -82,7 +84,13 @@ async function loadV1(communities) {
     for (var j=0; j<accounts.length; j++) {
       var account = accounts[j];
       await addGivable(account);
+    }
+    console.log("Givable updated");
+
+    for (var j=0; j<accounts.length; j++) {
+      var account = accounts[j];
       await addRewards(account.rewards);
+      await sleep(3000);
     }
     console.log("Rewards added");
   }
@@ -93,7 +101,7 @@ async function loadV1(communities) {
 }
 
 function addCommunity(community) {
-  console.log("community", community.id);
+  //console.log("community", community.id);
   return new Promise((resolve, reject) => {
     var method = eth.contract.methods.getCommunityCount();
     method.call(function(error, result) {
@@ -186,13 +194,15 @@ function getUrlFor(recipientId) {
 
 // add giving tranches until we're up to "givable"
 async function addGivable(account) {
-  var toGive = account.givable - balances[account.id];
+  var toGive = account.givable - (balances[account.id] || 0);
+  console.log(`account ${account.id} givable ${account.givable} to add ${toGive}`);
   if (toGive <= 0) {
     return;
   }
   while (toGive > 0) {
     const replenish = eth.contract.methods.replenish(account.id);
     await doSend(replenish);
+    console.log("replenished");
     toGive -= 100;
   }
 }
@@ -269,3 +279,6 @@ function doSend(method, callback = null, errorCallback = null) {
   });
 };
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

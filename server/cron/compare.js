@@ -58,12 +58,13 @@ function doCompare(v1, v2) {
       var a1 = as1[j];
       var a2 = as2[j];
       // console.log("Comparing", a1.metadata);
+      a1.id           === a2.id ? noop() : nope("Account id mismatch", a1, a2);
       a1.communityId  === a2.communityId ? noop() : nope("Account community mismatch", a1, a2);
       a1.tags         === a2.tags ? noop() : nope("Account tags mismatch", a1, a2);
       a1.userAddress  === a2.userAddress ? noop() : nope("Account userAddress mismatch", a1, a2);
       a1.flags        === a2.flags ? noop() : nope("Account flags mismatch", a1, a2);
       a1.urls         === a2.urls ? noop() : nope("Account urls mismatch", a1, a2);
-      a1.givable      === a2.givable ? noop() : nope("userAddress givable mismatch", a1, a2);
+      a1.givable      === a2.givable ? noop() : nope("Account givable mismatch", a1, a2);
       JSON.stringify(a1.metadata) === JSON.stringify(a2.metadata) ? noop() : nope("Account metadata mismatch", a1, a2);
 
       var gs1 = a1.given.sort((a,b) => { return a.block - b.block}).filter((a,b) => { return a.sender != a.receiver });
@@ -74,7 +75,7 @@ function doCompare(v1, v2) {
         t1.amount     === t2.amount ? noop() : nope("Tranche given amount mismatch", t1, t2);
         t1.available  === t2.available ? noop() : nope("Tranche given available mismatch", t1, t2);
         t1.message    === t2.message ? noop() : nope("Tranche given message mismatch", t1, t2);
-        t1.tags       === t2.tags ? noop() : nope("Tranchegiven  tags mismatch", t1, t2);
+        t1.tags       === t2.tags ? noop() : nope("Tranche given tags mismatch", t1, t2);
       }
 
       var rs1 = a1.received.sort((a,b) => { return a.block - b.block}).filter((a,b) => { return a.sender != a.receiver });
@@ -88,29 +89,18 @@ function doCompare(v1, v2) {
         t1.tags       === t2.tags ? noop() : nope("Tranche received tags mismatch", t1, t2);
       }
 
-      var os1 = a1.rewards.sort((a,b) => { return a.created - b.created});
-      var os2 = a2.rewards.sort((a,b) => { return a.created - b.created});
+      var os1 = a1.rewards.sort((a,b) => { return a.vendorId - b.vendorId || a.ownerId - b.ownerId});
+      var os2 = a2.rewards.sort((a,b) => { return a.vendorId - b.vendorId || a.ownerId - b.ownerId});
       for (var k=0; k<os1.length; k++) {
         var r1 = os1[k];
         var r2 = os2[k];
-        r1.cost     === r2.cost ? noop() : nope("Reward offered cost mismatch", r1, r2);
-        r1.quantity === r2.quantity ? noop() : nope("Reward offered quantity mismatch", r1, r2);
-        r1.flags    === r2.flags ? noop() : nope("Reward offered flags mismatch", r1, r2);
-        r1.tag      === r2.tag ? noop() : nope("Reward offered tag mismatch", r1, r2);
-        JSON.stringify(r1.metadata) === JSON.stringify(r2.metadata) ? noop() : nope("Reward offered metadata mismatch", r1, r2);
+        r1.cost     === r2.cost ? noop() : nope("Reward cost mismatch", r1, r2);
+        r1.quantity === r2.quantity ? noop() : nope("Reward quantity mismatch", r1, r2);
+        r1.flags    === r2.flags ? noop() : nope("Reward flags mismatch", r1, r2);
+        r1.tag      === r2.tag ? noop() : nope("Reward tag mismatch", r1, r2);
+        JSON.stringify(r1.metadata) === JSON.stringify(r2.metadata) ? noop() : nope("Reward metadata mismatch", r1, r2);
       }
 
-      var rws1 = a1.rewards.sort((a,b) => { return a.created - b.created});
-      var rws2 = a2.rewards.sort((a,b) => { return a.created - b.created});
-      for (var k=0; k<rws1.length; k++) {
-        var r1 = rws1[k];
-        var r2 = rws2[k];
-        r1.cost     === r2.cost ? noop() : nope("Reward owned cost mismatch", r1, r2);
-        r1.quantity === r2.quantity ? noop() : nope("Reward owned quantity mismatch", r1, r2);
-        r1.flags    === r2.flags ? noop() : nope("Reward owned flags mismatch", r1, r2);
-        r1.tag      === r2.tag ? noop() : nope("Reward owned tag mismatch", r1, r2);
-        JSON.stringify(r1.metadata) === JSON.stringify(r2.metadata) ? noop() : nope("Reward owned metadata mismatch", r1, r2);
-      }
     }
   }
   
@@ -122,7 +112,7 @@ function noop() {
 }
 
 function nope(reason, first, second) {
-  if (reasons == 0) {
+  if (reasons < 10) {
     console.log(reason, first);
     console.log(reason, second);
   } else {
