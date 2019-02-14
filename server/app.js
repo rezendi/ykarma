@@ -50,8 +50,12 @@ if (process.env.NODE_ENV == "production") {
   app.use(express.static(path.normalize(path.join(__dirname, '/../web/build'))));
 }
 
-app.get('/*', function (req, res) {
-  res.sendFile(path.join(__dirname, '/../web/build', 'index.html'));
+app.get('/*', function (req, res, next) {
+    if (req.path.startsWith('/api')) {
+        return next();
+    } else {
+        res.sendFile(path.join(__dirname, '/../web/build', 'index.html'));
+    }
 });
 
 // catch 404 and forward to error handler

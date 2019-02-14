@@ -7,6 +7,13 @@ import { auth } from '../fbase';
 
 class Login extends React.Component {
 
+  getSlackUrl() {
+    const slackState = Math.random().toString(36).substring(7);
+    sessionStorage.setItem('slackState', slackState);
+    const slackBaseUrl = "https://slack.com/oauth/authorize?scope=identity.basic,identity.email,identity.team,identity.avatar&client_id=517031124007.547193036866";
+    return slackBaseUrl + "&state=" + slackState;
+  }
+
   doLogin = async (values) => {
     console.log("Logging in", values.email);
     auth.sendSignInLinkToEmail(values.email, () => {
@@ -40,7 +47,7 @@ class Login extends React.Component {
     return (
         <Grid>
           <Row>
-            <Col md={6}>
+            <Col md={4}>
               <Panel>
                 <Panel.Heading>
                   Log In with Email
@@ -57,7 +64,7 @@ class Login extends React.Component {
                 </Panel.Body>
               </Panel>
             </Col>
-            <Col md={6}>
+            <Col md={4}>
               <Panel>
                 <Panel.Heading>
                   Log In with Twitter
@@ -70,6 +77,20 @@ class Login extends React.Component {
                 </Panel.Body>
               </Panel>
             </Col>
+            <Col md={4}>
+              <Panel>
+                <Panel.Heading>
+                  Log In with Slack
+                </Panel.Heading>
+                <Panel.Body>
+                  <Row>
+                    &nbsp;
+                    <a href={this.getSlackUrl()}><img alt="Sign in with Slack" height="40" width="172" src="https://platform.slack-edge.com/img/sign_in_with_slack.png" srcset="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" /></a>
+                  </Row>
+                </Panel.Body>
+              </Panel>
+            </Col>
+
           </Row>
         </Grid>
     )
