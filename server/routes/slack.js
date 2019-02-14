@@ -11,36 +11,6 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-// For now, just send mock Slack response with GIF
-router.post('/yk', function(req, res, next) {
-  util.log("got post", req.body);
-  const text          = req.body.text;
-  const response_url  = req.body.response_url;
-  const user_id       = req.body.user_id;
-  const team_id       = req.body.team_id;
-  
-  // for occasional pings from Slack
-  const ssl_check     = req.body.ssl_check;
-  const token         = req.body.token;
-  
-  // check to see whether there's a sufficient balance
-  var sufficientBalance = true;
-  
-  // if not, send back an error
-  if (!sufficientBalance) {
-    return res.json({
-    "response_type" : "ephemeral",
-      "text":"Sorry! You don't have enough YKarma to do that"
-    });
-  }
-  
-  // if so, send back a GIF
-  return res.json({
-    "response_type" : "in_channel",
-    "text": "Sent! https://giphy.com/gifs/the-wachowskis-MFje9gRTYIL28",
-  });
-});
-
 router.post('/state', function(req, res, next) {
   req.session.slackState = req.body.state;
   console.log("slack state set");
@@ -93,6 +63,9 @@ router.get('/auth', function(req, res, next) {
       };
       firebase.admin.auth().createCustomToken(userId, additionalClaims)
       .then(function(customToken) {
+        firebase.admin.auth().updateUser(userId, {
+          displayName: json.user.name,
+        });
         res.redirect('http://localhost:3000/finishSignIn?customToken='+customToken);
       })
       .catch(function(error) {
@@ -101,6 +74,36 @@ router.get('/auth', function(req, res, next) {
     });
   });
   
+});
+
+// For now, just send mock Slack response with GIF
+router.post('/yk', function(req, res, next) {
+  util.log("got post", req.body);
+  const text          = req.body.text;
+  const response_url  = req.body.response_url;
+  const user_id       = req.body.user_id;
+  const team_id       = req.body.team_id;
+  
+  // for occasional pings from Slack
+  const ssl_check     = req.body.ssl_check;
+  const token         = req.body.token;
+  
+  // check to see whether there's a sufficient balance
+  var sufficientBalance = true;
+  
+  // if not, send back an error
+  if (!sufficientBalance) {
+    return res.json({
+    "response_type" : "ephemeral",
+      "text":"Sorry! You don't have enough YKarma to do that"
+    });
+  }
+  
+  // if so, send back a GIF
+  return res.json({
+    "response_type" : "in_channel",
+    "text": "Sent! https://giphy.com/gifs/the-wachowskis-MFje9gRTYIL28",
+  });
 });
 
 function getAccountForUrl(url, callback) {

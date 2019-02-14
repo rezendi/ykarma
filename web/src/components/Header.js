@@ -22,7 +22,7 @@ class Header extends React.Component {
         <Navbar.Collapse>
           <Nav>
             { !this.props.user || !this.props.user.uid || !this.props.user.community || !this.props.user.community.id ?
-                (this.props.user.community && this.props.user.community.id===0
+                (this.props.user.community && this.props.user.community.id===0 || this.props.user.uid
                  ? <NavItem key='signout' href='/signOut'>Sign Out</NavItem>
                  : <NavItem key='login' href='/login'> Login</NavItem>
                 )

@@ -7,7 +7,8 @@ class FinishSignIn extends React.Component {
     const params = new URLSearchParams(window.location.search);
     const customToken = params.get('customToken');
     if (customToken && customToken.length > 0) {
-      fbase.auth.signInWithCustomToken(customToken).then(authUser => {
+      auth.doSignOut();
+      fbase.auth.signInWithCustomToken(customToken).then(() => {
         localStorage.setItem("authProvider", "slack");
         this.props.history.push("/");
       }).catch(function(error) {

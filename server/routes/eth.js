@@ -29,6 +29,10 @@ const getFromAccount = function() {
   });
 };
 
+const isConnected = function() {
+   return web3.isConnected();
+}
+
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
   var notifying = false;
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
@@ -138,6 +142,7 @@ module.exports = {
     contract:     contract,
     doSend:       doSend,
     GAS:          GAS,
+    isConnected:  isConnected,
     fromAccount:  fromAccount,
     getFromAccount:        getFromAccount,
     getAccountFor:         getAccountFor,

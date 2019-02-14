@@ -93,6 +93,11 @@ router.get('/account/:id', function(req, res, next) {
 /* GET account details */
 router.get('/me', function(req, res, next) {
   util.log("me session", req.session);
+  if (!eth.isConnected()) {
+    return res.status(400).send({
+      message: "web3 not connected"
+    });
+  }
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
@@ -369,7 +374,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
     // util.log("decoded", decodedToken);
     const twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
-    if (twitterIdentities.length > 0) {
+    if (twitterIdentities && twitterIdentities.length > 0) {
       req.session.twitter_id = twitterIdentities[0];
       req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
     } else {
@@ -378,6 +383,7 @@ router.post('/token/set', function(req, res, next) {
     util.debug("post token session", req.session);
     res.json({"success":true});
   }).catch(function(error) {
+    console.log("error", error);
     res.json({"success":false, "error":error});
   });
 });
