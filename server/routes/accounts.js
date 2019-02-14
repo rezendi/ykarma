@@ -358,14 +358,16 @@ router.post('/token/set', function(req, res, next) {
     req.session.ykcid = null;
     req.session.handle = null;
     req.session.twitter_id = null;
+    req.session.slack_id = null;
     req.session.account = null;
     return res.json({"success":true});
   }
   firebase.admin.auth().verifyIdToken(req.body.token).then(function(decodedToken) {
     req.session.uid = decodedToken.uid;
+    req.session.slack_id = decodedToken.slack_id;
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
-    // util.log("decoded", JSON.stringify(decodedToken.firebase.identities));
+    // util.log("decoded", decodedToken);
     const twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
     if (twitterIdentities.length > 0) {
       req.session.twitter_id = twitterIdentities[0];

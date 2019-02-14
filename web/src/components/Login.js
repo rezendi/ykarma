@@ -11,6 +11,12 @@ class Login extends React.Component {
     const slackState = Math.random().toString(36).substring(7);
     sessionStorage.setItem('slackState', slackState);
     const slackBaseUrl = "https://slack.com/oauth/authorize?scope=identity.basic,identity.email,identity.team,identity.avatar&client_id=517031124007.547193036866";
+    fetch('/api/slack/state', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({state:slackState}),
+    });
     return slackBaseUrl + "&state=" + slackState;
   }
 
@@ -85,7 +91,7 @@ class Login extends React.Component {
                 <Panel.Body>
                   <Row>
                     &nbsp;
-                    <a href={this.getSlackUrl()}><img alt="Sign in with Slack" height="40" width="172" src="https://platform.slack-edge.com/img/sign_in_with_slack.png" srcset="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" /></a>
+                    <a href={this.getSlackUrl()}><img alt="Sign in with Slack" height="40" width="172" src="https://platform.slack-edge.com/img/sign_in_with_slack.png" srcSet="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" /></a>
                   </Row>
                 </Panel.Body>
               </Panel>

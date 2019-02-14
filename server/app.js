@@ -52,6 +52,7 @@ if (process.env.NODE_ENV == "production") {
 
 app.get('/*', function (req, res, next) {
     if (req.path.startsWith('/api')) {
+        console.log("starts with api");
         return next();
     } else {
         res.sendFile(path.join(__dirname, '/../web/build', 'index.html'));

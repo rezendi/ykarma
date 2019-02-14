@@ -1,13 +1,30 @@
 import React from 'react';
-import { auth } from '../fbase';
+import { fbase, auth } from '../fbase';
 
 class FinishSignIn extends React.Component {
 
   componentDidMount() {
-    auth.signInViaEmailLink(window.location.href).then(authUser => {
-      localStorage.setItem("authProvider", "email");
-      this.props.history.push("/");
-    });
+    const params = new URLSearchParams(window.location.search);
+    const customToken = params.get('customToken');
+    if (customToken && customToken.length > 0) {
+      fbase.auth.signInWithCustomToken(customToken).then(authUser => {
+        localStorage.setItem("authProvider", "slack");
+        this.props.history.push("/");
+      }).catch(function(error) {
+        if (error) {
+          console.log("slack auth error", error);
+        }
+      });
+    } else {
+      auth.signInViaEmailLink(window.location.href).then(authUser => {
+        localStorage.setItem("authProvider", "email");
+        this.props.history.push("/");
+      }).catch(function(error) {
+        if (error) {
+          console.log("email auth error", error);
+        }
+      });
+    }
   }
 
   render() {
