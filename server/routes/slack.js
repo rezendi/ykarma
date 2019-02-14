@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fetch = require('node-fetch');
 const bodyParser = require("body-parser");
 const eth = require('./eth');
 const util = require('./util');
@@ -41,7 +42,40 @@ router.post('/yk', function(req, res, next) {
 
 router.get('/auth', function(req, res, next) {
   console.log("in slack auth");
-  res.json({'hello':'world'});
+  
+  //TODO: get the slack state arg from the login React component, check it here
+  const code = req.query.code;
+  const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}`;
+  fetch(url).then(function(response) {
+    const json = response.json();
+    if (!json.ok) {
+      util.warn("Error completing slack auth");
+      return res.redirect('/profile?error=slack');
+    }
+    const token = json.access_token;
+    var iniTeamId = json.team_id;
+
+    // TODO: check whether a community exists for this team
+    // if not, redirect to a "sorry, not yet"
+
+    var idUrl = `https://slack.com/api/users.identity?token=${token}`;
+    fetch(url)  .then(function(response) {
+      const json = response.json();
+      if (!json.ok) {
+        util.warn("Error getting slack identity");
+        return res.redirect('/profile?error=slackid');
+      }
+      const userId = json.user.id;
+      const userName = json.user.name;
+      const avatar = json.user.image_72;
+      const teamId = json.team_id;
+      const teamName = json.team.name;
+      const slackUrl = `slack://${teamId}/${userId}`;
+      // TODO: store access token keyed to this slackUrl in Firebase
+      // TODO: create YK account (if not logged in) or add URL to current one (if logged in)
+    });
+  });
+  
 });
 
 module.exports = router;
