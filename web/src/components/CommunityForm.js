@@ -25,7 +25,7 @@ class CommunityForm extends React.Component {
   getSlackUrl = () => {
     const slackState = Math.random().toString(36).substring(7);
     sessionStorage.setItem('slackState', slackState);
-    const slackBaseUrl = `https://slack.com/oauth/authorize?scope=commands,bot&client_id=${process.env.REACT_APP_SLACK_CLIENT_ID}&redirect_uri=http%3A%2F%2F${process.env.REACT_APP_DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
+    const slackBaseUrl = `https://slack.com/oauth/authorize?scope=commands,bot,users:read&client_id=${process.env.REACT_APP_SLACK_CLIENT_ID}&redirect_uri=http%3A%2F%2F${process.env.REACT_APP_DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
     fetch('/api/slack/state', {
       method: 'POST',
       credentials: 'include',
@@ -52,15 +52,19 @@ class CommunityForm extends React.Component {
                   </Row>
                   <Row>
                     <label htmlFor="description">Community Description</label>
-                    <Field name="description" component="input" type="text"/>
+                    <Field name="description" component="input" type="text" size="80"/>
                   </Row>
                   <Row>
                     <Button type="submit">Submit</Button>
                   </Row>
                 </form>
+                {this.props.initialValues && this.props.initialValues.slackTeams && this.props.initialValues.slackTeams.length > 0 &&
+                <p>This community already has a Slack team associated with it.</p>
+                }
               </Panel.Body>
             </Panel>
-            {this.props.initialValues && !this.props.initialValues.slackTeamId &&
+            
+            {this.props.initialValues && (!this.props.initialValues.slackTeams || this.props.initialValues.slackTeams.length === 0) &&
             <Panel>
               <Panel.Heading>
                 Add to Slack
@@ -87,7 +91,7 @@ function mapStateToProps(state, ownProps) {
       id: ownProps.community ? ownProps.community.id : 0,
       name: ownProps.community ? ownProps.community.metadata.name : '',
       description: ownProps.community ? ownProps.community.metadata.description : '',
-      slackTeamId: ownProps.community ? ownProps.community.metadata.slackTeamId : '',
+      slackTeams: ownProps.community ? ownProps.community.metadata.slackTeams : '',
     }
   };
 }

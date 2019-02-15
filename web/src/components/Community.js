@@ -73,7 +73,6 @@ class Community extends React.Component {
     return (
       <Grid>
         <Row>
-          {JSON.stringify(this.props.community.metadata)}
           <Col md={12}>
             <Panel>
               <Panel.Heading>

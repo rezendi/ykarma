@@ -22,8 +22,8 @@ function doDump() {
       console.log('getCommunityCount error', error);
     } else {
       console.log('getCommunityCount result', result);
-      for (var i = 0; i < result; i++) {
-        eth.getCommunityFor(i+1, (community) => {
+      for (var i = 1; i <= result; i++) {
+        eth.getCommunityFor(i, (community) => {
           console.log("community", community.metadata ? community.metadata.name : 'n/a');
           getCommunityData(community, function(hydratedCommunity) {
             communities.push(hydratedCommunity);

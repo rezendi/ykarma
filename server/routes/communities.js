@@ -3,6 +3,8 @@ var router = express.Router();
 var eth = require('./eth');
 var util = require('./util');
 
+const RESERVED_TAGS = "ykarma, test, alpha, beta, gamma, delta, epsilon, omega";
+
 var fromAccount = null;
 eth.getFromAccount().then(address => {
   fromAccount = address;
@@ -66,12 +68,17 @@ router.post('/create', function(req, res, next) {
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
   }
+  var tags = community.tags || '';
+  for (var i = 0; i < RESERVED_TAGS.length; i++) {
+    tags = tags.replace(RESERVED_TAGS[i],"");
+    tags = tags.replace(",,",",");
+  }
   var method = eth.contract.methods.addNewCommunity(
     community.addressAdmin,
     community.flags || '0x00',
     community.domain || '',
     JSON.stringify(community.metadata),
-    community.tags || '',
+    tags,
   );
   eth.doSend(method, res);
 });

@@ -161,7 +161,7 @@ describe('Reward', function () {
                 .end(function (err, res) {
                   if (err) done (err);
                   var rwds = JSON.parse(res.text).rewards;
-                  //console.log("rwds", rwds);
+                  // console.log("rwds", rwds);
                   expect(rwds.length).to.equal(initialRewards + 1);
                   expect(JSON.parse(rwds[initialRewards].metadata).name).to.equal("Test Reward One");
                   expect(rwds[initialRewards].id).to.not.equal(0);

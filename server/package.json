@@ -6,6 +6,7 @@
     "start": "node ./bin/www",
     "test": "NODE_ENV=test node ./bin/www",
     "cron": "node ./cron/cron.js",
+    "slack": "node ./cron/slack.js",
     "dump": "node ./cron/dump.js",
     "load": "node ./cron/load.js",
     "compare": "node ./cron/compare.js"
