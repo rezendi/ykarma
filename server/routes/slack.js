@@ -36,8 +36,9 @@ router.get('/auth', function(req, res, next) {
       // get vals, store to Firestore
       const userId = json.user.id;
       const teamId = json.team.id;
+      const uniqueId = `#${teamId}-${userId}`;
       const userVals = {
-        'id'    : userId,
+        'userId': userId,
         'name'  : json.user.name,
         'email' : json.user.email,
         'avatar': json.user.image_72,
@@ -46,24 +47,24 @@ router.get('/auth', function(req, res, next) {
         'scope' : json.scope,
       };
       //console.log("userVals", userVals);
-      var docRef = firebase.db.collection('slackUsers').doc(userId);
+      var docRef = firebase.db.collection('slackUsers').doc(uniqueId);
       docRef.set(userVals);
       docRef = firebase.db.collection('slackTeams').doc(teamId);
       docRef.set({
         'id'      : teamId,
         'name'    : json.team.name,
         'domain'  : json.team.domain,
-      });
+      }, { merge: true });
 
       // custom token per https://firebase.google.com/docs/auth/admin/create-custom-tokens#create_custom_tokens_using_the_firebase_admin_sdk
       var additionalClaims = {
         email       : json.user.email,
         displayName : json.user.name,
-        slack_id    : userId
+        slack_id    : uniqueId
       };
-      firebase.admin.auth().createCustomToken(userId, additionalClaims)
+      firebase.admin.auth().createCustomToken(uniqueId, additionalClaims)
       .then(function(customToken) {
-        firebase.admin.auth().updateUser(userId, {
+        firebase.admin.auth().updateUser(uniqueId, {
           displayName: json.user.name,
         });
         res.redirect('/finishSignIn?customToken='+customToken);
@@ -103,7 +104,7 @@ router.get('/team_auth', function(req, res, next) {
         'bot_token' : json.bot ? json.bot.bot_access_token : null,
       };
       docRef = firebase.db.collection('slackTeams').doc(teamId);
-      docRef.set(teamVals);
+      docRef.set(teamVals, { merge: true });
       // from here the cron job will take care of adding the users
       res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
     });
