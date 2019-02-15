@@ -29,8 +29,8 @@ const getFromAccount = function() {
   });
 };
 
-const isConnected = function() {
-   return web3.isConnected();
+const getId = function() {
+   return web3.eth.net.getId();
 }
 
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
@@ -142,7 +142,7 @@ module.exports = {
     contract:     contract,
     doSend:       doSend,
     GAS:          GAS,
-    isConnected:  isConnected,
+    getId:        getId,
     fromAccount:  fromAccount,
     getFromAccount:        getFromAccount,
     getAccountFor:         getAccountFor,

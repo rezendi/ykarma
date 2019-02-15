@@ -22,6 +22,19 @@ class CommunityForm extends React.Component {
     });
   }
 
+  getSlackUrl = () => {
+    const slackState = Math.random().toString(36).substring(7);
+    sessionStorage.setItem('slackState', slackState);
+    const slackBaseUrl = "https://slack.com/oauth/authorize?scope=incoming-webhook,commands,bot&client_id=517031124007.547193036866&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fapi%2Fslack%2Fteam_auth";
+    fetch('/api/slack/state', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({state:slackState}),
+    });
+    return slackBaseUrl + "&state=" + slackState;
+  }
+
   render() {
     return (
       <Grid>
@@ -47,6 +60,16 @@ class CommunityForm extends React.Component {
                 </form>
               </Panel.Body>
             </Panel>
+            {this.props.initialValues && !this.props.initialValues.slackTeamId &&
+            <Panel>
+              <Panel.Heading>
+                Add to Slack
+              </Panel.Heading>
+              <Panel.Body>
+                <a href={this.getSlackUrl()}><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+              </Panel.Body>
+            </Panel>
+            }
           </Col>
         </Row>
       </Grid>
@@ -64,6 +87,7 @@ function mapStateToProps(state, ownProps) {
       id: ownProps.community ? ownProps.community.id : 0,
       name: ownProps.community ? ownProps.community.metadata.name : '',
       description: ownProps.community ? ownProps.community.metadata.description : '',
+      slackTeamId: ownProps.community ? ownProps.community.metadata.slackTeamId : '',
     }
   };
 }

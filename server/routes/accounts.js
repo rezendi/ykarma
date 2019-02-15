@@ -91,9 +91,10 @@ router.get('/account/:id', function(req, res, next) {
 
 
 /* GET account details */
-router.get('/me', function(req, res, next) {
+router.get('/me', async function(req, res, next) {
   util.log("me session", req.session);
-  if (!eth.isConnected()) {
+  var id = await eth.getId();
+  if (!id) {
     return res.status(400).send({
       message: "web3 not connected"
     });

@@ -76,6 +76,10 @@ router.get('/auth', function(req, res, next) {
   
 });
 
+router.get('/team_auth', function(req, res, next) {
+  util.log("in slack team auth");
+});
+
 // For now, just send mock Slack response with GIF
 router.post('/yk', function(req, res, next) {
   util.log("got post", req.body);
