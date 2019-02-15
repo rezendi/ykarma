@@ -19,6 +19,8 @@ contract('Paces', function(accounts) {
     await communityData.addOracle(ykarma.address);
     await rewardData.addOracle(ykarma.address);
 
+    await ykarma.loadModeOff();
+
     // add a little data
     await ykarma.addNewCommunity(accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');
     var count = await ykarma.getCommunityCount();
