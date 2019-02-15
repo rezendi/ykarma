@@ -28,13 +28,12 @@ router.get('/auth', function(req, res, next) {
   const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}`;
   fetch(url).then(function(response) {
     response.json().then((json) => {
-      console.log("response", json);
+      //console.log("response", json);
       if (!json.ok) {
         util.warn("Error completing slack auth");
         return res.redirect('/profile?error=slack');
       }
       // get vals, store to Firestore
-      const token = json.access_token;
       const userId = json.user.id;
       const teamId = json.team.id;
       const userVals = {
@@ -42,10 +41,11 @@ router.get('/auth', function(req, res, next) {
         'name'  : json.user.name,
         'email' : json.user.email,
         'avatar': json.user.image_72,
-        'token' : token,
+        'token' : json.access_token,
         'teamId': teamId,
+        'scope' : json.scope,
       };
-      console.log("userVals", userVals);
+      //console.log("userVals", userVals);
       var docRef = firebase.db.collection('slackUsers').doc(userId);
       docRef.set(userVals);
       docRef = firebase.db.collection('slackTeams').doc(teamId);
@@ -66,7 +66,7 @@ router.get('/auth', function(req, res, next) {
         firebase.admin.auth().updateUser(userId, {
           displayName: json.user.name,
         });
-        res.redirect('http://localhost:3000/finishSignIn?customToken='+customToken);
+        res.redirect('/finishSignIn?customToken='+customToken);
       })
       .catch(function(error) {
         console.log("Error creating custom token:", error);
@@ -78,6 +78,36 @@ router.get('/auth', function(req, res, next) {
 
 router.get('/team_auth', function(req, res, next) {
   util.log("in slack team auth");
+  if (req.session.slackState != req.query.state) {
+    return res.json({success:false, error: "State mismatch " + req.session.slackState});
+  }
+
+  const code = req.query.code;
+  const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
+  fetch(url).then(function(response) {
+    response.json().then((json) => {
+      console.log("response", json);
+      if (!json.ok) {
+        util.warn("Error completing slack team auth");
+        return res.redirect('/profile?error=slack_team');
+      }
+      // get vals, store to Firestore
+      const teamId = json.team_id;
+      var teamVals = {
+        'id'        : teamId,
+        'token'     : json.access_token,
+        'scope'     : json.scope,
+        'name'      : json.team_name,
+        'userId'    : json.user_id,
+        'bot_id'    : json.bot ? json.bot.bot_user_id : null,
+        'bot_token' : json.bot ? json.bot.bot_access_token : null,
+      };
+      docRef = firebase.db.collection('slackTeams').doc(teamId);
+      docRef.set(teamVals);
+      // from here the cron job will take care of adding the users
+      res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+    });
+  });
 });
 
 // For now, just send mock Slack response with GIF

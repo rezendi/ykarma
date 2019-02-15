@@ -10,7 +10,7 @@ class Login extends React.Component {
   getSlackUrl() {
     const slackState = Math.random().toString(36).substring(7);
     sessionStorage.setItem('slackState', slackState);
-    const slackBaseUrl = "https://slack.com/oauth/authorize?scope=identity.basic,identity.email,identity.team,identity.avatar&client_id=517031124007.547193036866";
+    const slackBaseUrl = "https://slack.com/oauth/authorize?scope=identity.basic,identity.email,identity.team,identity.avatar&client_id=" + process.env.REACT_APP_SLACK_CLIENT_ID;
     fetch('/api/slack/state', {
       method: 'POST',
       credentials: 'include',
