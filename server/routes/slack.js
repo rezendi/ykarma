@@ -147,51 +147,133 @@ router.get('/team_auth', function(req, res, next) {
 });
 
 // For now, just send mock Slack response with GIF
-router.post('/yk', function(req, res, next) {
-  util.log("got post", req.body);
+router.post('/yk', async function(req, res, next) {
+  util.warn("got post", req.body);
   const text          = req.body.text;
   const response_url  = req.body.response_url;
   const user_id       = req.body.user_id;
   const team_id       = req.body.team_id;
   
-  // for occasional pings from Slack
-  const ssl_check     = req.body.ssl_check;
-  const token         = req.body.token;
+  //TODO: for occasional pings from Slack
+  //const ssl_check     = req.body.ssl_check;
+  //const token         = req.body.token;
+
+  const words = text.split(" ");
+  var amount = 0;
+  var recipientId = '';
+  var message = '';
   
-  // check to see whether there's a sufficient balance
-  var sufficientBalance = true;
+  for (var i=0; i < words.length; i++) {
+    if (amount === 0) {
+      var wordAmount = parseInt(words[i], 10);
+      if (wordAmount > 0) {
+        amount = wordAmount;
+      }
+    }
+    if (words[i].startsWith("<@")) {
+      if (recipientId === '') {
+        recipientId = words[i].replace("<@","").replace(">","");
+      }
+    } else {
+      if (recipientId !== '') {
+        message += words[i] + ' ';
+      }
+    }
+  }
   
-  // if not, send back an error
-  if (!sufficientBalance) {
+  if (amount === 0) {
     return res.json({
-    "response_type" : "ephemeral",
-      "text":"Sorry! You don't have enough YKarma to do that"
+      "response_type" : "ephemeral",
+      "text" : "Sorry! Valid amount not found."
+    });
+  }
+
+  if (recipientId === '' || recipientId === user_id) {
+    return res.json({
+      "response_type" : "ephemeral",
+      "text" : "Sorry! Valid recipient not found."
+    });
+  }
+
+  // get the sender  
+  const senderUrl = `slack:${team_id}-${user_id}`;
+  const sender = await getAccountForUrl(senderUrl);
+  if (sender.id === 0 || sender.communityId === 0) {
+    return res.json({
+      "response_type" : "ephemeral",
+      "text" : "Sorry! Your YKarma account is not set up for sending here"
+    });
+  }
+  if (sender.givable < amount) {
+    return res.json({
+      "response_type" : "ephemeral",
+      "text" : "Sorry! You don't have enough YKarma to do that. Your balance is " + givable
     });
   }
   
-  // if so, send back a GIF
+  const recipientUrl = `slack:${team_id}-${recipientId}`;
+  const recipient = await getAccountForUrl(recipientUrl);
+  if (recipient.id === 0 || recipient.communityId === 0) {
+    return res.json({
+      "response_type" : "ephemeral",
+      "text" : "Sorry! That YKarma account is not set up for receiving here"
+    });
+  }
+  
+  //OK, let's go ahead and do the give
+  util.warn(`About to give ${amount} from id ${sender.id} to ${recipient.id} via Slack`, message);
+  var method = eth.contract.methods.give(
+    sender.id,
+    recipientUrl,
+    amount,
+    message || ''
+  );
+
+  eth.doSend(method, res, 1, 4, function() {
+    // send back a GIF via the response_url
+    const body = {
+      "response_type" : "in_channel",
+      "text": "Sent! " + getGIFFor(amount)
+    };
+    util.log("response body", body);
+    fetch(response_url, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify(body),
+    }).then(function(response) {
+      util.log("Delayed response response", response.status);
+    });
+  });
+
   return res.json({
     "response_type" : "in_channel",
-    "text": "Sent! https://giphy.com/gifs/the-wachowskis-MFje9gRTYIL28",
+    "text": "Stacking a block on the chain..."
   });
 });
 
-function getAccountForUrl(url, callback) {
-  var method = eth.contract.methods.accountForUrl(url);
-  // util.log("method", method);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getAccountForUrl error', error);
-    } else {
-      util.debug('getAccountForUrl result', result);
-      var account = eth.getAccountFromResult(result);
-      callback(account);
-    }
-  })
-  .catch(function(error) {
-    util.warn('getAccountForUrl call error ' + url, error);
+
+function getAccountForUrl(url) {
+  return new Promise(function(resolve, reject) {
+    var method = eth.contract.methods.accountForUrl(url);
+    method.call(function(error, result) {
+      if (error) {
+        util.warn('getAccountForUrl error', error);
+      } else {
+        util.debug('getAccountForUrl result', result);
+        var account = eth.getAccountFromResult(result);
+        resolve(account);
+      }
+    })
+    .catch(function(error) {
+      util.warn('getAccountForUrl call error ' + url, error);
+      reject(error);
+    });
   });
 }
 
+function getGIFFor(amount) {
+  console.log("getting GIF for", amount);
+  return "https://giphy.com/gifs/the-wachowskis-MFje9gRTYIL28";
+}
 
 module.exports = router;
