@@ -17,7 +17,7 @@ class CommunityMember extends React.Component {
   }
   
   getUrlFrom = (urls) => {
-    return (urls || '').split(',')[0].replace("mailto:","").replace("https://www.twitter.com/","@")
+    return (urls || '').split(',')[0].replace("mailto:","").replace("https://twitter.com/","@")
   }
 
   render() {

@@ -122,7 +122,7 @@ router.get('/team_auth', function(req, res, next) {
             return res.redirect('/profile?error=slack_team_chain');
           }
           var slackTeams = community.metadata.slackTeams || [];
-          if (slackTeams.contains(teamId)) {
+          if (slackTeams.includes(teamId)) {
             util.log("Team already added");
             return res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
           }

@@ -11,12 +11,9 @@ class Account extends React.Component {
     this.setState({editing: false});
   }
   
-  getFirstUrlFrom = (urls) => {
-    return (urls || '').split('||')[0].replace("mailto:","").replace("https://www.twitter.com/","@")
-  }
-
-  getSecondUrlFrom = (urls) => {
-    return (urls || '').split('||').length < 2 ? null : (urls || '').split('||')[1].replace("mailto:","").replace("https://www.twitter.com/","@")
+  getUrlFrom = (urls, idx) => {
+    var url = (urls || '').split('||').length < idx ? null : (urls || '').split('||')[idx-1].replace("mailto:","").replace("https://twitter.com/","@")
+    return !url ? null : url.startsWith("slack:") ? "slack" : url;
   }
 
   getTotalSoldRewards = (offered) => {
@@ -51,11 +48,15 @@ class Account extends React.Component {
                   <Col md={8}>
                     { this.props.account.metadata && this.props.account.metadata.name && <b>{ this.props.account.metadata.name }</b> }
                     <div>
-                      <i>{ this.getFirstUrlFrom(this.props.account.urls) }</i>
+                      <i>{ this.getUrlFrom(this.props.account.urls, 1) }</i>
                     </div>
-                    { this.getSecondUrlFrom(this.props.account.urls) &&
+                    { this.getUrlFrom(this.props.account.urls, 2) &&
                     <div>
-                      <i>@{ this.getSecondUrlFrom(this.props.account.urls) }</i>
+                      <i>{ this.getUrlFrom(this.props.account.urls, 2) }</i>
+                    </div> }
+                    { this.getUrlFrom(this.props.account.urls, 3) &&
+                    <div>
+                      <i>{ this.getUrlFrom(this.props.account.urls, 3) }</i>
                     </div> }
                   </Col>
                   { this.props.account.providerData && this.props.account.providerData.length > 0 && this.props.account.providerData[0].photoURL &&
