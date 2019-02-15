@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const bodyParser = require("body-parser");
 const eth = require('./eth');
 const util = require('./util');
 const email = require('./emails');

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
-const bodyParser = require("body-parser");
 const firebase = require('./firebase');
 const eth = require('./eth');
 const util = require('./util');
@@ -79,8 +78,18 @@ router.get('/auth', function(req, res, next) {
 
 router.get('/team_auth', function(req, res, next) {
   util.log("in slack team auth");
+  
+  // check slack state arg
   if (req.session.slackState != req.query.state) {
     return res.json({success:false, error: "State mismatch " + req.session.slackState});
+  }
+  
+  // for now only the admin can add to slack
+  if (req.session.email !== process.env.ADMIN_EMAIL) {
+    return res.json({"success":false, "error": "Not authorized"});
+  }
+  if (req.session.ykcid === 0) {
+    return res.json({"success":false, "error": "No community"});
   }
 
   const code = req.query.code;
@@ -105,8 +114,30 @@ router.get('/team_auth', function(req, res, next) {
       };
       docRef = firebase.db.collection('slackTeams').doc(teamId);
       docRef.set(teamVals, { merge: true });
-      // from here the cron job will take care of adding the users
-      res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+      
+      // update community metadata
+        eth.getCommunityFor(req.session.ykcid, (community) => {
+          if (!community.metadata) {
+            util.warn("Couldn't get community for id", req.session.ykcid);
+            return res.redirect('/profile?error=slack_team_chain');
+          }
+          var slackTeams = community.metadata.slackTeams || [];
+          slackTeams.push(teamId);
+          community.metadata.slackTeams = slackTeams;
+          var method = eth.contract.methods.editExistingCommunity(
+            parseInt(community.id),
+            community.addressAdmin || 0,
+            community.flags || '0x00',
+            community.domain || '',
+            JSON.stringify(community.metadata),
+            community.tags || '',
+          );
+          eth.doSend(method, res, 1, 2, () => {
+            // from here the cron job will take care of adding the users' accounts
+            res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+          });
+        });
+
     });
   });
 });

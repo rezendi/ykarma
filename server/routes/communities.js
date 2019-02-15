@@ -1,5 +1,4 @@
 var express = require('express');
-var bodyParser = require("body-parser");
 var router = express.Router();
 var eth = require('./eth');
 var util = require('./util');
@@ -16,7 +15,7 @@ router.get('/setup', function(req, res, next) {
       return res.json({"success":true, 'message':'Redundant'});
     }
     var method = eth.contract.methods.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
-    doSend(method, 4);
+    eth.doSend(method, res);
   });
 });
 
