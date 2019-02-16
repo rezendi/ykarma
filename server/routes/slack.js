@@ -168,9 +168,9 @@ router.post('/yk', async function(req, res, next) {
       }
     }
     if (words[i].startsWith("<@")) {
-      if (recipientId === '') {
-        recipientId = words[i].replace("<@","").replace(">","");
-      }
+      // because Slack's docs are misleading
+      var endIdx = words[i].indexOf('|') > 0 ? words[i].indexOf('|') : words[i].indexOf('>');
+      recipientId = words[i].substring(2, endIdx);
     } else {
       if (recipientId !== '') {
         message += words[i] + ' ';
