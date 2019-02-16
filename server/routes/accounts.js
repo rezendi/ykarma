@@ -302,52 +302,61 @@ router.post('/give', function(req, res, next) {
   if (recipientUrl.startsWith('error')) {
     return res.json({"success":false, "error": recipientUrl});
   }
-  util.warn(`About to give ${req.body.amount} from id ${sender} to ${recipientUrl}`, req.body.message);
-  var method = eth.contract.methods.give(
-    sender,
-    recipientUrl,
-    req.body.amount,
-    req.body.message || '',
-  );
-  eth.doSend(method, res, 1, 4, function() {
-    util.log("karma sent to", req.body.recipient);
-    if (recipientUrl.startsWith("mailto:")) {
-      var account = req.session.account || {};
-      account.metadata = account.metadata || {};
-      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-      util.log("emailPrefs", account.metadata.emailPrefs);
-      let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
-      getAccountForUrl(recipientUrl, (recipient) => {
-        // util.debug("recipient", recipient);
-        // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
-        let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
-        if (sendEmail) {
-          util.log("sending mail", req.body.recipient);
-          const senderName = req.session.name || req.session.email;
-          email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
-          if (!hasNeverLoggedIn(recipient)) {
+  eth.getCommunityFor(req.session.ykcid, (community) => {
+    if (isStrictCommunity(community)) {
+      if (recipientUrl.startsWith("https://twitter.com/")) {
+        return res.json({"success":false, "error": `Closed community, can only give to @${community.domain} emails and/or via Slack`});
+      }
+      if (recipientUrl.startsWith("mailto:") && recipientUrl.indexOf("@"+community.domain) <= 0) {
+        return res.json({"success":false, "error": `Closed community, can only give to @${community.domain} emails and/or via Slack`});
+      }
+    }
+    var method = eth.contract.methods.give(
+      sender,
+      recipientUrl,
+      req.body.amount,
+      req.body.message || ''
+    );
+    eth.doSend(method, res, 1, 4, function() {
+      util.log("karma sent to", req.body.recipient);
+      if (recipientUrl.startsWith("mailto:")) {
+        var account = req.session.account || {};
+        account.metadata = account.metadata || {};
+        account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+        util.log("emailPrefs", account.metadata.emailPrefs);
+        let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
+        getAccountForUrl(recipientUrl, (recipient) => {
+          // util.debug("recipient", recipient);
+          // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
+          let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
+          if (sendEmail) {
+            util.log("sending mail", req.body.recipient);
+            const senderName = req.session.name || req.session.email;
+            email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
+            if (!hasNeverLoggedIn(recipient)) {
+              return res.json( { "success":true } );
+            }
+    
+            // make sure we don't send karma-received email more than once unless explicitly desired
+            account.metadata.emailPrefs[req.body.recipient] = 0;
+            util.log("updated metadata", account.metadata);
+            var method2 = eth.contract.methods.editAccount(
+              account.id,
+              account.userAddress,
+              JSON.stringify(account.metadata),
+              account.flags
+            );
+            eth.doSend(method2, res, 1, 4);
+          } else {
+            util.log("not sending email", account.metadata.emailPrefs);
             return res.json( { "success":true } );
           }
-  
-          // make sure we don't send karma-received email more than once unless explicitly desired
-          account.metadata.emailPrefs[req.body.recipient] = 0;
-          util.log("updated metadata", account.metadata);
-          var method2 = eth.contract.methods.editAccount(
-            account.id,
-            account.userAddress,
-            JSON.stringify(account.metadata),
-            account.flags
-          );
-          eth.doSend(method2, res, 1, 4);
-        } else {
-          util.log("not sending email", account.metadata.emailPrefs);
-          return res.json( { "success":true } );
-        }
-      });
-    } else {
-      // TODO: Twitter notifications
-      return res.json( { "success":true } );
-    }
+        });
+      } else {
+        // TODO: Twitter notifications
+        return res.json( { "success":true } );
+      }
+    });
   });
 });
 
@@ -542,6 +551,10 @@ function getLongUrlFromShort(shortUrl) {
     if (!url.startsWith("mailto:")) {
       url = "mailto:" + url;
     }
+    // should maybe be on-chain: do some basic URL validation, fixing the "+" Gmail/GSuite hack
+    if (url.indexOf('+') > 0) {
+      return 'error Bad Email';
+    }
   } else {
     if (url.startsWith("@")) {
       url = url.substring(1);
@@ -558,6 +571,10 @@ function getLongUrlFromShort(shortUrl) {
 
 function hasNeverLoggedIn(account) {
   return account.id === 0 || account.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
+}
+
+function isStrictCommunity(community) {
+  return community.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
 }
 
 module.exports = router;
