@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from 'react-dom'
 import './index.css';
 import { BrowserRouter } from 'react-router-dom'
+import { unregister } from './registerServiceWorker';
 import App from './components/App';
 
 // Redux Store
@@ -17,3 +18,5 @@ render((
     </BrowserRouter>
   </Provider>
 ), document.getElementById('root'));
+
+unregister();
