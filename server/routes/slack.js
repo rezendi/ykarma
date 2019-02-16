@@ -209,6 +209,7 @@ router.post('/yk', async function(req, res, next) {
   }
   
   const recipientUrl = `slack:${team_id}-${recipientId}`;
+  util.warn("recipientUrl is", recipientUrl);
   const recipient = await getAccountForUrl(recipientUrl);
   if (recipient.id === 0 || recipient.communityId === 0) {
     return res.json({
