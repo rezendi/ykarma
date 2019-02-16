@@ -6,6 +6,7 @@ const YKAccounts = artifacts.require('YKAccounts.sol');
 const YKCommunities = artifacts.require('YKCommunities.sol');
 const YKRewards = artifacts.require('YKRewards.sol');
 const YKarma = artifacts.require('YKarma.sol');
+const YKarmaDirect = artifacts.require('YKarma.sol');
 
 const fs = require('fs');
 const envFile = '../server/.env';
@@ -37,6 +38,7 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(YKCommunities, {from : owner});
     await deployer.deploy(YKRewards, {from : owner});
     await deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
+    await deployer.deploy(YKarmaDirect, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
     const ykt = await YKTranches.deployed();
     await ykt.addOracle(YKarma.address, {from: owner});
     const yka = await YKAccounts.deployed();
@@ -46,6 +48,7 @@ module.exports = (deployer, network, accounts) => {
     const ykv = await YKRewards.deployed();
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
+    const yk2 = await YKarmaDirect.deployed();
     if (!isTesting) {
       setEnvAddress(YKarma.address);
       if (!isInitialGeneration) {

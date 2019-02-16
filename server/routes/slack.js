@@ -149,15 +149,16 @@ router.get('/team_auth', function(req, res, next) {
 // For now, just send mock Slack response with GIF
 router.post('/yk', async function(req, res, next) {
   util.warn("got post", req.body);
-  const text          = req.body.text;
-  const response_url  = req.body.response_url;
+  
+  if (req.body.ssl_check === 1) {
+    return res.json({"ok":true});
+  }
+
   const user_id       = req.body.user_id;
   const team_id       = req.body.team_id;
+  const text          = req.body.text;
+  const response_url  = req.body.response_url;
   
-  //TODO: for occasional pings from Slack
-  //const ssl_check     = req.body.ssl_check;
-  //const token         = req.body.token;
-
   const words = text.split(" ");
   var amount = 0;
   var recipientId = '';

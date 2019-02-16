@@ -46,19 +46,10 @@ contract YKarma is Oracular, YKStructs {
   }
 
   /**
-   * Community methods
+   * Giving and purchasing
    */
 
-  function giveTo(string _url, uint256 _amount, string _message) public {
-    uint256 giverId = accountData.accountIdForAddress(msg.sender);
-    doGive(giverId, _url, _amount, _message);
-  }
-
   function give(uint256 _giverId, string _url, uint256 _amount, string _message) public onlyOracle {
-    doGive(_giverId, _url, _amount, _message);
-  }
-  
-  function doGive(uint256 _giverId, string _url, uint256 _amount, string _message) internal {
     Account memory giver = accountData.accountForId(_giverId);
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
@@ -70,16 +61,7 @@ contract YKarma is Oracular, YKStructs {
     trancheData.performGive(giver, recipient, _amount, community.tags, _message);
   }
 
-  function buy(uint256 _rewardId) public {
-    uint256 spenderId = accountData.accountIdForAddress(msg.sender);
-    doPurchase(spenderId, _rewardId);
-  }
-
   function purchase(uint256 _buyerId, uint256 _rewardId) public onlyOracle {
-    doPurchase(_buyerId, _rewardId);
-  }
-
-  function doPurchase(uint256 _buyerId, uint256 _rewardId) internal {
     Reward memory reward = rewardData.rewardForId(_rewardId);
     require(reward.ownerId == 0); // for now
     trancheData.spend(_buyerId, reward.cost, reward.tag);
@@ -103,19 +85,17 @@ contract YKarma is Oracular, YKStructs {
     return (c.id, c.adminAddress, c.flags, c.domain, c.metadata, c.tags, c.accountIds.length);
   }
   
-  function addNewCommunity(address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) onlyOracle public {
+  function addNewCommunity(address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle {
     communityData.addCommunity(_adminAddress, _flags, _domain, _metadata, _tags);
   }
   
-  function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public {
+  function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle {
     Community memory community = communityData.communityForId(_id);
-    require (community.adminAddress == msg.sender || senderIsOracle());
     communityData.editCommunity(_id, _adminAddress, _flags, _domain, _metadata, _tags);
   }
   
-  function removeAccount(uint256 _communityId, uint256 _accountId) public {
+  function removeAccount(uint256 _communityId, uint256 _accountId) public onlyOracle {
     Community memory community = communityData.communityForId(_communityId);
-    require (community.adminAddress == msg.sender || senderIsOracle());
     communityData.removeAccount(_communityId, _accountId);
   }
   
@@ -170,27 +150,23 @@ contract YKarma is Oracular, YKStructs {
     return newAccountId;
   }
   
-  function editAccount(uint256 _id, address _newAddress, string _metadata, bytes32 _flags) public {
+  function editAccount(uint256 _id, address _newAddress, string _metadata, bytes32 _flags) public onlyOracle {
     Account memory account = accountData.accountForId(_id);
-    require (account.userAddress == msg.sender || senderIsOracle());
     accountData.editAccount(_id, _newAddress, _metadata, _flags);
   }
   
-  function addUrlToExistingAccount(uint256 _id, string _newUrl) public returns (bool) {
+  function addUrlToExistingAccount(uint256 _id, string _newUrl) public onlyOracle returns (bool) {
     Account memory account = accountData.accountForId(_id);
-    require (account.userAddress == msg.sender || senderIsOracle());
     return accountData.addUrlToAccount(_id, _newUrl);
   }
   
-  function removeUrlFromExistingAccount(uint256 _id, string _oldUrl) public {
+  function removeUrlFromExistingAccount(uint256 _id, string _oldUrl) public onlyOracle {
     Account memory account = accountData.accountForId(_id);
-    require (account.userAddress == msg.sender || senderIsOracle());
     accountData.removeUrlFromAccount(_id, _oldUrl);
   }
   
-  function deleteAccount(uint256 _id) public {
+  function deleteAccount(uint256 _id) public onlyOracle {
     Account memory account = accountData.accountForId(_id);
-    require (account.userAddress == msg.sender || senderIsOracle());
     removeAccount(account.communityId, _id);
     accountData.deleteAccount(_id);
   }
@@ -198,35 +174,33 @@ contract YKarma is Oracular, YKStructs {
   /**
    * Reward methods
    */
-  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
+  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
     Account memory vendor = accountData.accountForId(_vendorId);
-    require (vendor.userAddress == msg.sender || senderIsOracle());
     uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
     accountData.addRewardToAccount(_vendorId, rewardId);
     communityData.addRewardToCommunity(vendor.communityId, rewardId);
   }
   
-  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
+  
+  function rewardForId(uint256 _id) public onlyOracle view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string)  {
     Reward memory reward = rewardData.rewardForId(_id);
     if (reward.ownerId != 0) {
       Account memory account = accountData.accountForId(reward.ownerId);
-      require (account.userAddress == msg.sender || senderIsOracle());
     }
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.quantity, reward.flags, reward.tag, reward.metadata);
   }
   
-  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
+  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);
     Account memory account = accountData.accountForId(reward.vendorId);
-    require (account.userAddress == msg.sender || senderIsOracle());
     rewardData.editReward(_id, _cost, _quantity, _tag, _metadata, _flags);
   }
 
-  function deleteReward(uint256 _id) public {
+  function deleteReward(uint256 _id) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_id);
     Account memory vendor = accountData.accountForId(reward.vendorId);
-    require (reward.ownerId == 0 && (vendor.userAddress == msg.sender || senderIsOracle()));
+    require (reward.ownerId == 0);
     accountData.deleteRewardFromAccount(reward.vendorId, reward.id);
     rewardData.deleteRewardRecord(_id);
     communityData.deleteRewardFromCommunity(vendor.communityId, _id);
