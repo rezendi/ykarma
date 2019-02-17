@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import { withTranslation } from 'react-i18next';
 import { loadOwnedRewards, loadVendedRewards, loadAvailableRewards } from '../store/data/actions';
 import RewardForm from './RewardForm';
 import RewardRow from './RewardRow';
@@ -14,13 +15,14 @@ class Rewards extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
         <Grid>
           <Row>
             <Col md={6}>
               <Panel>
                 <Panel.Heading>
-                  Available Rewards
+                  {t('Available Rewards')}
                 </Panel.Heading>
                 <Panel.Body>
                   {this.props.availableRewards.map(reward => reward.ownerId === 0 && reward.vendorId !== this.props.user.ykid &&
@@ -32,7 +34,7 @@ class Rewards extends React.Component {
             <Col md={6}>
               <Panel>
                 <Panel.Heading>
-                  My Rewards
+                  {t('My Rewards')}
                 </Panel.Heading>
                 <Panel.Body>
                   {this.props.ownedRewards.map(reward =>
@@ -46,7 +48,7 @@ class Rewards extends React.Component {
             <Col md={6}>
               <Panel>
                 <Panel.Heading>
-                  Rewards you have offered
+                  {t('Rewards you have offered')}
                 </Panel.Heading>
                 <Panel.Body>
                   {this.props.vendedRewards.map(reward => reward.vendorId === this.props.user.ykid &&
@@ -81,4 +83,6 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Rewards);
+Rewards = connect(mapStateToProps, mapDispatchToProps)(Rewards);
+
+export default withTranslation()(Rewards);

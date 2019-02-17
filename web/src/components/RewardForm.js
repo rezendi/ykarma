@@ -3,6 +3,7 @@ import { Row, Col, Panel, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import { Field, reduxForm, SubmissionError } from 'redux-form';
+import { withTranslation } from 'react-i18next';
 import { setLoading } from '../store/data/actions'
 import Api from '../store/Api';
 
@@ -11,53 +12,54 @@ class RewardForm extends React.Component {
   submitForm = async (values) => {
     //console.log("submitting", values);
     if (!values.name || values.name.length === 0) {
-      alert("Invalid name");
+      alert(this.props.t("Invalid name"));
       throw new SubmissionError({
-        cost: 'Invalid name',
-        _error: 'Reward creation failed',
+        cost: this.props.t('Invalid name'),
+        _error: this.props.t('Reward creation failed'),
       }) ;
     }
     if (!values.cost || parseInt(values.cost, 10) <= 0) {
-      alert("Invalid cost");
+      alert(this.props.t("Invalid cost"));
       throw new SubmissionError({
-        cost: 'Invalid cost',
-        _error: 'Reward creation failed',
+        cost: this.props.t('Invalid cost'),
+        _error: this.props.t('Reward creation failed'),
       }) ;
     }
     if (!values.quantity || parseInt(values.quantity, 10) <= 0) {
-      alert("Invalid quantity");
+      alert(this.props.t("Invalid quantity"));
       throw new SubmissionError({
-        cost: 'Invalid quantity',
-        _error: 'Reward creation failed',
+        cost: this.props.t('Invalid quantity'),
+        _error: this.props.t('Reward creation failed'),
       }) ;
     }
     this.props.setLoading(true);
     Api.upsertReward(values).then((res) => {
       this.props.setLoading(false);
       if (!res.ok) {
-        return alert("Server error!");
+        return alert(this.props.t("Server error!"));
       }
       res.json().then(json => {;
         if (json.success) {
           values.id===0 ? window.location.reload() : this.props.history.push('/user/rewards');
         } else {
-          alert("Server failure! " + JSON.stringify(json));
+          alert(this.props.t("Server failure!") + " " + JSON.stringify(json));
         }
       });
     });
   }
 
   render() {
+    const { t } = this.props;
     return (
       <Panel>
         <Panel.Heading>
-          New Reward
+          {t('New Reward')}
         </Panel.Heading>
         <Panel.Body>
           <form onSubmit={this.props.handleSubmit(this.submitForm)}>
             <Row>
               <Col md={2}>
-                <label htmlFor="name">Name</label>
+                <label htmlFor="name">{t('Name')}</label>
               </Col>
               <Col md={8}>
                 <Field name="name" component="input" size="40" type="text"/>
@@ -65,7 +67,7 @@ class RewardForm extends React.Component {
             </Row>
             <Row>
               <Col md={2}>
-                <label htmlFor="description">Description</label>
+                <label htmlFor="description">{t('Description')}</label>
               </Col>
               <Col md={8}>
                 <Field name="description" component="textarea" cols="40" type="textarea"/>
@@ -73,19 +75,19 @@ class RewardForm extends React.Component {
             </Row>
              <Row>
               <Col md={1}>
-                <label htmlFor="cost">Cost</label>
+                <label htmlFor="cost">{t('Cost')}</label>
               </Col>
               <Col md={3}>
                 <Field name="cost" component="input" size="8" placeholder="? karma" type="text"/>
               </Col>
               <Col md={1}>
-                <label htmlFor="quantity">Qty</label>
+                <label htmlFor="quantity">{t('Qty')}</label>
               </Col>
               <Col md={3}>
                 <Field name="quantity" component="input" size="4" type="text"/>
               </Col>
               <Col md={1}>
-                <label htmlFor="tag">Karma Flavor</label>
+                <label htmlFor="tag">{t('Karma Flavor')}</label>
               </Col>
               <Col md={3}>
                 <Field name="tag" component="input" size="8" type="text"/>
@@ -99,7 +101,7 @@ class RewardForm extends React.Component {
                 &nbsp;
               </Col>
               <Col md={8}>
-                <Button bsStyle="info" type="submit">Offer This Reward</Button>
+                <Button bsStyle="info" type="submit">{t('Offer This Reward')}</Button>
               </Col>
             </Row>
           </form>
@@ -140,5 +142,6 @@ RewardForm = reduxForm({
 })(RewardForm);
 
 RewardForm = connect(mapStateToProps, mapDispatchToProps)(RewardForm);
+RewardForm = withRouter(RewardForm);
 
-export default withRouter(RewardForm);
+export default withTranslation()(RewardForm);

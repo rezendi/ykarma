@@ -27,6 +27,8 @@ const resources = {
       "rewards for a total of" : "rewards for a total of",
       "karma." : "karma.",
       
+      // AccountForm
+      
       // Community
       "Loading..." : "Loading",
       "Server error..." : "Server error",
@@ -34,6 +36,8 @@ const resources = {
       "You have" : "You have",
       "karma available to give." : "karma available to give.",
 
+      // CommunityForm
+      
       // FinishSignIn
       "Logging you in..." : "Logging you in...",
 
@@ -72,14 +76,54 @@ const resources = {
       "Stacking another block on the chain..." : "Stacking another block on the chain...",
       
       // Profile
+      "Error:" : "Error:",
+      "Nameless One" : "Nameless One",
+      "Home" : "Home",
+      "karma to spend." : "karma to spend.",
+      "Add Twitter" : "Add Twitter",
+      "Remove Twitter" : "Remove Twitter",
+      "Add Email" : "Add Email",
+      "Remove Email" : "Remove Email",
+      "Edit Profile" : "Edit Profile",
+      "Email Preferences" : "Email Preferences",
+      "Whenever you receive karma" : "Whenever you receive karma",
+      "Weekly updates, when your karma is replenished" : "Weekly updates, when your karma is replenished",
+      "Edit" : "Edit",
+      "Offered Rewards" : "Offered Rewards",
+      "You have sold" : "You have sold",
+      "Owned Rewards" : "Owned Rewards",
+      "My Given Karma": "My Given Karma",
+      "My Received Karma": "My Received Karma",
       
       // Reward
+      "Cost:" : "Cost:",
+      "Available:" : "Available:",
+      "Description:" : "Description:",
+      "Purchase" : "Purchase",
 
       // RewardForm
+      "Invalid name" : "Invalid name",
+      "Invalid cost" : "Invalid cost",
+      "Invalid quantity" : "Invalid quantity",
+      "Reward creation failed" : "Reward creation failed",
+      "Server error!" : "Server error!",
+      "Server failure!" : "Server failure!",
+      "New Reward" : "New Reward",
+      "Name" : "Name",
+      "Description" : "Description",
+      "Cost" : "Cost",
+      "Qty" : "Qty",
+      "Karma Flavor" : "Karma Flavor",
+      "Offer This Reward" : "Offer This Reward",
       
       // RewardRow
+      "cost:" : "cost:",
+      "available" : "available",
       
       // Rewards
+      "Available Rewards" : "Available Rewards",
+      "My Rewards" : "My Rewards",
+      "Rewards you have offered" : "Rewards you have offered",
       
       // Sign Out
       "Logging you out..." : "Logging you out...",

@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form';
+import { withTranslation } from 'react-i18next';
 import firebase from 'firebase/app'
 import 'firebase/auth';
 import { auth } from '../fbase';
@@ -32,7 +33,7 @@ class Profile extends React.Component {
       console.log("twitter error", errorMessage);
       localStorage.removeItem("additionalTwitterInfo");
       firebase.auth().currentUser.unlink("twitter.com");
-      alert("Error: " + errorMessage);
+      alert(this.props.t("Error:") + " " + errorMessage);
     });
   }
 
@@ -48,7 +49,7 @@ class Profile extends React.Component {
       var errorMessage = error.message;
       console.log("twitter error", errorMessage);
       localStorage.removeItem("additionalTwitterInfo");
-      alert("Error: " + errorMessage);
+      alert(this.props.t("Error:") + " " + errorMessage);
       Api.removeUrl("twitter").then(() => {
         window.location.reload();
       });
@@ -57,7 +58,7 @@ class Profile extends React.Component {
   
   addEmail = async (values) => {
     auth.sendLinkToLinkEmail(values.email);
-    alert("Email sent!");
+    alert(this.props.t("Email sent!"));
   }
 
   removeEmail = () => {
@@ -77,7 +78,7 @@ class Profile extends React.Component {
     this.props.setLoading(true);
     Api.updateAccount(this.props.user.ykid, toSubmit).then((res) => {
       this.props.setLoading(false);
-      !res.ok ? alert("Server error!") : window.location.reload();
+      !res.ok ? alert(this.props.t("Server error!")) : window.location.reload();
     });
   }
 
@@ -87,9 +88,9 @@ class Profile extends React.Component {
 
   getName = (user) => {
     if (!user || !user.uid)
-      return "Nameless One";
+      return this.props.t("Nameless One");
     if (!user.metadata || !user.metadata.name)
-      return user.displayName || "Nameless One";
+      return user.displayName || this.props.t("Nameless One");
     return user.metadata.name;
   }
   
@@ -144,18 +145,19 @@ class Profile extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <Grid>
         <Row>
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                Home
+                {t('Home')}
               </Panel.Heading>
               <Panel.Body>
                 <Row>
                   <Col md={8}>
-                    Howdy, <b>{ this.getName(this.props.user) }</b>
+                    {t('Howdy,')} <b>{ this.getName(this.props.user) }</b>
                     { false && JSON.stringify(this.props.user)}
                     <div>
                       <i>{ this.props.user.email }</i>
@@ -165,9 +167,9 @@ class Profile extends React.Component {
                       <i>@{ this.props.user.handle}</i>
                     </div> }
                     <div>
-                      You have { this.props.user.givable } karma available to give.
+                      {t('You have')} { this.props.user.givable } {t('karma available to give.')}
                     </div>
-                    You have { this.totalSpendable() } karma to spend. ({ this.karmaBreakdown() })
+                    {t('You have')} { this.totalSpendable() } {t('karma to spend.')} ({ this.karmaBreakdown() })
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
@@ -178,28 +180,28 @@ class Profile extends React.Component {
                 <Row>
                   { !this.props.user.handle &&
                   <Col md={4}>
-                    <Button bsStyle="info" type="submit" onClick={this.addTwitter}>Add Twitter</Button>
+                    <Button bsStyle="info" type="submit" onClick={this.addTwitter}>{t('Add Twitter')}</Button>
                   </Col> }
 
                   { this.props.user.email &&
                   (this.props.user.handle || JSON.parse(localStorage.getItem("additionalTwitterInfo") || '{}').username ||
                    (this.props.user.providerData.length > 0 && this.props.user.providerData[0].providerId==="twitter.com")) &&
                   <Col md={4}>
-                    <Button bsStyle="info" type="submit" onClick={this.removeTwitter}>Remove Twitter</Button>
+                    <Button bsStyle="info" type="submit" onClick={this.removeTwitter}>{t('Remove Twitter')}</Button>
                   </Col> }
 
                   { this.props.user.uid && !this.props.user.email &&
                   <Col md={8}>
                     <form onSubmit={this.props.handleSubmit(this.addEmail)}>
-                      <label htmlFor="email">Email</label>
+                      <label htmlFor="email">{t('Email')}</label>
                       <Field name="email" component="input" type="text"/>
-                      <Button bsStyle="info" type="submit">Add Email</Button>
+                      <Button bsStyle="info" type="submit">{t('Add Email')}</Button>
                     </form>
                   </Col> }
 
                   { this.props.user.email && this.props.user.handle &&
                   <Col md={4}>
-                    <Button bsStyle="info" type="submit" onClick={this.removeEmail}>Remove Email</Button>
+                    <Button bsStyle="info" type="submit" onClick={this.removeEmail}>{t('Remove Email')}</Button>
                   </Col> }
                 </Row>
                 { false &&
@@ -218,23 +220,23 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                Edit Profile
+                {t('Edit Profile')}
               </Panel.Heading>
               <Panel.Body>
                 <Row>
                   <Col md={12}>
                     <form onSubmit={this.props.handleSubmit(this.editMetadata)}>
-                        <label htmlFor="name">Name</label>
+                        <label htmlFor="name">{t('Name')}</label>
                         &nbsp;
                         <Field name="name" component="input" type="text"/>
                         <br/>
-                        <label htmlFor="pref1">Email Preferences</label>
+                        <label htmlFor="pref1">{t('Email Preferences')}</label>
                         <br/>
-                        <Field name='kr' id='kr' component="input" type="checkbox"/>Whenever you receive karma
+                        <Field name='kr' id='kr' component="input" type="checkbox"/>{t('Whenever you receive karma')}
                         <br/>
-                        <Field name='wk' id='wk' component="input" type="checkbox"/>Weekly updates, when your karma is replenished
+                        <Field name='wk' id='wk' component="input" type="checkbox"/>{t('Weekly updates, when your karma is replenished')}
                         <hr/>
-                        <Button bsStyle="info" type="submit">Edit</Button>
+                        <Button bsStyle="info" type="submit">{t('Edit')}</Button>
                     </form>
                   </Col>
                 </Row>
@@ -247,20 +249,20 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                Offered Rewards
+                {t('Offered Rewards')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.vendedRewards.map(reward =>
                   <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                 )}
-                You have sold {this.getTotalSoldRewards(this.props.vendedRewards)} rewards for a total of {this.getTotalSoldKarma(this.props.vendedRewards)} karma.
+                {t('You have sold')} {this.getTotalSoldRewards(this.props.vendedRewards)} {t('rewards for a total of')} {this.getTotalSoldKarma(this.props.vendedRewards)} {t('karma.')}
               </Panel.Body>
             </Panel>
           </Col>
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                Owned Rewards
+                {t('Owned Rewards')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.ownedRewards.map(reward =>
@@ -276,7 +278,7 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Given Karma
+                {t('My Given Karma')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.given && this.props.user.given.map((tranche, idx) =>
@@ -288,7 +290,7 @@ class Profile extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                My Received Karma
+                {t('My Received Karma')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.received && this.props.user.received.map((tranche, idx) =>
@@ -332,4 +334,6 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Profile);
+Profile = connect(mapStateToProps, mapDispatchToProps)(Profile);
+
+export default withTranslation()(Profile);

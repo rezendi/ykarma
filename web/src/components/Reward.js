@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
+import { withTranslation } from 'react-i18next';
 import { loadReward, setLoading } from '../store/data/actions'
 import RewardForm from './RewardForm';
 import Api from '../store/Api';
@@ -35,22 +36,23 @@ class Reward extends React.Component {
     Api.purchaseReward(this.props.reward.id).then((res) => {
       this.props.setLoading(false);
       if (!res.ok) {
-        return alert("Server error!");
+        return alert(this.props.t("Server error!"));
       }
       res.json().then(json => {;
         if (json.success) {
           this.props.history.push('/user/rewards');
         } else {
-          alert("Server failure! " + JSON.stringify(json));
+          alert(this.props.t("Server failure!") + " " + JSON.stringify(json));
         }
       });
     });
   };
 
   render() {
+    const { t } = this.props;
     if (this.props.reward.id === undefined) {
       return (
-        <div>Loading...</div>
+        <div>{t('Loading...')}</div>
       );
     }
     if (this.state && this.state.editing) {
@@ -69,12 +71,12 @@ class Reward extends React.Component {
               <Panel.Body>
                 <Row>
                   <Col md={6}>
-                    <i>Cost:</i> {this.props.reward.cost} {this.props.reward.tag} karma
+                    <i>{t('Cost:')}</i> {this.props.reward.cost} {this.props.reward.tag} {t('karma')}
                     &nbsp;
-                    <i>Available:</i> {this.props.reward.quantity}
+                    <i>{t('Available:')}</i> {this.props.reward.quantity}
                   </Col>
                   <Col md={6}>
-                    <i>Description:</i> {this.props.reward.metadata.description}
+                    <i>{t('Description:')}</i> {this.props.reward.metadata.description}
                   </Col>
                 </Row>
                 <hr/>
@@ -83,7 +85,7 @@ class Reward extends React.Component {
                     { this.props.reward.ownerId === this.props.user.ykid &&
                     <div>You own this reward.</div> }
                     { this.props.reward.ownerId === 0 && this.getSpendable() !== "nada" && this.getSpendable() > 0 &&
-                    <Button bsStyle="info" type="submit" onClick={this.doPurchase}>Purchase</Button> }
+                    <Button bsStyle="info" type="submit" onClick={this.doPurchase}>{t('Purchase')}</Button> }
                   </Col>
                 </Row>
               </Panel.Body>
@@ -109,4 +111,6 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Reward);
+Reward = connect(mapStateToProps, mapDispatchToProps)(Reward);
+
+export default withTranslation()(Reward);
