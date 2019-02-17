@@ -56,7 +56,7 @@ const resources = {
       "Give" : "Give",
       "Spend" : "Spend",
       "total karma available to spend." : "total karma available to spend.",
-      "Top reward:" : "Top reward:",
+      "Top reward" : "Top reward",
       "View All Available Rewards" : "View All Available Rewards",
       "Given" : "Given",
       "Received" : "Received",
@@ -76,7 +76,7 @@ const resources = {
       "Stacking another block on the chain..." : "Stacking another block on the chain...",
       
       // Profile
-      "Error:" : "Error:",
+      "Error" : "Error",
       "Nameless One" : "Nameless One",
       "Home" : "Home",
       "karma to spend." : "karma to spend.",
@@ -96,9 +96,9 @@ const resources = {
       "My Received Karma": "My Received Karma",
       
       // Reward
-      "Cost:" : "Cost:",
-      "Available:" : "Available:",
-      "Description:" : "Description:",
+      "Cost" : "Cost",
+      "Available" : "Available",
+      "Description" : "Description",
       "Purchase" : "Purchase",
 
       // RewardForm
@@ -110,14 +110,12 @@ const resources = {
       "Server failure!" : "Server failure!",
       "New Reward" : "New Reward",
       "Name" : "Name",
-      "Description" : "Description",
-      "Cost" : "Cost",
       "Qty" : "Qty",
       "Karma Flavor" : "Karma Flavor",
       "Offer This Reward" : "Offer This Reward",
       
       // RewardRow
-      "cost:" : "cost:",
+      "cost" : "cost",
       "available" : "available",
       
       // Rewards

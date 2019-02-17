@@ -98,6 +98,7 @@ class Home extends React.Component {
                 <Row>
                   <Col md={12}>
                     {t('Howdy,')} { this.props.user.email || this.props.user.handle }!
+                    &nbsp;
                     {t('You are a member of')} { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } {t('which has')} { this.props.user.community.accounts } {t('members / invitees.')}
                   </Col>
                 </Row>

@@ -33,7 +33,7 @@ class Profile extends React.Component {
       console.log("twitter error", errorMessage);
       localStorage.removeItem("additionalTwitterInfo");
       firebase.auth().currentUser.unlink("twitter.com");
-      alert(this.props.t("Error:") + " " + errorMessage);
+      alert(this.props.t("Error") + " " + errorMessage);
     });
   }
 
@@ -49,7 +49,7 @@ class Profile extends React.Component {
       var errorMessage = error.message;
       console.log("twitter error", errorMessage);
       localStorage.removeItem("additionalTwitterInfo");
-      alert(this.props.t("Error:") + " " + errorMessage);
+      alert(this.props.t("Error") + " " + errorMessage);
       Api.removeUrl("twitter").then(() => {
         window.location.reload();
       });

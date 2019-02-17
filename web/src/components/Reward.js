@@ -71,12 +71,12 @@ class Reward extends React.Component {
               <Panel.Body>
                 <Row>
                   <Col md={6}>
-                    <i>{t('Cost:')}</i> {this.props.reward.cost} {this.props.reward.tag} {t('karma')}
+                    <i>{t('Cost')}:</i> {this.props.reward.cost} {this.props.reward.tag} {t('karma')}
                     &nbsp;
-                    <i>{t('Available:')}</i> {this.props.reward.quantity}
+                    <i>{t('Available')}:</i> {this.props.reward.quantity}
                   </Col>
                   <Col md={6}>
-                    <i>{t('Description:')}</i> {this.props.reward.metadata.description}
+                    <i>{t('Description')}:</i> {this.props.reward.metadata.description}
                   </Col>
                 </Row>
                 <hr/>
