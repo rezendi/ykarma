@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { connect } from 'react-redux'
+import { withTranslation } from 'react-i18next';
 import { loadAccount, loadRewardsVendedBy } from '../store/data/actions'
 import RewardRow from './RewardRow';
 
@@ -29,6 +30,7 @@ class Account extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
     if (!this.props.account.id) {
       return (
         <div>Loading...</div>
@@ -41,7 +43,7 @@ class Account extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                Profile
+                {t('Profile')}
               </Panel.Heading>
               <Panel.Body>
                 <Row>
@@ -73,13 +75,13 @@ class Account extends React.Component {
           <Col md={12}>
             <Panel>
               <Panel.Heading>
-                Rewards
+                {t('Rewards')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.vendedRewards.map(reward =>
                   <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                 )}
-                Has sold {this.getTotalSoldRewards(this.props.vendedRewards)} rewards for a total of {this.getTotalSoldKarma(this.props.vendedRewards)} karma.
+                {t('Has sold')} {this.getTotalSoldRewards(this.props.vendedRewards)} {t('rewards for a total of')} {this.getTotalSoldKarma(this.props.vendedRewards)} {t('karma.')}
               </Panel.Body>
             </Panel>
           </Col>
@@ -104,4 +106,4 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Account);
+export default withTranslation(connect(mapStateToProps, mapDispatchToProps))(Account);
