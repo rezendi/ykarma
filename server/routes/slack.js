@@ -159,22 +159,33 @@ router.post('/yk', async function(req, res, next) {
   var amount = 0;
   var recipientId = '';
   var message = '';
+  var showGif = true;
   
   for (var i=0; i < words.length; i++) {
+    if (words[i]==='nogif') {
+      showGif = false;
+      continue;
+    }
     if (amount === 0) {
       var wordAmount = parseInt(words[i], 10);
       if (wordAmount > 0) {
         amount = wordAmount;
+        continue;
       }
     }
     if (words[i].startsWith("<@")) {
-      // because Slack's docs are misleading
-      var endIdx = words[i].indexOf('|') > 0 ? words[i].indexOf('|') : words[i].indexOf('>');
-      recipientId = words[i].substring(2, endIdx);
-    } else {
-      if (recipientId !== '') {
-        message += words[i] + ' ';
+      if (recipientId === '') {
+        // because Slack's docs are misleading
+        var endIdx = words[i].indexOf('|') > 0 ? words[i].indexOf('|') : words[i].indexOf('>');
+        recipientId = words[i].substring(2, endIdx);
+      } else { // someone else named
+        var startIdx = words[i].indexOf('|') > 0 ? words[i].indexOf('|') : 2;
+        message += `@${words[i].substring(startIdx, words[i].indexOf('>'))} `;
       }
+      continue;
+    }
+    if (recipientId !== '') {
+      message += words[i] + ' ';
     }
   }
   
@@ -231,7 +242,7 @@ router.post('/yk', async function(req, res, next) {
     // send back a GIF via the response_url
     const body = {
       "response_type" : "in_channel",
-      "text": "Sent! " + getGIFFor(amount)
+      "text": "Sent!" + showGif ?` ${getGIFFor(amount)}` : ''
     };
     util.log("response body", body);
     fetch(response_url, {
