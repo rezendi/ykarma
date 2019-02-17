@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { Field, reduxForm } from 'redux-form';
+import { withTranslation } from 'react-i18next';
 import { setLoading, loadAvailableRewards } from '../store/data/actions'
 import Api from '../store/Api';
 import Tranche from './Tranche';
@@ -41,6 +42,7 @@ class Home extends React.Component {
   }
   
   render() {
+    const { t } = this.props;
    if (!this.props.user || Object.keys(this.props.user).length === 0) {
       return (
         <Grid>
@@ -60,7 +62,7 @@ class Home extends React.Component {
     if (!this.props.user.community || !this.props.user.community.id) {
       return (
         <Grid>
-          <Row><Col md={12}>Hi, { this.props.user.displayName || this.props.user.email }! You are not (yet) a member of any YKarma community.</Col></Row>
+          <Row><Col md={12}>Hi, { this.props.user.displayName || this.props.user.email }! {t('You are not (yet) a member of any YKarma community.')}</Col></Row>
           <Readme/>
         </Grid>
       );
@@ -78,8 +80,8 @@ class Home extends React.Component {
       }, 6000);
       return (
         <Grid>
-          <Row>First login detected, populating your account...</Row>
-          <Row>Please wait while we pile another block or two on the blockchain...</Row>
+          <Row>{t('First login detected, populating your account...')}</Row>
+          <Row>{t('Please wait while we pile another block or two on the blockchain...')}</Row>
         </Grid>
       );
     }
@@ -95,8 +97,8 @@ class Home extends React.Component {
               <Panel.Body>
                 <Row>
                   <Col md={12}>
-                    Howdy, { this.props.user.email || this.props.user.handle }!
-                    You are a member of { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } which has { this.props.user.community.accounts } members / invitees.
+                    {t('Howdy,')} { this.props.user.email || this.props.user.handle }!
+                    {t('You are a member of')} { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } {t('which has')} { this.props.user.community.accounts } {t('members / invitees.')}
                   </Col>
                 </Row>
               </Panel.Body>
@@ -113,8 +115,8 @@ class Home extends React.Component {
               <Panel.Body>
                 <Col md={12}>
                   <Row>
-                    You have { this.props.user.givable } karma available to give.
-                    <br/>For every 100 you give, you get 10 to spend.
+                    {t('You have')} { this.props.user.givable } {t('karma available to give.')}
+                    <br/>{t('For every 100 you give, you get 10 to spend.')}
                     <hr/>
                   </Row>
                   <form onSubmit={this.props.handleSubmit(this.submitForm)}>
@@ -123,17 +125,17 @@ class Home extends React.Component {
                       &nbsp;
                       <Field name="coins" component="input" type="text" size="3" placeholder="?"/>
                       &nbsp;
-                      <label htmlFor="coins">karma</label>
+                      <label htmlFor="coins">{t('karma')}</label>
                       &nbsp;
-                      <label htmlFor="recipient">to</label>
+                      <label htmlFor="recipient">{t('to')}</label>
                       &nbsp;
                       <Field name="recipient" component="input" type="text" size="12" placeholder="Email / Twitter"/>
                       &nbsp;
-                      <label htmlFor="message">because</label>
+                      <label htmlFor="message">{t('because')}</label>
                       &nbsp;
                       <Field name="message" component="input" type="text" size="16" maxLength="128" placeholder="Optional message"/>
                       &nbsp;
-                      <Button bsStyle="info" type="submit">Give</Button>
+                      <Button bsStyle="info" type="submit">{t('Give')}</Button>
                     </Row>
                   </form>
                 </Col>
@@ -144,18 +146,18 @@ class Home extends React.Component {
           <Col md={6}>
             <Panel>
               <Panel.Heading>
-                Spend
+                {t('Spend')}
               </Panel.Heading>
               <Panel.Body>
                 <Col md={12}>
                   <Row>
-                    You have { this.totalSpendable() } total karma available to spend.
+                    {t('You have')} { this.totalSpendable() } {t('total karma available to spend.')}
                     <Link className="pull-right" to="/profile">view details</Link>
                     <hr/>
                   </Row>
                   { this.getTopReward() &&
                   <Row>
-                    Top reward:
+                    {t('Top reward')}:
                     &nbsp;
                     <Link to={`/reward/${this.getTopReward().id}`}>{this.getTopReward().metadata.name || 'n/a'}</Link>
                     ,
@@ -165,7 +167,7 @@ class Home extends React.Component {
                   </Row>
                   }
                   <Row>
-                    <Link className="pull-right" to="/user/rewards">View All Available Rewards</Link>
+                    <Link className="pull-right" to="/user/rewards">{t('View All Available Rewards')}</Link>
                   </Row>
                 </Col>
               </Panel.Body>
@@ -178,7 +180,7 @@ class Home extends React.Component {
             {this.props.user.given.length > 0 &&
             <Panel>
               <Panel.Heading>
-                Given
+                {t('Given')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.given.map((tranche, idx) =>
@@ -191,7 +193,7 @@ class Home extends React.Component {
             {this.props.user.received.length > 0 &&
             <Panel>
               <Panel.Heading>
-                Received
+                {t('Received')}
               </Panel.Heading>
               <Panel.Body>
                 {this.props.user.received.map((tranche, idx) =>
@@ -225,4 +227,5 @@ Home = reduxForm({
 })(Home);
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+const connected = connect(mapStateToProps, mapDispatchToProps)(Home);
+export default withTranslation()(connected);

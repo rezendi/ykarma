@@ -1,4 +1,5 @@
 import React from 'react';
+import { withTranslation } from 'react-i18next';
 import { fbase, auth } from '../fbase';
 
 class FinishSignIn extends React.Component {
@@ -29,10 +30,11 @@ class FinishSignIn extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
-      <div>Logging you in...</div>
+      <div>{t('Logging you in...')}</div>
     )
   }
 }
 
-export default FinishSignIn
+export default withTranslation()(FinishSignIn)

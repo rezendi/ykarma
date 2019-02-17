@@ -106,4 +106,5 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default withTranslation(connect(mapStateToProps, mapDispatchToProps))(Account);
+const connected = connect(mapStateToProps, mapDispatchToProps)(Account);
+export default withTranslation()(connected);

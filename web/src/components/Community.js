@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { reduxForm } from 'redux-form';
+import { withTranslation } from 'react-i18next';
 import { loadCommunity, loadAccountsFor, setLoading } from '../store/data/actions'
 import CommunityForm from './CommunityForm';
 import CommunityMember from './CommunityMember';
@@ -19,7 +20,7 @@ class Community extends React.Component {
       innerDict[pieces[0]] = formValues[key];
       values[newKey] = innerDict;
     }
-    // console.log("Values", values);
+
     for (var key2 in values) {
       var args = {
         // FIXME note incredibly ugly hack because no dots allowed in forms, see also CommunityMember.js
@@ -27,7 +28,7 @@ class Community extends React.Component {
         coins: values[key2]['coins'],
         message: values[key2]['message'],
       }
-      // console.log("args", args);
+
       var callbacks = 0;
       this.props.setLoading(true);
       // eslint-disable-next-line
@@ -54,14 +55,15 @@ class Community extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
     if ((this.props.community === undefined || this.props.accounts === undefined) && this.props.user === undefined) {
       return (
-        <div>Loading...</div>
+        <div>{t('Loading...')}</div>
       );
     }
     if (this.props.community.metadata === undefined) {
       return (
-        <div>Server error...</div>
+        <div>{t('Server error..')}.</div>
       );
     }
     if (this.state && this.state.editing) {
@@ -79,14 +81,14 @@ class Community extends React.Component {
                 {this.props.community.metadata.name}
                 {this.props.user.isAdmin && <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>}
                 &nbsp; &nbsp;
-                {this.props.accounts.length} members
+                {this.props.accounts.length} {t('members')}
               </Panel.Heading>
               <Panel.Body>
                 <Row><Col md={12}>
                   {this.props.community.metadata.description}
                 </Col></Row>
                 <Row><Col md={12}>
-                  You have { this.props.user.givable } karma available to give.
+                  {t('You have')} { this.props.user.givable } {t('karma available to give.')}
                   <hr/>
                 </Col></Row>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
@@ -129,4 +131,5 @@ Community = reduxForm({
 })(Community);
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(Community);
+const connected = connect(mapStateToProps, mapDispatchToProps)(Community);
+export default withTranslation()(connected);
