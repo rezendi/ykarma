@@ -16,16 +16,18 @@ import Reward from './Reward';
 import RewardForm from './RewardForm';
 import Rewards from './Rewards';
 import Loadable from 'react-loading-overlay';
+import { withTranslation } from 'react-i18next';
 import GA from '../utils/GoogleAnalytics'
 
 class Main extends React.Component {
 
   render() {
+    const { t } = this.props;
     return (
       <main>
         { GA.init() && <GA.RouteTracker /> }
         <Switch>
-          <Loadable active={this.props.loading} color={'red'} background='white' spinner={true} animate={true} text={'Stacking another block on the chain...'} >
+          <Loadable active={this.props.loading} color={'red'} background='white' spinner={true} animate={true} text={t('Stacking another block on the chain...')} >
             <Route exact path='/' component={Home}/>
             <Route exact path='/login' component={Login}/>
             <Route exact path='/finishSignIn' component={FinishSignIn}/>
@@ -56,5 +58,6 @@ function mapStateToProps(state, ownProps) {
 }
 
 Main = connect(mapStateToProps, null)(Main);
+Main = withRouter(Main)
 
-export default withRouter(Main)
+export default withTranslation()(Main);

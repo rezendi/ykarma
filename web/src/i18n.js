@@ -57,7 +57,39 @@ const resources = {
       "Given" : "Given",
       "Received" : "Received",
 
-      "" : "",
+      // LinkEmail
+      "Linking your email..." : "Linking your email...",
+
+      // Login
+      "Email sent!" : "Email sent!",
+      "Email failed!" : "Email failed!",
+      "Log In with Email" : "Log In with Email",
+      "Email" : "Email",
+      "Log In with Twitter" : "Log In with Twitter",
+      "Log In with Slack" : "Log In with Slack",
+
+      // Main
+      "Stacking another block on the chain..." : "Stacking another block on the chain...",
+      
+      // Profile
+      
+      // Reward
+
+      // RewardForm
+      
+      // RewardRow
+      
+      // Rewards
+      
+      // Sign Out
+      "Logging you out..." : "Logging you out...",
+      
+      // Tranche
+      "unknown" : "unknown",
+      "you" : "you",
+      "sent" : "sent",
+      "karma to" : "karma to",
+      "at block" : "at block",
     }
   }
 };

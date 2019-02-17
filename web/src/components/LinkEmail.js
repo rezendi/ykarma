@@ -1,4 +1,5 @@
 import React from 'react';
+import { withTranslation } from 'react-i18next';
 import { auth, fbase } from '../fbase';
 import Api from '../store/Api';
 
@@ -22,10 +23,11 @@ class LinkEmail extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
-      <div>Linking your email...</div>
+      <div>{t('Linking your email...')}</div>
     )
   }
 }
 
-export default LinkEmail;
+export default withTranslation()(LinkEmail);
