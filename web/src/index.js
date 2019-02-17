@@ -4,6 +4,7 @@ import './index.css';
 import { BrowserRouter } from 'react-router-dom'
 import { unregister } from './registerServiceWorker';
 import App from './components/App';
+import './i18n';
 
 // Redux Store
 import { Provider } from 'react-redux'
