@@ -144,29 +144,31 @@ router.get('/team_auth', function(req, res, next) {
 });
 
 // For now, just send mock Slack response with GIF
-router.post('/yk', async function(req, res, next) {
+router.post('/yk', function(req, res, next) {
   util.warn("got post", req.body);
   
   if (req.body.ssl_check === 1) {
     return res.json({"ok":true});
   }
 
-  const user_id       = req.body.user_id;
-  const team_id       = req.body.team_id;
-  const text          = req.body.text;
-  const response_url  = req.body.response_url;
-  
+  const text = req.body.text || '';
+  var showGif = text.indexOf('nogif') === -1;
+
+  var error = sendKarma(req.body.team_id, req.body.user_id, req.body.response_url, text, showGif);
+  return res.json({
+    "response_type" : error ? "ephemeral" : "in_channel",
+    "text" : error ? error : "Posting the send to the blockchain chain..."
+  });
+});
+
+
+async function sendKarma(team_id, user_id, response_url, text, showGif) {
   const words = text.split(" ");
   var amount = 0;
   var recipientId = '';
   var message = '';
-  var showGif = true;
-  
+
   for (var i=0; i < words.length; i++) {
-    if (words[i]==='nogif') {
-      showGif = false;
-      continue;
-    }
     if (amount === 0) {
       var wordAmount = parseInt(words[i], 10);
       if (wordAmount > 0) {
@@ -191,43 +193,28 @@ router.post('/yk', async function(req, res, next) {
   }
   
   if (amount === 0) {
-    return res.json({
-      "response_type" : "ephemeral",
-      "text" : "Sorry! Valid amount not found."
-    });
+    return "Sorry! Valid amount not found.";
   }
 
   if (recipientId === '' || recipientId === user_id) {
-    return res.json({
-      "response_type" : "ephemeral",
-      "text" : "Sorry! Valid recipient not found."
-    });
+    return "Sorry! Valid recipient not found.";
   }
 
   // get the sender  
   const senderUrl = `slack:${team_id}-${user_id}`;
   const sender = await getAccountForUrl(senderUrl);
   if (sender.id === 0 || sender.communityId === 0) {
-    return res.json({
-      "response_type" : "ephemeral",
-      "text" : "Sorry! Your YKarma account is not set up for sending here"
-    });
+    return "Sorry! Your YKarma account is not set up for sending here";
   }
   if (sender.givable < amount) {
-    return res.json({
-      "response_type" : "ephemeral",
-      "text" : "Sorry! You don't have enough YKarma to do that. Your balance is " + givable
-    });
+    return "Sorry! You don't have enough YKarma to do that. Your balance is " + givable;
   }
   
   const recipientUrl = `slack:${team_id}-${recipientId}`;
   util.warn("recipientUrl is", recipientUrl);
   const recipient = await getAccountForUrl(recipientUrl);
   if (recipient.id === 0 || recipient.communityId === 0) {
-    return res.json({
-      "response_type" : "ephemeral",
-      "text" : "Sorry! That YKarma account is not set up for receiving here"
-    });
+    return "Sorry! That YKarma account is not set up for receiving here";
   }
   
   //OK, let's go ahead and do the give
@@ -243,7 +230,7 @@ router.post('/yk', async function(req, res, next) {
     // send back a GIF via the response_url
     const body = {
       "response_type" : "in_channel",
-      "text": "Sent!" + showGif ?` ${getGIFFor(amount)}` : ''
+      "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
     };
     util.log("response body", body);
     fetch(response_url, {
@@ -255,12 +242,8 @@ router.post('/yk', async function(req, res, next) {
     });
   });
 
-  return res.json({
-    "response_type" : "in_channel",
-    "text": "Stacking a block on the chain..."
-  });
-});
-
+  return null; // no error
+}
 
 function getAccountForUrl(url) {
   return new Promise(function(resolve, reject) {
@@ -804,5 +787,65 @@ function getGIFFor(amount) {
 function gifFrom(options) {
   return options[Math.floor(Math.random() * options.length)];
 }
+
+router.post('/bot', function(req, res, next) {
+
+  const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
+  const doc = await docRef.get();
+  if (!doc.exists) {
+    return console.log("no team data for", req.body);
+  }
+
+  const bot_token = doc.data().bot_token;
+  if (!bot_token) {
+    return console.log("no bot token found for", req.body);
+  }
+  
+  var slackUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
+
+  // parse text
+  var text = req.body.text || '';
+  var words = text.split(' ');
+  var purpose = words[0];
+  switch (purpose) {
+    case "help":
+      text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
+      break;
+    case "balance":
+      const senderUrl = `slack:${team_id}-${user_id}`;
+      const sender = await getAccountForUrl(senderUrl);
+      return res.json({
+        text: `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`
+      });
+    case "send":
+      var error = sendKarma(req.body,team_id, req.body.user_id, req,body,response_url, text, false);
+      return res.json({
+        "text" : error ? error : "Posting the send to the blockchain chain..."
+      });
+    case "rewards":
+      const senderUrl = `slack:${team_id}-${user_id}`;
+      const sender = await getAccountForUrl(senderUrl);
+      break;
+    case "purchase":
+      const senderUrl = `slack:${team_id}-${user_id}`;
+      const sender = await getAccountForUrl(senderUrl);
+      text = "purchase goes here";
+      break;
+    default:
+      text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
+  }
+
+  body = {
+    text: text,
+    channel: req.body.channel_id,
+    token: bot_token
+  };
+  url = "https://slack.com/api/chat.postMessage";
+  var response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    body: JSON.stringify(body),
+  });
+});
 
 module.exports = router;

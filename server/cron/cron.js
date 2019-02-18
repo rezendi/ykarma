@@ -3,7 +3,7 @@
 require('dotenv').config();
 
 var eth = require('../routes/eth');
-var slack = require('./slack');
+var slack = require('./slackron');
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
