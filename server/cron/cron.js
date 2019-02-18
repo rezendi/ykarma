@@ -3,11 +3,13 @@
 require('dotenv').config();
 
 var eth = require('../routes/eth');
+var slack = require('./slack');
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const REFRESH_WINDOW = 20 * 60 * 24 * 7;
+const REPLENISH_AMOUNT = 100;
 
 var fromAccount;
 var blockNumber;
@@ -87,8 +89,8 @@ function replenishAccount(account) {
     }
     console.log("replenishing account", account.id);
     var replenish = eth.contract.methods.replenish(account.id);
-    var notify = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod';
     replenish.estimateGas({gas: eth.GAS}, function(estError, gasAmount) {
+      var notify = true;
       if (estError) {
         console.log('estimation error', estError);
         return;
@@ -101,6 +103,7 @@ function replenishAccount(account) {
           notify = false;
           var metadata = account.metadata || {};
           var emailPrefs = metadata.emailPrefs || {};
+          sendReplenishSlack(account);
           if (emailPrefs.wk !== 0) {
             sendReplenishEmail(account);
           }
@@ -118,17 +121,15 @@ function replenishAccount(account) {
 
 function sendReplenishEmail(account) {
   console.log("sending email to", account.urls);
-  if (process.env.NODE_ENV === "test") return;
-  var recipientEmail = "";
-  if (account.urls && account.urls.indexOf("mailto") > 0) {
-    const urls = account.urls.split("||");
-    for (var i in urls) {
-      if (urls[i].startsWith("mailto:")) {
-        recipientEmail = urls[i].replace("mailto:","");
-      }
+  if (process.env.NODE_ENV === "test" || !account.urls || account.urls.indexOf("mailto") === -1) return;
+  var recipientEmail = null;
+  const urls = account.urls.split("||");
+  for (var i in urls) {
+    if (urls[i].startsWith("mailto:")) {
+      recipientEmail = urls[i].replace("mailto:","");
     }
   }
-  if (recipientEmail === "") return;
+  if (!recipientEmail) return;
   const msg = {
     to: recipientEmail,
     from: 'do-not-respond@ykarma.com',
@@ -136,6 +137,7 @@ function sendReplenishEmail(account) {
     text: `
 You now have 100 more YKarma to give away!
 Log into https://www.ykarma.com/ to give it to the deserving or even the not-so-deserving.
+These expire in a month or so, so give them away soon --
 
 YKarma
 https://www.ykarma.com/
@@ -143,6 +145,7 @@ https://www.ykarma.com/
     html: `
 <p>You now have 100 more YKarma to give away!</p>
 <p><a href="https://www.ykarma.com/">Log in to YKarma</a> to give it to the deserving or even the not-so-deserving.</p>
+<p>These expire in a month or so, so give them away soon --</p>
 <hr/>
 <a href="https://www.ykarma.com/">YKarma</a>
 `,
@@ -150,3 +153,17 @@ https://www.ykarma.com/
   sgMail.send(msg);
 }
 
+function sendReplenishSlack(account) {
+  console.log("sending slack notification to", account.urls);
+  if (process.env.NODE_ENV === "test" || !account.urls) return;
+  var slackUrl = null;
+  const urls = account.urls.split("||");
+  for (var i in urls) {
+    if (urls[i].startsWith("slack:")) {
+      slackUrl = urls[i];
+    }
+  }
+  if (slackUrl) {
+    slack.notifyReplenishment(slackUrl, REPLENISH_AMOUNT, account.givable + REPLENISH_AMOUNT);
+  }
+}

@@ -97,6 +97,7 @@ router.get('/team_auth', function(req, res, next) {
         util.warn("Error completing slack team auth");
         return res.redirect('/profile?error=slack_team');
       }
+
       // get vals, store to Firestore
       const teamId = json.team_id;
       var teamVals = {
@@ -112,31 +113,31 @@ router.get('/team_auth', function(req, res, next) {
       docRef.set(teamVals, { merge: true });
       
       // update community metadata
-        eth.getCommunityFor(req.session.ykcid, (community) => {
-          if (!community.metadata) {
-            util.warn("Couldn't get community for id", req.session.ykcid);
-            return res.redirect('/profile?error=slack_team_chain');
-          }
-          var slackTeams = community.metadata.slackTeams || [];
-          if (slackTeams.includes(teamId)) {
-            util.log("Team already added");
-            return res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
-          }
-          slackTeams.push(teamId);
-          community.metadata.slackTeams = slackTeams;
-          var method = eth.contract.methods.editExistingCommunity(
-            parseInt(community.id),
-            community.addressAdmin || 0,
-            community.flags || '0x00',
-            community.domain || '',
-            JSON.stringify(community.metadata),
-            community.tags || '',
-          );
-          eth.doSend(method, res, 1, 2, () => {
-            // from here the cron job will take care of adding the users' accounts
-            res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
-          });
+      eth.getCommunityFor(req.session.ykcid, (community) => {
+        if (!community.metadata) {
+          util.warn("Couldn't get community for id", req.session.ykcid);
+          return res.redirect('/profile?error=slack_team_chain');
+        }
+        var slackTeams = community.metadata.slackTeams || [];
+        if (slackTeams.includes(teamId)) {
+          util.log("Team already added");
+          return res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+        }
+        slackTeams.push(teamId);
+        community.metadata.slackTeams = slackTeams;
+        var method = eth.contract.methods.editExistingCommunity(
+          parseInt(community.id),
+          community.addressAdmin || 0,
+          community.flags || '0x00',
+          community.domain || '',
+          JSON.stringify(community.metadata),
+          community.tags || '',
+        );
+        eth.doSend(method, res, 1, 2, () => {
+          // from here the cron job will take care of adding the users' accounts
+          res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
         });
+      });
 
     });
   });
