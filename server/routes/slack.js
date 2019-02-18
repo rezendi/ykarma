@@ -144,7 +144,7 @@ router.get('/team_auth', function(req, res, next) {
 });
 
 // For now, just send mock Slack response with GIF
-router.post('/yk', function(req, res, next) {
+router.post('/yk', async function(req, res, next) {
   util.warn("got post", req.body);
   
   if (req.body.ssl_check === 1) {
@@ -152,6 +152,18 @@ router.post('/yk', function(req, res, next) {
   }
 
   const text = req.body.text || '';
+  if (text.startsWith('help') {
+    const senderUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
+    const sender = await getAccountForUrl(senderUrl);
+    return res.json({
+      "response_type" : "ephemeral",
+      "text" : `YKarma is a reputation cryptocurrency which you give to others, who can then use it to buy rewards.
+You currently have ${sender.givable} karma to give away to others, and ${sender.spendable} to spend on rewards.
+To send karma, use this slash command; for example, to send 10 karma to Alice with the message _for being awesome_,
+just type ``/yk 10 to @alice for being awesome```
+    });
+  }
+    
   var showGif = text.indexOf('nogif') === -1;
 
   var error = sendKarma(req.body.team_id, req.body.user_id, req.body.response_url, text, showGif);
