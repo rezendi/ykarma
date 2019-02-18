@@ -82,8 +82,8 @@ world in which people actually use this one.
 wave of experimentation with wholly new economic structures and incentivization
 systems. This is something which blockchains enable, but which has not yet
 happened, largely because (most) people cannot think outside the box in which
-they live, and/or are more interested in getting rich in the cryptocurrency casino
-or building decentralized versions of existing centralized services.
+they live, and/or are more interested in getting rich in the cryptocurrency
+casino or building decentralized versions of existing centralized services.
 
 19. This isn't to reject capitalism, by the way. Well-regulated capitalism is
 great, up to a point, one which I think we in the rich world have now hit. Even
@@ -109,7 +109,7 @@ offering attendance or benefits to people whose presence would burnish their
 quality or public image; individuals offering lunch in exchange for meeting
 and picking the brains of high-reputation people; altruists offering gifts to
 those collectively deemed most deserving; hosts offering couchsurfing
-to particularly interesting people; brands offering freebies to very-high-
+to quantifiably interesting people; brands offering freebies to very-high-
 reputation people, just as they do today, except quantified; etc etc etc.
 
 23. Whether people will want to participate in a given reputation currency

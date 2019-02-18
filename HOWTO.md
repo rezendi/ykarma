@@ -14,6 +14,11 @@ Only two third-party services are used: Firebase for authentication, and
 Sendgrid for email. Authentication is either via email link or Sign In With
 Twitter -- this app does not use (or store) passwords.
 
+(_update_: since the first iteration of this HOWTO, some Slack integration has
+been added to the code. This is entirely optional and does not invalidate any
+of the below; documentation for the Slack integration will be added as a
+separate file and linked to from here.)
+
 All these services have been Dockerized so that they can be launched via a
 single docker-compose statement, after the various configuration files have
 been appropriately populated. Automated integration tests exist for the smart

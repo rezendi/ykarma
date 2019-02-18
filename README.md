@@ -38,7 +38,7 @@ The most obvious and most boring use is within a company, wherein offering
 employee rewards -- a day off, a course, a conference, a social event at
 company expense, etc. -- would a) be good for morale, b) identify those people
 most highly thought of by their fellow workers. In that case the company would
-be the"vendor" of rewards for their employees.
+be the "vendor" of rewards for their employees.
 
 It's also easy to envision why external vendors would want to offer rewards to
 people who have established themselves as high-reputation within a particular
@@ -204,10 +204,10 @@ credit", and rating vendors as opposed to users seems a reasonable thing to do.
 
 ### Can't I just make multiple accounts and funnel their weekly allocation to myself?
 
-This is known in the infosec biz as a "sibyl attack." Fortunately, there are
-a lot of notional ways for communities to prevent sibyls: two-factor
+This is known in the infosec biz as a "sybil attack." Fortunately, there are
+a lot of notional ways for communities to prevent sybils: two-factor
 authentication to ensure each account has a phone associated with it, making
-sibyls both inconvenient and expensive; only allowing accounts with emails at
+sybils both inconvenient and expensive; only allowing accounts with emails at
 a particular domain; requiring X established accounts to vouch for any new one
 before they can join; simply having trusted administrator accounts approve each
 new account; etcetera.
@@ -257,8 +257,8 @@ immediately, I'm looking for volunteers to take part in that testing.
 I'm also interested in talking to people who find the concept intriguing,
 whether they be potential collaborators, parallel experimenters, angry critics,
 or anything else. If you're any of those, please feel free to reach out to me
-at info@ykarma.com to converse privately, or [@rezendi](https://twitter.com/rezendi) on Twitter to discuss
-publicly.
+at info@ykarma.com to converse privately, or
+[@rezendi](https://twitter.com/rezendi) on Twitter to discuss publicly.
 
 ### Why is it called "YKarma"?
 

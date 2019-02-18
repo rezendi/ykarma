@@ -131,6 +131,7 @@ function sendReplenishEmail(account) {
     }
   }
   if (!recipientEmail) return;
+  console.log("sending email to", recipientEmail);
   const msg = {
     to: recipientEmail,
     from: 'do-not-respond@ykarma.com',

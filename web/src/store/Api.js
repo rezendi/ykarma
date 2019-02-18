@@ -184,6 +184,8 @@ class Api {
       body: JSON.stringify({
         community: {
           id: values.id,
+          domain: values.domain,
+          strict: values.strict,
           metadata: {
             name: values.name,
             description: values.description

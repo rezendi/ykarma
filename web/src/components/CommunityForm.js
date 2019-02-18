@@ -10,16 +10,14 @@ class CommunityForm extends React.Component {
   submitForm = async (values) => {
     //console.log("Submitting form", values);
     this.props.setLoading(true);
-    Api.upsertCommunity(values).then((res) => {
-      this.props.setLoading(false);
-      if (!res.ok) {
-        alert("Server error!");
-      } else {
-        res.json().then(json => {
-          json.success ? this.props.history.push('/admin') : alert("Server failure! " + JSON.stringify(json));
-        });
-      }
-    });
+    var response = await Api.upsertCommunity(values);
+    this.props.setLoading(false);
+    if (!response.ok) {
+      alert("Server error!");
+    } else {
+      var json = await response.json();
+      json.success ? window.location.href = '/admin' : alert("Server failure! " + JSON.stringify(json));
+    }
   }
 
   getSlackUrl = () => {
@@ -55,11 +53,20 @@ class CommunityForm extends React.Component {
                     <Field name="description" component="input" type="text" size="80"/>
                   </Row>
                   <Row>
+                    <label htmlFor="domain">Community Domain (if any)</label>
+                    <Field name="domain" component="input" type="text"/>
+                  </Row>
+                  <Row>
+                        <Field name='strict' id='strict' component="input" type="checkbox"/>Strict membership (only from Slack workspace or emails from this domain)
+                  </Row>
+                  <Row>
                     <Button type="submit">Submit</Button>
                   </Row>
                 </form>
                 {this.props.initialValues && this.props.initialValues.slackTeams && this.props.initialValues.slackTeams.length > 0 &&
-                <p>This community already has a Slack team associated with it.</p>
+                <Row>
+                  <p>This community already has a Slack team associated with it.</p>
+                </Row>
                 }
               </Panel.Body>
             </Panel>
@@ -90,6 +97,8 @@ function mapStateToProps(state, ownProps) {
     initialValues: {
       id: ownProps.community ? ownProps.community.id : 0,
       name: ownProps.community ? ownProps.community.metadata.name : '',
+      domain: ownProps.community ? ownProps.community.domain : '',
+      strict: ownProps.community ? ownProps.community.flags === '0x0000000000000000000000000000000000000000000000000000000000000001' : null,
       description: ownProps.community ? ownProps.community.metadata.description : '',
       slackTeams: ownProps.community ? ownProps.community.metadata.slackTeams : '',
     }

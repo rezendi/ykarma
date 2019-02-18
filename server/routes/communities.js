@@ -64,6 +64,7 @@ router.post('/create', function(req, res, next) {
     return res.json({"success":false, "error": "Not authorized"});
   }
   var community = req.body.community;
+  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : '0x00';
   util.log("community", JSON.stringify(community));
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
@@ -86,10 +87,11 @@ router.post('/create', function(req, res, next) {
 /* PUT edit community */
 router.put('/update', function(req, res, next) {
   var community = req.body.community;
+  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : '0x00';
   if (req.session.email !== process.env.ADMIN_EMAIL && parseInt(req.session.communityAdminId) !== community.id) {
     return res.json({"success":false, "error": "Not authorized"});
   }
-  util.log("community", JSON.stringify(community));
+  util.log("community update", JSON.stringify(community));
   if (community.id === 0) {
     res.json({'success':false, 'error':'community not saved'});
   }
