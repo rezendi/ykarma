@@ -11,13 +11,14 @@ const util = require('../routes/util');
 var balances = {};
 var ids = {};
 
+console.log(new Date().toUTCString());
 var checkLoadMode = eth.contract.methods.loadMode();
 checkLoadMode.call(function(error, result) {
   if (error) {
     console.log("loadMode error");
     return;
   }
-  if (result == false) {
+  if (result === false) {
     console.log("loadMode false");
     return;
   }

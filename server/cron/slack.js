@@ -9,6 +9,7 @@ const firebase = require('../routes/firebase');
 var fromAccount;
 var blockNumber;
 
+console.log(new Date().toUTCString());
 console.log("ykarma", process.env.YKARMA_ADDRESS);
 eth.web3.eth.getAccounts().then((ethAccounts) => {
   fromAccount = ethAccounts[0];
