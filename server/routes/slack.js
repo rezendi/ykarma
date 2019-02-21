@@ -802,12 +802,14 @@ function gifFrom(options) {
 
 router.post('/event', async function(req, res, next) {
 
+  console.log("event request", req.body);
   if (req.body.type==="url_verification") {
-    if (req.body.token != process.env.SLACK_APP_TOKEN) {
+    if (req.body.token !== process.env.SLACK_APP_TOKEN) {
       return res.json({success:false, error: "Token mismatch"});
     }
     return res.text(req.body.challenge);
   }
+  return res.text(JSON.stringify(req.body));
 
   const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
   const doc = await docRef.get();
