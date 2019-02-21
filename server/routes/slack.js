@@ -807,9 +807,9 @@ router.post('/event', async function(req, res, next) {
     if (req.body.token !== process.env.SLACK_APP_TOKEN) {
       return res.json({success:false, error: "Token mismatch"});
     }
-    return res.text(req.body.challenge);
+    return res.send(req.body.challenge);
   }
-  return res.text(JSON.stringify(req.body));
+  return res.send(JSON.stringify(req.body));
 
   const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
   const doc = await docRef.get();
