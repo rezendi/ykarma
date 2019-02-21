@@ -152,7 +152,7 @@ router.post('/yk', async function(req, res, next) {
   }
 
   const text = req.body.text || '';
-  if (text.startsWith('help') {
+  if (text.startsWith('help')) {
     const senderUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
     const sender = await getAccountForUrl(senderUrl);
     return res.json({
@@ -800,7 +800,7 @@ function gifFrom(options) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
-router.post('/bot', function(req, res, next) {
+router.post('/bot', async function(req, res, next) {
 
   const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
   const doc = await docRef.get();

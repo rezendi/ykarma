@@ -169,7 +169,7 @@ function doSend(method, minConfirmations = 1, gasMultiplier = 2, callback = null
   });
 }
 
-function notifyReplenishment(slackUrl, amount, balance) {
+async function notifyReplenishment(slackUrl, amount, balance) {
 
   if (!slackUrl || slackUrl.indexOf(":")===-1 || slackUrl.indexOf("-")===-1) {
     return console.log("bad slack URL", slackUrl);
