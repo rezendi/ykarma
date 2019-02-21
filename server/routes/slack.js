@@ -826,13 +826,15 @@ router.post('/event', async function(req, res, next) {
   var text = req.body.text || '';
   var words = text.split(' ');
   var purpose = words[0];
+  var senderUrl;
+  var sender;
   switch (purpose) {
     case "help":
       text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
       break;
     case "balance":
-      const senderUrl = `slack:${team_id}-${user_id}`;
-      const sender = await getAccountForUrl(senderUrl);
+      senderUrl = `slack:${team_id}-${user_id}`;
+      sender = await getAccountForUrl(senderUrl);
       return res.json({
         text: `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`
       });
@@ -842,12 +844,12 @@ router.post('/event', async function(req, res, next) {
         "text" : error ? error : "Posting the send to the blockchain chain..."
       });
     case "rewards":
-      const senderUrl = `slack:${team_id}-${user_id}`;
-      const sender = await getAccountForUrl(senderUrl);
+      senderUrl = `slack:${team_id}-${user_id}`;
+      sender = await getAccountForUrl(senderUrl);
       break;
     case "purchase":
-      const senderUrl = `slack:${team_id}-${user_id}`;
-      const sender = await getAccountForUrl(senderUrl);
+      senderUrl = `slack:${team_id}-${user_id}`;
+      sender = await getAccountForUrl(senderUrl);
       text = "purchase goes here";
       break;
     default:
