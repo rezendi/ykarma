@@ -800,7 +800,14 @@ function gifFrom(options) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
-router.post('/bot', async function(req, res, next) {
+router.post('/event', async function(req, res, next) {
+
+  if (req.body.type==="url_verification") {
+    if (req.body.token != process.env.SLACK_APP_TOKEN) {
+      return res.json({success:false, error: "Token mismatch"});
+    }
+    return res.text(req.body.challenge);
+  }
 
   const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
   const doc = await docRef.get();
