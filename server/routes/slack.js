@@ -802,15 +802,20 @@ function gifFrom(options) {
 
 router.post('/event', async function(req, res, next) {
 
-  console.log("event request", req.body);
   if (req.body.type==="url_verification") {
     if (req.body.token !== process.env.SLACK_APP_TOKEN) {
       return res.json({success:false, error: "Token mismatch"});
     }
     return res.send(req.body.challenge);
   }
-  return res.send(JSON.stringify(req.body));
 
+  var isDM = req.body.type==="message.im" || (req.body.type==="message" && req.body.channel_type==="im");
+  if (!isDM) {
+    util.warn("unhandled event request", req.body);
+    return res.send(JSON.stringify(req.body));
+  }
+
+  console.log("message.im", req.body);
   const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
   const doc = await docRef.get();
   if (!doc.exists) {
@@ -822,10 +827,10 @@ router.post('/event', async function(req, res, next) {
     return console.log("no bot token found for", req.body);
   }
   
-  var slackUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
+  var slackUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
 
   // parse text
-  var text = req.body.text || '';
+  var text = req.body.event.text || '';
   var words = text.split(' ');
   var purpose = words[0];
   var senderUrl;
@@ -858,9 +863,10 @@ router.post('/event', async function(req, res, next) {
       text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
   }
 
+  res.sendStatus(200);
   body = {
     text: text,
-    channel: req.body.channel_id,
+    channel: req.body.event.channel,
     token: bot_token
   };
   url = "https://slack.com/api/chat.postMessage";
@@ -869,6 +875,8 @@ router.post('/event', async function(req, res, next) {
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
     body: JSON.stringify(body),
   });
+  var json = await response.json();
+  console.log("response", json);
 });
 
 module.exports = router;
