@@ -866,13 +866,12 @@ router.post('/event', async function(req, res, next) {
   res.sendStatus(200);
   body = {
     text: text,
-    channel: req.body.event.channel,
-    token: bot_token
+    channel: req.body.event.channel
   };
   url = "https://slack.com/api/chat.postMessage";
   var response = await fetch(url, {
     method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
   });
   var json = await response.json();
