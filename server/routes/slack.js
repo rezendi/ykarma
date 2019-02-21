@@ -809,7 +809,7 @@ router.post('/event', async function(req, res, next) {
     return res.send(req.body.challenge);
   }
 
-  var isDM = req.body.type==="message.im" || (req.body.type==="message" && req.body.channel_type==="im");
+  var isDM = req.body.event.type==="message.im" || (req.body.event.type==="message" && req.body.event.channel_type==="im");
   if (!isDM) {
     util.warn("unhandled event request", req.body);
     return res.send(JSON.stringify(req.body));
