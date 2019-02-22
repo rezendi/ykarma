@@ -168,28 +168,28 @@ router.post('/yk', async function(req, res, next) {
     text=text.replace("nogif ", "");
   }
 
-  var error = await sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
-    const body = {
+  var error = await sendKarma(res, req.body.team_id, req.body.user_id, text, function() {
+    console.log("in callback");
+    console.log("url", req.body.response_url);
+    console.log("showGif", showGif);
+    const postBody = {
       "response_type" : "in_channel",
       "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
     };
-    console.log("in callback", body);
+    console.log("callback body", postBody);
     fetch(req.body.response_url, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify(body),
+      body: JSON.stringify(postBody),
     }).then(function(response) {
       util.log("Delayed response response", response.status);
     });
   });
 
-  console.log("error", error);
-  const responseBody = {
+  return res.json({
     "response_type" : error ? "ephemeral" : "in_channel",
-    "text" : error ? error : "Posting the send to the blockchain chain..."
-  };
-  console.log("responseBody", responseBody);
-  return res.json(responseBody);
+    "text" : error ? error : "Sending..."
+  });
 });
 
 
@@ -868,7 +868,7 @@ router.post('/event', async function(req, res, next) {
         });
         console.log("response", sendResponse.status);
       });
-      text = error ? error : "Stacking the send block on the chain...";
+      text = error ? error : "Sending...";
       break;
     case "rewards":
       text = "rewards handling goes here";
