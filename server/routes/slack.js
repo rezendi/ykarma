@@ -836,21 +836,14 @@ router.post('/event', async function(req, res, next) {
     return res.send({success:false, error:"no token found"});
   }
 
-  const bot_id = doc.data().bot_id;
-  if (req.body.event.user===bot_id) {
-    console.log("message is from bot");
-    return res.send({success:false, error:"message is from bot"});
-  }
-    
   const senderUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
   const sender = await getAccountForUrl(senderUrl);
 
   // parse text
-  var text = req.body.event.text || '';
-  var words = text.split(' ');
+  var text;
+  var incoming = req.body.event.text || '';
+  var words = incoming.split(' ');
   var purpose = words[0];
-  console.log("text", text);
-  console.log("purpose", purpose);
   switch (purpose) {
     case "help":
       text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
@@ -860,14 +853,14 @@ router.post('/event', async function(req, res, next) {
       break;
     case "send":
       var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
-        var body = {
+        var sendBody = {
           text: error ? error : "Sent!",
           channel: req.body.event.channel
         };
         var sendResponse = fetch("https://slack.com/api/chat.postMessage", {
           method: 'POST',
           headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
-          body: JSON.stringify(body),
+          body: JSON.stringify(sendBody),
         }).then(function(sendResponse2) {
           util.log("Delayed response response", sendResponse2.status);
         });
@@ -889,14 +882,15 @@ router.post('/event', async function(req, res, next) {
     text: text,
     channel: req.body.event.channel
   };
+  console.log("POSTing to chat", body);
   var response = fetch("https://slack.com/api/chat.postMessage", {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
   }).then(function(response) {
-    util.log("Delayed response response", response.status);
+    console.log("Delayed response response", response);
   });
-  console.log("response", response.status);
+  console.log("response", response);
   res.sendStatus(200);
 });
 
