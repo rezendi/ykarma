@@ -809,6 +809,11 @@ router.post('/event', async function(req, res, next) {
     return res.send(req.body.challenge);
   }
 
+  if (req.body.event.bot_id || req.body.event.subtype==="bot_message") {
+    console.log("bot message");
+    return res.send({success:false, error:"bot message"});
+  }
+
   var isDM = req.body.event.type==="message.im" || (req.body.event.type==="message" && req.body.event.channel_type==="im");
   if (!isDM) {
     util.warn("unhandled event request", req.body);
@@ -822,7 +827,6 @@ router.post('/event', async function(req, res, next) {
     console.log("no team data");
     return res.send({success:false, error:"no team data"});
   }
-
   
   const bot_token = doc.data().bot_token;
   if (!bot_token) {
