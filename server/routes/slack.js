@@ -854,7 +854,7 @@ router.post('/event', async function(req, res, next) {
     case "send":
       var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
         var sendBody = {
-          text: error ? error : "Sent!",
+          text: "Sent!",
           channel: req.body.event.channel
         };
         var sendResponse = fetch("https://slack.com/api/chat.postMessage", {
