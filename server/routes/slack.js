@@ -256,7 +256,7 @@ async function sendKarma(res, team_id, user_id, text, callback) {
   }
   
   //OK, let's go ahead and do the give
-  util.warn(`About to give ${amount} from id ${sender.id} to ${recipient.id} via Slack`, message);
+  util.log(`About to give ${amount} from id ${sender.id} to ${recipient.id} via Slack`, message);
   var method = eth.contract.methods.give(
     sender.id,
     recipientUrl,
@@ -866,14 +866,13 @@ router.post('/event', async function(req, res, next) {
           text: "Sent!",
           channel: req.body.event.channel
         };
-        var sendResponse = fetch("https://slack.com/api/chat.postMessage", {
+        fetch("https://slack.com/api/chat.postMessage", {
           method: 'POST',
           headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
           body: JSON.stringify(sendBody),
-        }).then(function(sendResponse2) {
-          util.log("Delayed response response", sendResponse2.status);
+        }).then(function(sendResponse) {
+          util.log("Delayed response response", sendResponse.status);
         });
-        console.log("response", sendResponse.status);
       });
       text = error ? error : "Sending...";
       break;
@@ -891,15 +890,14 @@ router.post('/event', async function(req, res, next) {
     text: text,
     channel: req.body.event.channel
   };
-  console.log("POSTing to chat", body);
-  var response = fetch("https://slack.com/api/chat.postMessage", {
+  // console.log("POSTing to chat", body);
+  fetch("https://slack.com/api/chat.postMessage", {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
   }).then(function(response) {
-    console.log("Delayed response response", response);
+    console.log("Delayed response response", response.status);
   });
-  console.log("response", response);
   res.sendStatus(200);
 });
 
