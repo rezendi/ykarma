@@ -822,11 +822,14 @@ router.post('/event', async function(req, res, next) {
     console.log("no team data");
     return res.send({success:false, error:"no team data"});
   }
-  docRef = firebase.db.collection('slackUsers').doc(req.body.event.user);
+  
+  //TODO: better check that it's not the bot talking
+  const uniqueId = `#${req.body.team_id}-${req.body.event.user}`;
+  docRef = firebase.db.collection('slackUsers').doc(uniqueId);
   doc = await docRef.get();
   if (!doc.exists) {
     console.log("no user data");
-    return res.send({success:false, error:"no uer data"});
+    return res.send({success:false, error:"no user data"});
   }
 
   const bot_token = doc.data().bot_token;
