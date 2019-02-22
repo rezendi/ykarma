@@ -860,7 +860,7 @@ router.post('/event', async function(req, res, next) {
       text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
       break;
     case "send":
-      var error = sendKarma(req.body,team_id, req.body.user_id, text, () => {
+      var error = sendKarma(req.body.team_id, req.body.user_id, text, () => {
         var body = {
           text: text,
           channel: req.body.event.channel
