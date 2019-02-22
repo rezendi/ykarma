@@ -151,7 +151,7 @@ router.post('/yk', async function(req, res, next) {
     return res.json({"ok":true});
   }
 
-  const text = req.body.text || '';
+  var text = req.body.text || '';
   if (text.startsWith('help')) {
     const senderUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
     const sender = await getAccountForUrl(senderUrl);
@@ -164,9 +164,26 @@ just type ``/yk 10 to @alice for being awesome```
     });
   }
     
-  var showGif = text.indexOf('nogif') === -1;
+  if (text.indexOf('nogif') >= 0) {
+    showGif = false;
+    text=text.replace(" nogif", "");
+    text=text.replace("nogif ", "");
+  }
 
-  var error = sendKarma(req.body.team_id, req.body.user_id, req.body.response_url, text, showGif);
+  var error = sendKarma(req.body.team_id, req.body.user_id, text, () => {
+    const body = {
+      "response_type" : "in_channel",
+      "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
+    };
+    fetch(req.body.response_url, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify(body),
+    }).then(function(response) {
+      util.log("Delayed response response", response.status);
+    });
+  });
+
   return res.json({
     "response_type" : error ? "ephemeral" : "in_channel",
     "text" : error ? error : "Posting the send to the blockchain chain..."
@@ -174,7 +191,7 @@ just type ``/yk 10 to @alice for being awesome```
 });
 
 
-async function sendKarma(team_id, user_id, response_url, text, showGif) {
+async function sendKarma(team_id, user_id, text, callback) {
   const words = text.split(" ");
   var amount = 0;
   var recipientId = '';
@@ -238,22 +255,7 @@ async function sendKarma(team_id, user_id, response_url, text, showGif) {
     message || ''
   );
 
-  eth.doSend(method, res, 1, 4, function() {
-    // send back a GIF via the response_url
-    const body = {
-      "response_type" : "in_channel",
-      "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
-    };
-    util.log("response body", body);
-    fetch(response_url, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify(body),
-    }).then(function(response) {
-      util.log("Delayed response response", response.status);
-    });
-  });
-
+  eth.doSend(method, res, 1, 4, callback);
   return null; // no error
 }
 
@@ -842,24 +844,38 @@ router.post('/event', async function(req, res, next) {
     
   const senderUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
   const sender = await getAccountForUrl(senderUrl);
+  console.log("sender", sender);
 
   // parse text
   var text = req.body.event.text || '';
   var words = text.split(' ');
   var purpose = words[0];
+  console.log("text", text);
+  console.log("purpose", purpose);
   switch (purpose) {
     case "help":
       text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
       break;
     case "balance":
-      return res.json({
-        text: `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`
-      });
+      text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
+      break;
     case "send":
-      var error = sendKarma(req.body,team_id, req.body.user_id, req,body, response_url, text, false);
-      return res.json({
-        "text" : error ? error : "Posting the send to the blockchain chain..."
+      var error = sendKarma(req.body,team_id, req.body.user_id, text, () => {
+        var body = {
+          text: text,
+          channel: req.body.event.channel
+        };
+        var response = fetch("https://slack.com/api/chat.postMessage", {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
+          body: JSON.stringify(body),
+        }).then(function(response) {
+          util.log("Delayed response response", response.status);
+        });
+        console.log("response", response.status);
       });
+      text = error ? error : "Stacking the send block on the chain...";
+      break;
     case "rewards":
       text = "rewards handling goes here";
       break;
@@ -871,18 +887,6 @@ router.post('/event', async function(req, res, next) {
   }
 
   res.sendStatus(200);
-  body = {
-    text: text,
-    channel: req.body.event.channel
-  };
-  url = "https://slack.com/api/chat.postMessage";
-  var response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
-    body: JSON.stringify(body),
-  });
-  var json = await response.json();
-  console.log("response", json);
 });
 
 module.exports = router;
