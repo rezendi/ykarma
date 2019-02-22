@@ -157,10 +157,7 @@ router.post('/yk', async function(req, res, next) {
     const sender = await getAccountForUrl(senderUrl);
     return res.json({
       "response_type" : "ephemeral",
-      "text" : `YKarma is a reputation cryptocurrency which you give to others, who can then use it to buy rewards.
-You currently have ${sender.givable} karma to give away to others, and ${sender.spendable} to spend on rewards.
-To send karma, use this slash command; for example, to send 10 karma to Alice with the message _for being awesome_,
-just type ``/yk 10 to @alice for being awesome```
+      "text" : `YKarma is a reputation cryptocurrency which you give to others, who can then use it to buy rewards. You currently have ${sender.givable} karma to give away to others, and ${sender.spendable} to spend on rewards. To send karma, use this slash command; for example, to send 10 karma to Alice with the message _for being awesome_, just type "/yk 10 to @alice for being awesome"`
     });
   }
     
@@ -171,6 +168,7 @@ just type ``/yk 10 to @alice for being awesome```
   }
 
   var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
+    console.log("in callback");
     const body = {
       "response_type" : "in_channel",
       "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
@@ -184,10 +182,13 @@ just type ``/yk 10 to @alice for being awesome```
     });
   });
 
-  return res.json({
+  console.log("error", error);
+  const responseBody = {
     "response_type" : error ? "ephemeral" : "in_channel",
     "text" : error ? error : "Posting the send to the blockchain chain..."
-  });
+  };
+  console.log("responseBody", responseBody);
+  return res.json(responseBody);
 });
 
 
@@ -852,7 +853,7 @@ router.post('/event', async function(req, res, next) {
       text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
       break;
     case "send":
-      var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
+      var error = sendKarma(res, req.body.team_id, req.body.user_id, incoming, () => {
         var sendBody = {
           text: "Sent!",
           channel: req.body.event.channel
