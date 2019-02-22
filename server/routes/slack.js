@@ -146,7 +146,8 @@ router.get('/team_auth', function(req, res, next) {
 // For now, just send mock Slack response with GIF
 router.post('/yk', async function(req, res, next) {
   util.warn("got post", req.body);
-  
+
+  var showGif = true;
   if (req.body.ssl_check === 1) {
     return res.json({"ok":true});
   }
@@ -168,11 +169,11 @@ router.post('/yk', async function(req, res, next) {
   }
 
   var error = await sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
-    console.log("in callback");
     const body = {
       "response_type" : "in_channel",
       "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
     };
+    console.log("in callback", body);
     fetch(req.body.response_url, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
@@ -853,7 +854,7 @@ router.post('/event', async function(req, res, next) {
       text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
       break;
     case "send":
-      var error = await sendKarma(res, req.body.team_id, req.body.user_id, incoming, () => {
+      var error = await sendKarma(res, req.body.team_id, req.body.event.user, incoming, () => {
         var sendBody = {
           text: "Sent!",
           channel: req.body.event.channel
