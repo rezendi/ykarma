@@ -167,7 +167,7 @@ router.post('/yk', async function(req, res, next) {
     text=text.replace("nogif ", "");
   }
 
-  var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
+  var error = await sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
     console.log("in callback");
     const body = {
       "response_type" : "in_channel",
@@ -853,7 +853,7 @@ router.post('/event', async function(req, res, next) {
       text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
       break;
     case "send":
-      var error = sendKarma(res, req.body.team_id, req.body.user_id, incoming, () => {
+      var error = await sendKarma(res, req.body.team_id, req.body.user_id, incoming, () => {
         var sendBody = {
           text: "Sent!",
           channel: req.body.event.channel
