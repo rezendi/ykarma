@@ -816,15 +816,23 @@ router.post('/event', async function(req, res, next) {
   }
 
   console.log("message.im", req.body);
-  const docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
-  const doc = await docRef.get();
+  var docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
+  var doc = await docRef.get();
   if (!doc.exists) {
-    return console.log("no team data for", req.body);
+    console.log("no team data");
+    return res.send({success:false, error:"no team data"});
+  }
+  docRef = firebase.db.collection('slackUsers').doc(req.body.event.user);
+  doc = await docRef.get();
+  if (!doc.exists) {
+    console.log("no user data");
+    return res.send({success:false, error:"no uer data"});
   }
 
   const bot_token = doc.data().bot_token;
   if (!bot_token) {
-    return console.log("no bot token found for", req.body);
+    console.log("no bot token found");
+    return res.send({success:false, error:"no token found"});
   }
   
   var slackUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
