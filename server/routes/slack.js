@@ -170,7 +170,7 @@ just type ``/yk 10 to @alice for being awesome```
     text=text.replace("nogif ", "");
   }
 
-  var error = sendKarma(req.body.team_id, req.body.user_id, text, () => {
+  var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
     const body = {
       "response_type" : "in_channel",
       "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
@@ -191,7 +191,7 @@ just type ``/yk 10 to @alice for being awesome```
 });
 
 
-async function sendKarma(team_id, user_id, text, callback) {
+async function sendKarma(res, team_id, user_id, text, callback) {
   const words = text.split(" ");
   var amount = 0;
   var recipientId = '';
@@ -844,7 +844,6 @@ router.post('/event', async function(req, res, next) {
     
   const senderUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
   const sender = await getAccountForUrl(senderUrl);
-  console.log("sender", sender);
 
   // parse text
   var text = req.body.event.text || '';
@@ -860,19 +859,19 @@ router.post('/event', async function(req, res, next) {
       text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
       break;
     case "send":
-      var error = sendKarma(req.body.team_id, req.body.user_id, text, () => {
+      var error = sendKarma(res, req.body.team_id, req.body.user_id, text, () => {
         var body = {
-          text: text,
+          text: error ? error : "Sent!",
           channel: req.body.event.channel
         };
-        var response = fetch("https://slack.com/api/chat.postMessage", {
+        var sendResponse = fetch("https://slack.com/api/chat.postMessage", {
           method: 'POST',
           headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
           body: JSON.stringify(body),
-        }).then(function(response) {
-          util.log("Delayed response response", response.status);
+        }).then(function(sendResponse2) {
+          util.log("Delayed response response", sendResponse2.status);
         });
-        console.log("response", response.status);
+        console.log("response", sendResponse.status);
       });
       text = error ? error : "Stacking the send block on the chain...";
       break;
@@ -886,6 +885,18 @@ router.post('/event', async function(req, res, next) {
       text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
   }
 
+  var body = {
+    text: text,
+    channel: req.body.event.channel
+  };
+  var response = fetch("https://slack.com/api/chat.postMessage", {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
+    body: JSON.stringify(body),
+  }).then(function(response) {
+    util.log("Delayed response response", response.status);
+  });
+  console.log("response", response.status);
   res.sendStatus(200);
 });
 
