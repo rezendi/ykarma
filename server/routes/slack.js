@@ -168,15 +168,22 @@ router.post('/yk', async function(req, res, next) {
     text=text.replace("nogif ", "");
   }
 
+  // TODO fix this ugly hack where we reproduce code in sendKarma because we need the amount in the callback...
+  const words = text.split(" ");
+  var amount = 0;
+  for (var i=0; i < words.length; i++) {
+    var wordAmount = parseInt(words[i], 10);
+    if (wordAmount > 0) {
+      amount = wordAmount;
+      break;
+    }
+  }
+
   var error = await sendKarma(res, req.body.team_id, req.body.user_id, text, function() {
-    console.log("in callback");
-    console.log("url", req.body.response_url);
-    console.log("showGif", showGif);
     const postBody = {
       "response_type" : "in_channel",
       "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
     };
-    console.log("callback body", postBody);
     fetch(req.body.response_url, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
