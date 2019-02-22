@@ -822,53 +822,45 @@ router.post('/event', async function(req, res, next) {
     console.log("no team data");
     return res.send({success:false, error:"no team data"});
   }
-  
-  //TODO: better check that it's not the bot talking
-  const uniqueId = `#${req.body.team_id}-${req.body.event.user}`;
-  docRef = firebase.db.collection('slackUsers').doc(uniqueId);
-  doc = await docRef.get();
-  if (!doc.exists) {
-    console.log("no user data");
-    return res.send({success:false, error:"no user data"});
-  }
 
+  
   const bot_token = doc.data().bot_token;
   if (!bot_token) {
     console.log("no bot token found");
     return res.send({success:false, error:"no token found"});
   }
-  
-  var slackUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
+
+  const bot_id = doc.data().bot_id;
+  if (req.body.event.user===bot_id) {
+    console.log("message is from bot");
+    return res.send({success:false, error:"message is from bot"});
+  }
+    
+  const senderUrl = `slack:${req.body.team_id}-${req.body.event.user}`;
+  const sender = await getAccountForUrl(senderUrl);
 
   // parse text
   var text = req.body.event.text || '';
   var words = text.split(' ');
   var purpose = words[0];
-  var senderUrl;
-  var sender;
   switch (purpose) {
     case "help":
       text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
       break;
     case "balance":
-      senderUrl = `slack:${team_id}-${user_id}`;
-      sender = await getAccountForUrl(senderUrl);
       return res.json({
         text: `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`
       });
     case "send":
-      var error = sendKarma(req.body,team_id, req.body.user_id, req,body,response_url, text, false);
+      var error = sendKarma(req.body,team_id, req.body.user_id, req,body, response_url, text, false);
       return res.json({
         "text" : error ? error : "Posting the send to the blockchain chain..."
       });
     case "rewards":
-      senderUrl = `slack:${team_id}-${user_id}`;
-      sender = await getAccountForUrl(senderUrl);
+      text = "rewards handling goes here";
       break;
     case "purchase":
-      senderUrl = `slack:${team_id}-${user_id}`;
-      sender = await getAccountForUrl(senderUrl);
-      text = "purchase goes here";
+      text = "purchase handling goes here";
       break;
     default:
       text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
