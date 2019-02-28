@@ -864,9 +864,15 @@ router.post('/event', async function(req, res, next) {
     case "send":
       var result = await sendKarma(res, req.body.team_id, req.body.event.user, incoming, () => {
         postToChannel(req.body.event.channel, "Sent!", bot_token);
-        if (result.recipient) {
-          // get slack URL from recipient URLs
-          // use that to open the channel and post a notification to them a la cron job
+        if (result.recipient && result.recipient.urls && result.recipient.urls.length > 0) {
+          var urls = result.recipient.urls.split("||");
+          for (var i in urls) {
+            if (urls[i].startsWith("slack:") && urls.includes(req.body.team_id)) {
+              // TODO: get sender and amount back from sendKarma too, use
+              // actually split sendKarma into two methods, one which parses, one which sends?
+              openChannelAndPost(urls[i], "You have been sent karma!");
+            }
+          }
         }
       });
       text = result.error ? result.error : "Sending...";
