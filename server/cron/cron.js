@@ -3,7 +3,7 @@
 require('dotenv').config();
 
 var eth = require('../routes/eth');
-var slack = require('./slackron');
+var slack = require('../routes/slack');
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -166,6 +166,7 @@ function sendReplenishSlack(account) {
     }
   }
   if (slackUrl) {
-    slack.notifyReplenishment(slackUrl, REPLENISH_AMOUNT, account.givable + REPLENISH_AMOUNT);
+    var text = `You have been allocated ${amount} more YKarma to give away! Your giving balance is now ${balance}. These expire in a month or so, so give them away soon -`;
+    slack.openChannelAndPost(slackUrl, text);
   }
 }

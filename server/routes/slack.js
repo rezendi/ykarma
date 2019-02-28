@@ -169,7 +169,7 @@ router.post('/yk', async function(req, res, next) {
   }
 
   // TODO fix this ugly hack where we reproduce code in sendKarma because we need the amount in the callback...
-  const words = text.split(" ");
+  var words = text.split(" ");
   var amount = 0;
   for (var i=0; i < words.length; i++) {
     var wordAmount = parseInt(words[i], 10);
@@ -179,7 +179,7 @@ router.post('/yk', async function(req, res, next) {
     }
   }
 
-  var error = await sendKarma(res, req.body.team_id, req.body.user_id, text, function() {
+  var result = await sendKarma(res, req.body.team_id, req.body.user_id, text, function() {
     const postBody = {
       "response_type" : "in_channel",
       "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
@@ -194,8 +194,8 @@ router.post('/yk', async function(req, res, next) {
   });
 
   return res.json({
-    "response_type" : error ? "ephemeral" : "in_channel",
-    "text" : error ? error : "Sending..."
+    "response_type" : result.error ? "ephemeral" : "in_channel",
+    "text" : result.error ? result.error : "Sending..."
   });
 });
 
@@ -231,28 +231,28 @@ async function sendKarma(res, team_id, user_id, text, callback) {
   }
   
   if (amount === 0) {
-    return "Sorry! Valid amount not found.";
+    return { recipient: null, error: "Sorry! Valid amount not found." };
   }
 
   if (recipientId === '' || recipientId === user_id) {
-    return "Sorry! Valid recipient not found.";
+    return { recipient: null, error: "Sorry! Valid recipient not found." };
   }
 
   // get the sender  
   const senderUrl = `slack:${team_id}-${user_id}`;
   const sender = await getAccountForUrl(senderUrl);
   if (sender.id === 0 || sender.communityId === 0) {
-    return "Sorry! Your YKarma account is not set up for sending here";
+    return { recipient: null, error: "Sorry! Your YKarma account is not set up for sending here" };
   }
   if (sender.givable < amount) {
-    return "Sorry! You don't have enough YKarma to do that. Your balance is " + givable;
+    return { recipient: null, error: "Sorry! You don't have enough YKarma to do that. Your balance is " + givable };
   }
   
   const recipientUrl = `slack:${team_id}-${recipientId}`;
   util.warn("recipientUrl is", recipientUrl);
   const recipient = await getAccountForUrl(recipientUrl);
   if (recipient.id === 0 || recipient.communityId === 0) {
-    return "Sorry! That YKarma account is not set up for receiving here";
+    return { recipient: recipient, error: "Sorry! That YKarma account is not set up for receiving here" };
   }
   
   //OK, let's go ahead and do the give
@@ -265,7 +265,7 @@ async function sendKarma(res, team_id, user_id, text, callback) {
   );
 
   eth.doSend(method, res, 1, 4, callback);
-  return null; // no error
+  return { recipient: recipient, error: null };
 }
 
 function getAccountForUrl(url) {
@@ -850,6 +850,7 @@ router.post('/event', async function(req, res, next) {
 
   // parse text
   var text;
+  var body;
   var incoming = req.body.event.text || '';
   var words = incoming.split(' ');
   var purpose = words[0];
@@ -861,23 +862,40 @@ router.post('/event', async function(req, res, next) {
       text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
       break;
     case "send":
-      var error = await sendKarma(res, req.body.team_id, req.body.event.user, incoming, () => {
-        var sendBody = {
-          text: "Sent!",
-          channel: req.body.event.channel
-        };
-        fetch("https://slack.com/api/chat.postMessage", {
-          method: 'POST',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
-          body: JSON.stringify(sendBody),
-        }).then(function(sendResponse) {
-          util.log("Delayed response response", sendResponse.status);
-        });
+      var result = await sendKarma(res, req.body.team_id, req.body.event.user, incoming, () => {
+        postToChannel(req.body.event.channel, "Sent!", bot_token);
+        if (result.recipient) {
+          // get slack URL from recipient URLs
+          // use that to open the channel and post a notification to them a la cron job
+        }
       });
-      text = error ? error : "Sending...";
+      text = result.error ? result.error : "Sending...";
       break;
     case "rewards":
-      text = "rewards handling goes here";
+      const method = eth.contract.methods.getRewardsCount(sender.community_id, 0);
+      text = 'Fetching available rewards from blockchain...';
+      method.call(function(error, totalRewards) {
+        if (error) {
+          util.log('getListOfRewards error', error);
+        }
+        if (parseInt(totalRewards)===0) {
+          util.log("No rewards available");
+        postToChannel(req.body.event.channel, "No rewards available", bot_token);
+        }
+        var rewards = [];
+        for (var i = 0; i < parseInt(totalRewards); i++) {
+          getRewardByIndex(idType, id, i, (reward) => {
+            rewards.push(reward);
+            if (rewards.length >= parseInt(totalRewards)) {
+              text = "Rewards: " + JSON.stringify(rewards);
+              postToChannel(req.body.event.channel, text, bot_token);
+            }
+          });
+        }
+      })
+      .catch(function(error) {
+        text = `Error getting list of rewards ${error}`;
+      });
       break;
     case "purchase":
       text = "purchase handling goes here";
@@ -897,8 +915,62 @@ router.post('/event', async function(req, res, next) {
     body: JSON.stringify(body),
   }).then(function(response) {
     console.log("Delayed response response", response.status);
+    
+    //TODO: if this was a send, send DM to recipient informing them of it
   });
   res.sendStatus(200);
 });
 
-module.exports = router;
+function postToChannel(channel, text, bot_token) {
+  var body = {
+    text: text,
+    channel: channel
+  };
+  fetch("https://slack.com/api/chat.postMessage", {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
+    body: JSON.stringify(body),
+  }).then(function(response) {
+    util.log("Post response", response.status);
+  });
+}
+
+async function openChannelAndPost(slackUrl, text) {
+  if (!slackUrl || slackUrl.indexOf(":")===-1 || slackUrl.indexOf("-")===-1) {
+    return console.log("bad slack URL", slackUrl);
+  }
+
+  const teamId = slackUrl.substring(slackUrl.indexOf(":")+1, slackUrl.indexOf("-"));
+  const docRef = firebase.db.collection('slackTeams').doc(teamId);
+  const doc = await docRef.get();
+  if (!doc.exists) {
+    return console.log("no team data for", slackUrl);
+  }
+  const bot_token = doc.data().bot_token;
+  if (!bot_token) {
+    return console.log("no bot token for", slackUrl);
+  }
+
+  const userId = slackUrl.substring(slackUrl.indexOf("-")+1);
+  var body = {
+    users: userId,
+    token: bot_token
+  };
+  var url = "https://slack.com/api/conversations.open";
+  var response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
+    body: JSON.stringify(body),
+  });
+  var json = await response.json();
+  if (!json.ok) {
+    return console.log("conversation open error", json);
+  }
+  
+  postToChannel(json,channel.id, text, bot_token);
+}
+
+module.exports = {
+  router : router,
+  openChannelAndPost : openChannelAndPost
+};
