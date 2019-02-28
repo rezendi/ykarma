@@ -37,8 +37,8 @@ module.exports = (deployer, network, accounts) => {
     await deployer.link(SafeMath, YKTranches);
     await deployer.deploy(YKCommunities, {from : owner});
     await deployer.deploy(YKRewards, {from : owner});
-    await deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
     await deployer.deploy(YKarmaDirect, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
+    await deployer.deploy(YKarma, YKTranches.address, YKAccounts.address, YKCommunities.address, YKRewards.address, {from : owner});
     const ykt = await YKTranches.deployed();
     await ykt.addOracle(YKarma.address, {from: owner});
     const yka = await YKAccounts.deployed();

@@ -10,7 +10,7 @@ contract YKTranches is Oracular, YKStructs {
   using strings for *;
   using SafeMath for uint256;
 
-  uint256 ExpiryBlocks  = 20 * 60 * 24 * 120;
+  uint256 ExpiryBlocks  = 20 * 60 * 24 * 30;
   uint256 RefreshBlocks = 20 * 60 * 24 * 7;
   uint256 Replenish     = 100;
   uint256 Bonus         = 10;
@@ -25,6 +25,19 @@ contract YKTranches is Oracular, YKStructs {
     if (_expiry  > 0) { ExpiryBlocks = _expiry; }
     if (_refresh  > 0) { RefreshBlocks = _refresh; }
     if (_replenish  > 0) { Replenish = _replenish; }
+    if (_bonus  > 0) { Bonus = _bonus; }
+  }
+  
+  function setExpiry(uint256 _expiry) onlyOracle {
+    if (_expiry  > 0) { ExpiryBlocks = _expiry; }
+  }
+  function setRefresh(uint256 _refresh) onlyOracle {
+    if (_refresh  > 0) { RefreshBlocks = _refresh; }
+  }
+  function setReplenish(uint256 _replenish) onlyOracle {
+    if (_replenish  > 0) { Replenish = _replenish; }
+  }
+  function setBonus(uint256 _bonus) onlyOracle {
     if (_bonus  > 0) { Bonus = _bonus; }
   }
   
@@ -137,8 +150,8 @@ contract YKTranches is Oracular, YKStructs {
   function replenish(uint256 _id, bool _override) public onlyOracle {
     uint256 mostRecent = lastReplenished(_id);
     
-    //TODO: verify override somehow eg ensure block number low 
-    if (mostRecent > 0 && block.number - mostRecent < RefreshBlocks && !_override) {
+    //override should only be for reloading the whole blockchain; worst case, stops working at block 131072
+    if ((mostRecent > 0 && block.number - mostRecent < RefreshBlocks && !_override) || (_override && block.number > 131072)) {
       return;
     }
     Giving storage recipient = giving[_id];

@@ -103,14 +103,14 @@ contract YKarma is Oracular, YKStructs {
     communityData.deleteCommunity(_id);
   }
   
-  /**
-   * Account methods
-   */
   function getAccountCount(uint256 _communityId) public view returns (uint256) {
     Community memory c = communityData.communityForId(_communityId);
     return c.accountIds.length;
   }
 
+  /**
+   * Account methods
+   */
   function replenish(uint256 _accountId) public onlyOracle {
     trancheData.replenish(_accountId, loadMode);
   }
@@ -119,6 +119,10 @@ contract YKarma is Oracular, YKStructs {
     trancheData.recalculateBalances(_id);
   }
 
+  function availableToSpend(uint256 _id, string _tag) public onlyOracle view returns (uint256) {
+    return trancheData.availableToSpend(_id, _tag);
+  }
+  
   function accountForId(uint256 _id) public onlyOracle view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
     Account memory a = accountData.accountForId(_id);
     return (a.id, a.communityId, a.userAddress, a.flags, a.metadata, a.urls, a.rewardIds.length,
