@@ -174,7 +174,8 @@ async function notifyReplenishment(slackUrl, amount, balance) {
   if (!slackUrl || slackUrl.indexOf(":")===-1 || slackUrl.indexOf("-")===-1) {
     return console.log("bad slack URL", slackUrl);
   }
-  const teamId = slackUrl.substring(slackUrl.indexOf(":", slackUrl.indexOf("-")));
+  const teamId = slackUrl.substring(slackUrl.indexOf(":")+1, slackUrl.indexOf("-"));
+  console.log("team ID", teamId);
   const docRef = firebase.db.collection('slackTeams').doc(teamId);
   const doc = await docRef.get();
   if (!doc.exists) {
@@ -186,7 +187,7 @@ async function notifyReplenishment(slackUrl, amount, balance) {
     return console.log(`no bot token for ${slackUrl}`, doc.data());
   }
 
-  const userId = slackUrl.substring(slackUrl.indexOf("-"));
+  const userId = slackUrl.substring(slackUrl.indexOf("-")+1);
   var body = {
     users: userId,
     token: bot_token
@@ -194,7 +195,7 @@ async function notifyReplenishment(slackUrl, amount, balance) {
   var url = "https://slack.com/api/conversations.open";
   var response = await fetch(url, {
     method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
   });
   var json = await response.json();
@@ -206,14 +207,14 @@ async function notifyReplenishment(slackUrl, amount, balance) {
   body = {
     text: `You have been allocated ${amount} more YKarma to give away! Your giving balance is now ${balance}. These expire in a month or so, so give them away soon -`,
     channel: channelId,
-    token: bot_token
   };
   url = "https://slack.com/api/chat.postMessage";
-  var response = await fetch(url, {
+  response = await fetch(url, {
     method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
   });
+  console.log("post message response", response.status);
 }
 
 module.exports = {
