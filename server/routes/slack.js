@@ -859,7 +859,17 @@ router.post('/event', async function(req, res, next) {
       text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
       break;
     case "balance":
-      text = `You currently have ${sender.givable} to give away and ${sender.spendable} to spend.`;
+      const availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
+      availableMethod.call(function(error, available) {
+        if (error) {
+          util.log('getAvailable error', error);
+          postToChannel(req.body.event.channel, "Error getting available-to-spend amount", bot_token);
+        } else {
+          // TODO: flavor breakdown?
+          postToChannel(req.body.event.channel, `You currently have ${available} to spend`, bot_token);
+        }
+      });
+      text = `You currently have ${sender.givable} to give away`;
       break;
     case "send":
       var result = await sendKarma(res, req.body.team_id, req.body.event.user, incoming, () => {
@@ -878,15 +888,16 @@ router.post('/event', async function(req, res, next) {
       text = result.error ? result.error : "Sending...";
       break;
     case "rewards":
-      const method = eth.contract.methods.getRewardsCount(sender.community_id, 0);
+      const method = eth.contract.methods.getRewardsCount(sender.communityId, 0);
       text = 'Fetching available rewards from blockchain...';
       method.call(function(error, totalRewards) {
         if (error) {
           util.log('getListOfRewards error', error);
+          postToChannel(req.body.event.channel, "Error getting rewards", bot_token);
         }
         if (parseInt(totalRewards)===0) {
           util.log("No rewards available");
-        postToChannel(req.body.event.channel, "No rewards available", bot_token);
+          postToChannel(req.body.event.channel, "No rewards available", bot_token);
         }
         var rewards = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
@@ -910,20 +921,7 @@ router.post('/event', async function(req, res, next) {
       text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
   }
 
-  var body = {
-    text: text,
-    channel: req.body.event.channel
-  };
-  // console.log("POSTing to chat", body);
-  fetch("https://slack.com/api/chat.postMessage", {
-    method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
-    body: JSON.stringify(body),
-  }).then(function(response) {
-    console.log("Delayed response response", response.status);
-    
-    //TODO: if this was a send, send DM to recipient informing them of it
-  });
+  postToChannel(req.body.event.channel, text, bot_token);
   res.sendStatus(200);
 });
 
@@ -974,6 +972,22 @@ async function openChannelAndPost(slackUrl, text) {
   }
   
   postToChannel(json,channel.id, text, bot_token);
+}
+
+function getRewardByIndex(idType, accountId, idx, callback) {
+  const method = eth.contract.methods.rewardByIdx(accountId, idx, idType);
+  method.call(function(error, result) {
+    if (error) {
+      util.warn('getRewardByIndex error', error);
+    } else {
+      var reward = eth.getRewardFromResult(result);
+      callback(reward);
+    }
+  })
+  .catch(function(error) {
+    util.warn('getRewardByIndex call error ' + id, error);
+    callback({});
+  });
 }
 
 module.exports = {
