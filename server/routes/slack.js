@@ -901,7 +901,7 @@ router.post('/event', async function(req, res, next) {
         }
         var rewards = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
-          getRewardByIndex(idType, id, i, (reward) => {
+          getRewardByIndex(0, sender.communityId, i, (reward) => {
             rewards.push(reward);
             if (rewards.length >= parseInt(totalRewards)) {
               text = "Rewards: " + JSON.stringify(rewards);
