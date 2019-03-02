@@ -196,4 +196,8 @@ function getRewardByIndex(idType, accountId, idx, callback) {
 
 
 
-module.exports = router;
+module.exports = {
+  router: router,
+  getRewardByIndex: getRewardByIndex,
+  getRewardFor: getRewardFor
+};

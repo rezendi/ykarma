@@ -37,8 +37,8 @@ app.use(bodyParser.json());
 
 app.use('/api', indexRouter);
 app.use('/api/accounts', accountsRouter);
-app.use('/api/rewards', rewardsRouter);
 app.use('/api/communities', communitiesRouter);
+app.use('/api/rewards', rewardsRouter.router);
 app.use('/api/slack', slackRouter.router);
 
 console.log("hostname", os.hostname());

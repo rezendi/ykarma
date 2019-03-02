@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const firebase = require('./firebase');
 const eth = require('./eth');
 const util = require('./util');
+const rewards = require('./rewards');
 
 var fromAccount = null;
 eth.getFromAccount().then(address => {
@@ -168,39 +169,31 @@ router.post('/yk', async function(req, res, next) {
     text=text.replace("nogif ", "");
   }
 
-  // TODO fix this ugly hack where we reproduce code in sendKarma because we need the amount in the callback...
-  var words = text.split(" ");
-  var amount = 0;
-  for (var i=0; i < words.length; i++) {
-    var wordAmount = parseInt(words[i], 10);
-    if (wordAmount > 0) {
-      amount = wordAmount;
-      break;
-    }
-  }
-
-  var result = await sendKarma(res, req.body.team_id, req.body.user_id, text, function() {
-    const postBody = {
-      "response_type" : "in_channel",
-      "text": `Sent! ${showGif ? getGIFFor(amount) : ""}`
-    };
-    fetch(req.body.response_url, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-      body: JSON.stringify(postBody),
-    }).then(function(response) {
-      util.log("Delayed response response", response.status);
+  var vals = await prepareToSendKarma(req.body.team_id, req.body.user_id, text);
+  if (!vals.error) {
+    sendKarma(res, vals, function() {
+      const body = {
+        "response_type" : "in_channel",
+        "text": `Sent! ${showGif ? getGIFFor(vals.amount) : ""}`
+      };
+      fetch(req.body.response_url, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+        body: JSON.stringify(body),
+      }).then(function(response) {
+        util.log("Delayed response response", response.status);
+      });
     });
-  });
-
+  }
+  
   return res.json({
-    "response_type" : result.error ? "ephemeral" : "in_channel",
-    "text" : result.error ? result.error : "Sending..."
+    "response_type" : vals.error ? "ephemeral" : "in_channel",
+    "text" : vals.error ? vals.error : "Sending..."
   });
 });
 
 
-async function sendKarma(res, team_id, user_id, text, callback) {
+async function prepareToSendKarma(team_id, user_id, text) {
   const words = text.split(" ");
   var amount = 0;
   var recipientId = '';
@@ -231,41 +224,43 @@ async function sendKarma(res, team_id, user_id, text, callback) {
   }
   
   if (amount === 0) {
-    return { recipient: null, error: "Sorry! Valid amount not found." };
+    return { error: "Sorry! Valid amount not found." };
   }
 
   if (recipientId === '' || recipientId === user_id) {
-    return { recipient: null, error: "Sorry! Valid recipient not found." };
+    return { error: "Sorry! Valid recipient not found.", amount:amount };
   }
 
   // get the sender  
   const senderUrl = `slack:${team_id}-${user_id}`;
   const sender = await getAccountForUrl(senderUrl);
   if (sender.id === 0 || sender.communityId === 0) {
-    return { recipient: null, error: "Sorry! Your YKarma account is not set up for sending here" };
+    return { error: "Sorry! Your YKarma account is not set up for sending here", sender:sender, amount:amount };
   }
   if (sender.givable < amount) {
-    return { recipient: null, error: "Sorry! You don't have enough YKarma to do that. Your balance is " + givable };
+    return { error: `Sorry! You don't have enough YKarma to do that. Your balance is ${givable}`, sender:sender, amount:amount };
   }
   
   const recipientUrl = `slack:${team_id}-${recipientId}`;
   util.warn("recipientUrl is", recipientUrl);
   const recipient = await getAccountForUrl(recipientUrl);
   if (recipient.id === 0 || recipient.communityId === 0) {
-    return { recipient: recipient, error: "Sorry! That YKarma account is not set up for receiving here" };
+    return { error: "Sorry! That YKarma account is not set up for receiving here", sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
   }
   
-  //OK, let's go ahead and do the give
-  util.log(`About to give ${amount} from id ${sender.id} to ${recipient.id} via Slack`, message);
+  return { sender:sender, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
+}
+
+function sendKarma(res, vals, callback) {
+  util.log(`About to give ${vals.amount} from id ${vals.sender.id} to ${vals.recipientUrl} via Slack`, vals.message);
   var method = eth.contract.methods.give(
-    sender.id,
-    recipientUrl,
-    amount,
-    message || ''
+    vals.sender.id,
+    vals.recipientUrl,
+    vals.amount,
+    vals.message || ''
   );
 
   eth.doSend(method, res, 1, 4, callback);
-  return { recipient: recipient, error: null };
 }
 
 function getAccountForUrl(url) {
@@ -866,31 +861,28 @@ router.post('/event', async function(req, res, next) {
           postToChannel(req.body.event.channel, "Error getting available-to-spend amount", bot_token);
         } else {
           // TODO: flavor breakdown?
-          postToChannel(req.body.event.channel, `You currently have ${available} to spend`, bot_token);
+          postToChannel(req.body.event.channel, `You currently have a total of ${available} to spend. You can get an itemization by flavor with the 'flavors' command.`, bot_token);
         }
       });
       text = `You currently have ${sender.givable} to give away`;
       break;
     case "send":
-      var result = await sendKarma(res, req.body.team_id, req.body.event.user, incoming, () => {
+      var vals = await prepareToSendKarma(req.body.team_id, req.body.event.user, incoming);
+      if (vals.error) {
+        text = vals.error;
+        break;
+      }
+      sendKarma(res, vals, function() {
         postToChannel(req.body.event.channel, "Sent!", bot_token);
-        if (result.recipient && result.recipient.urls && result.recipient.urls.length > 0) {
-          var urls = result.recipient.urls.split("||");
-          for (var i in urls) {
-            if (urls[i].startsWith("slack:") && urls.includes(req.body.team_id)) {
-              // TODO: get sender and amount back from sendKarma too, use
-              // actually split sendKarma into two methods, one which parses, one which sends?
-              openChannelAndPost(urls[i], "You have been sent karma!");
-            }
-          }
-        }
+        var name = sender.metadata ? sender.metadata.name : sender.id;
+        openChannelAndPost(vals.recipientUrl, `${name} has sent you ${vals.amount} karma!`);
       });
-      text = result.error ? result.error : "Sending...";
+      text = "Sending...";
       break;
     case "rewards":
-      const method = eth.contract.methods.getRewardsCount(sender.communityId, 0);
+      const rewardsMethod = eth.contract.methods.getRewardsCount(sender.communityId, 0);
       text = 'Fetching available rewards from blockchain...';
-      method.call(function(error, totalRewards) {
+      rewardsMethod.call(function(error, totalRewards) {
         if (error) {
           util.log('getListOfRewards error', error);
           postToChannel(req.body.event.channel, "Error getting rewards", bot_token);
@@ -901,10 +893,12 @@ router.post('/event', async function(req, res, next) {
         }
         var rewards = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
-          getRewardByIndex(0, sender.communityId, i, (reward) => {
+          rewards.getRewardByIndex(0, sender.communityId, i, (reward) => {
             rewards.push(reward);
             if (rewards.length >= parseInt(totalRewards)) {
-              text = "Rewards: " + JSON.stringify(rewards);
+              var retval = rewards.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
+              //TODO: structure more nicely
+              text = "Available Rewards: " + JSON.stringify(retval);
               postToChannel(req.body.event.channel, text, bot_token);
             }
           });
@@ -915,7 +909,33 @@ router.post('/event', async function(req, res, next) {
       });
       break;
     case "purchase":
-      text = "purchase handling goes here";
+      var purchaseId = 0;
+      for (var i=1; i < words.length; i++) {
+        var wordNum = parseInt(words[i], 10);
+        if (wordNum > 0) {
+          purchaseId = wordNum;
+          break;
+        }
+      }
+      if (purchaseId === 0) {
+        text = "Please tell me the ID of the reward you want to purchase";
+        break;
+      }
+      var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId);
+      rewards.getRewardFor(purchaseId, (reward) => {
+        eth.doSend(purchaseMethod, res, 1, 2, () => {
+          eth.getAccountFor(reward.vendorId, (vendor) => {
+            util.log("reward purchased", reward);
+            util.log("from", vendor);
+            // TODO send purchased DM email.sendRewardPurchasedEmail(reward, req.session.account, vendor);
+            // TODO send sold DM email.sendRewardSoldEmail(reward, req.session.account, vendor);
+          });
+        });
+      });
+      text = "Purchasing...";
+      break;
+    case "flavors":
+      text = "flavor handling goes here";
       break;
     default:
       text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
@@ -972,22 +992,6 @@ async function openChannelAndPost(slackUrl, text) {
   }
   
   postToChannel(json,channel.id, text, bot_token);
-}
-
-function getRewardByIndex(idType, accountId, idx, callback) {
-  const method = eth.contract.methods.rewardByIdx(accountId, idx, idType);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getRewardByIndex error', error);
-    } else {
-      var reward = eth.getRewardFromResult(result);
-      callback(reward);
-    }
-  })
-  .catch(function(error) {
-    util.warn('getRewardByIndex call error ' + id, error);
-    callback({});
-  });
 }
 
 module.exports = {
