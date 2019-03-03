@@ -12,7 +12,7 @@ describe('Account', function () {
 
   it('should add a URL to an account, then remove one', function (done) {
     this.timeout(5000);
-    api.get('/api/accounts/setup').expect(200).end((err, res) => {
+    api.get('/api/accounts/setup?ykid=2').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       api.get('/api/accounts/url/test@example.com')
@@ -57,7 +57,7 @@ describe('Account', function () {
 
   it('should list accounts for a community', function (done) {
     this.timeout(5000);
-    api.get('/api/accounts/setup').expect(200).end((err, res) => {
+    api.get('/api/accounts/setup?ykid=2').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       api.get('/api/accounts/for/1')
@@ -73,7 +73,7 @@ describe('Account', function () {
 
   it('should update account metadata', function (done) {
     this.timeout(5000);
-    api.get('/api/accounts/setup').expect(200).end((err, res) => {
+    api.get('/api/accounts/setup?ykid=2').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       api.put('/api/accounts/update')
@@ -98,7 +98,7 @@ describe('Account', function () {
   it('should send karma to another account', function (done) {
     var initial;
     this.timeout(10000);
-    api.get('/api/accounts/setup').expect(200).end((err, res) => {
+    api.get('/api/accounts/setup?ykid=2').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       api.get('/api/accounts/url/test@example.com')
@@ -141,7 +141,7 @@ describe('Reward', function () {
     this.timeout(10000);
     var rewardId = 1;
     var initialRewards;
-    api.get('/api/accounts/setup').expect(200).end((err, res) => {
+    api.get('/api/accounts/setup?ykid=2').expect(200).end((err, res) => {
       if (err) done (err);
       // console.log("set-cookie", res.headers['set-cookie']);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -205,26 +205,3 @@ describe('Reward', function () {
   });
 
 });
-
-describe('Slack', function () {
-
-  // assumes a reward added as part of deploy
-  it('should run through various Slack functions', function (done) {
-    api.get('/api/accounts/setup').expect(200).end((err, res) => {
-      if (err) done (err);
-      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-      api.put('/api/accounts/addUrl')
-        .send({"url":"slack:TEST-USER1"})
-        .set('Cookie', TestCookies).expect(200)
-        .end(function (err, res) {
-          if (err) done (err);
-          expect(JSON.parse(res.text).success).to.equal('slack:TEST-USER1');
-          // POST to /yk to send ykarma between users
-          // ask YKarmaBot for help
-          // ask YKarmaBot for balance
-          // ask YKarmaBot for rewards
-        });
-    });
-  });
-});
-  

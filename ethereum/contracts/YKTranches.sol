@@ -28,16 +28,16 @@ contract YKTranches is Oracular, YKStructs {
     if (_bonus  > 0) { Bonus = _bonus; }
   }
   
-  function setExpiry(uint256 _expiry) onlyOracle {
+  function setExpiry(uint256 _expiry) public onlyOracle {
     if (_expiry  > 0) { ExpiryBlocks = _expiry; }
   }
-  function setRefresh(uint256 _refresh) onlyOracle {
+  function setRefresh(uint256 _refresh) public onlyOracle {
     if (_refresh  > 0) { RefreshBlocks = _refresh; }
   }
-  function setReplenish(uint256 _replenish) onlyOracle {
+  function setReplenish(uint256 _replenish) public onlyOracle {
     if (_replenish  > 0) { Replenish = _replenish; }
   }
-  function setBonus(uint256 _bonus) onlyOracle {
+  function setBonus(uint256 _bonus) public onlyOracle {
     if (_bonus  > 0) { Bonus = _bonus; }
   }
   
@@ -282,6 +282,7 @@ contract YKTranches is Oracular, YKStructs {
     return string(bstr);
   }
   
+  // not currently used
   function sendMessageOk(Account sender, Account recipient) internal view returns (bool) {
     if (sender.communityId == recipient.communityId) {
       return !(sender.flags & FLAG_NO_MESSAGES == FLAG_NO_MESSAGES);

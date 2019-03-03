@@ -45,6 +45,14 @@ contract('Paces', function(accounts) {
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '100', "Account replenished only once");
     
+    // try adding and removing a URL
+    await ykarma.addUrlToExistingAccount(1, "https://twitter.com/testacct");
+    vals = await ykarma.accountForId(1);
+    assert.equal(vals[5], 'mailto:jon@rezendi.com||https://twitter.com/testacct', "Account URLs");
+    await ykarma.removeUrlFromExistingAccount(1, "https://twitter.com/testacct");
+    vals = await ykarma.accountForId(1);
+    assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
+    
     // try giving to a new account, adding URLs to it
     await ykarma.give(1, 'mailto:jay@rezendi.com', 40, "Just a message");
     vals = await ykarma.accountForId(1);

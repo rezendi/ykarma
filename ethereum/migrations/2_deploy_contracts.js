@@ -12,7 +12,7 @@ const fs = require('fs');
 const envFile = '../server/.env';
 
 const isTesting = process.argv.slice(-1)[0] === 'test';
-const isInitialGeneration = false; // set false for the chain to be empty of initial community/account
+const isInitialGeneration = true; // set false for the chain to be empty of initial community/account
 
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
@@ -62,13 +62,17 @@ module.exports = (deployer, network, accounts) => {
     await yk.replenish(1);
     
     // add test data if appropriate
-    if (process.env.TRUFFLE_ENV !== 'production') {
+    if (process.env.TRUFFLE_ENV === 'test') {
+      console.log("adding test data...")
       await yk.addNewAccount(1, 0, '{"name":"Test"}', '0x00', 'mailto:test@example.com');
       await yk.addNewAccount(1, 0, '{"name":"Test Two"}', '0x00', 'mailto:test2@example.com');
       await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
       await yk.replenish(2);
       await yk.give(2, 'mailto:'+adminEmail, 80, "Just a message");
       await yk.give(1, 'mailto:test@example.com', 20, "Another message");
+      await yk.addNewAccount(1, 0, '{"name":"Test Three"}', '0x00', 'slack:TEST-USER1');
+      await yk.addNewAccount(1, 0, '{"name":"Test Four"}', '0x00', 'slack:TEST-USER2');
+      await yk.replenish(4);
     }
   });
 };

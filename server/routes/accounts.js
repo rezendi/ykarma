@@ -23,13 +23,8 @@ eth.getFromAccount().then(address => {
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.warn("setting up test data");
-    if (req.params.ykid) {
-      req.session.ykcid = parseInt(req.params.ykid, 10);
-      req.session.email = req.params.email;
-    } else {
-      req.session.email = process.env.ADMIN_EMAIL;
-      req.session.ykid = 2;
-    }
+    req.session.ykid = req.params.ykid || 2;
+    req.session.email = process.env.ADMIN_EMAIL; // so we can look at 
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
     util.log("set up test data", req.session);
@@ -238,22 +233,21 @@ router.put('/addUrl', function(req, res, next) {
 router.put('/removeUrl', function(req, res, next) {
   var type = req.body.type;
   var url = req.body.url || "error";
-  util.log("removing url type", type);
   if (!type) {
     type = url.indexOf("@") > 0 ? "email" : "twitter";
-    util.log("removing url implied type", type);
   }
+  util.log("removing url type", type);
   if (type === "email") {
-    url = getLongUrlFromShort(req.session.email);
+    url = getLongUrlFromShort(req.session.email || url);
   } else {
-    url = getLongUrlFromShort(req.session.handle);
+    url = getLongUrlFromShort(req.session.handle || url);
   }
   util.log("removing url", url);
   if (url.startsWith("error")) {
     return res.json({"success":false, "error": "Invalid URL"});
   }
   var method = eth.contract.methods.removeUrlFromExistingAccount(req.session.ykid, url);
-  eth.doSend(method, res, 1, 2, () => {
+  eth.doSend(method, res, 1, 3, () => {
     if (type === "email") {
       req.session.email = null;
     } else {

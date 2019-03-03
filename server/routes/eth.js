@@ -35,6 +35,7 @@ const getId = function() {
 
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
   var notifying = false;
+  var errored = false;
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
     if (estError) {
       util.warn('est error', estError);
@@ -53,10 +54,6 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
         }
         return res.json({"success":true, "result": receipt});
       }
-    })
-    .catch(function(error) {
-      util.warn('send call error ' + error);
-      return res.json({"success":false, "error": error});
     });
   })
   .catch(function(error) {
@@ -84,17 +81,23 @@ function getAccountFor(id, callback) {
 
 function getAccountFromResult(result) {
   // console.log("result",result);
+  var metadata = {};
+  try { metadata = JSON.parse(result[4] || '{}'); } catch(e) { util.warn("bad metadata", result); }
+  var given = [];
+  try { given = JSON.parse(result[8] || '[]'); } catch(e) { util.warn("bad given", result); }
+  var received = [];
+  try { received = JSON.parse(result[9] || '[]'); } catch(e) { util.warn("bad received", result); }
   return {
     id:           parseInt(result[0], 10),
     communityId:  parseInt(result[1], 10),
     userAddress:  result[2],
     flags:        result[3],
-    metadata:     JSON.parse(result[4] || '{}'),
+    metadata:     metadata,
     urls:         result[5],
     rewards:      result[6],
     givable:      parseInt(result[7], 10),
-    given:        JSON.parse(result[8] || '[]'),
-    received:     JSON.parse(result[9] || '[]'),
+    given:        given,
+    received:     received,
   };
 }
 

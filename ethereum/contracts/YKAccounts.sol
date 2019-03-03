@@ -8,7 +8,7 @@ import "./YKStructs.sol";
 contract YKAccounts is Oracular, YKStructs {
   using strings for *;
 
-  string DELIM = "||";
+  string DELIM = "||"; // TODO: replace this with a simple " ", sigh
 
   uint256 maxAccountId;
   mapping(uint256 => Account) accounts;
@@ -52,11 +52,11 @@ contract YKAccounts is Oracular, YKStructs {
   
   function addUrlToAccount(uint256 _accountId, string _url) public onlyOracle returns (bool) {
     require(urlIsValid(_url));
-    require(accountIdForUrl(_url)==0); // TODO: merge two URLs into one account
+    require(accountIdForUrl(_url)==0); // TODO: merge two existing URLs into one account
     string memory urls = accounts[_accountId].urls;
     if (bytes(urls).length > 0) {
-      string memory commaUrl = DELIM.toSlice().concat(_url.toSlice());
-      accounts[_accountId].urls = urls.toSlice().concat(commaUrl.toSlice());
+      string memory delimUrl = DELIM.toSlice().concat(_url.toSlice());
+      accounts[_accountId].urls = urls.toSlice().concat(delimUrl.toSlice());
     } else {
       accounts[_accountId].urls = _url;
     }

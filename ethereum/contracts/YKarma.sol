@@ -90,12 +90,10 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle {
-    Community memory community = communityData.communityForId(_id);
     communityData.editCommunity(_id, _adminAddress, _flags, _domain, _metadata, _tags);
   }
   
   function removeAccount(uint256 _communityId, uint256 _accountId) public onlyOracle {
-    Community memory community = communityData.communityForId(_communityId);
     communityData.removeAccount(_communityId, _accountId);
   }
   
@@ -155,17 +153,14 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function editAccount(uint256 _id, address _newAddress, string _metadata, bytes32 _flags) public onlyOracle {
-    Account memory account = accountData.accountForId(_id);
     accountData.editAccount(_id, _newAddress, _metadata, _flags);
   }
   
   function addUrlToExistingAccount(uint256 _id, string _newUrl) public onlyOracle returns (bool) {
-    Account memory account = accountData.accountForId(_id);
     return accountData.addUrlToAccount(_id, _newUrl);
   }
   
   function removeUrlFromExistingAccount(uint256 _id, string _oldUrl) public onlyOracle {
-    Account memory account = accountData.accountForId(_id);
     accountData.removeUrlFromAccount(_id, _oldUrl);
   }
   
@@ -188,16 +183,12 @@ contract YKarma is Oracular, YKStructs {
   
   function rewardForId(uint256 _id) public onlyOracle view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string)  {
     Reward memory reward = rewardData.rewardForId(_id);
-    if (reward.ownerId != 0) {
-      Account memory account = accountData.accountForId(reward.ownerId);
-    }
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.quantity, reward.flags, reward.tag, reward.metadata);
   }
   
   function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);
-    Account memory account = accountData.accountForId(reward.vendorId);
     rewardData.editReward(_id, _cost, _quantity, _tag, _metadata, _flags);
   }
 
