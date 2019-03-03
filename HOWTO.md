@@ -142,13 +142,17 @@ repo, and run `truffle deploy` (this should compile and write the smart
 contracts, again, and write the address of the resulting YKarma interface
 contract to `server/.env` for use by the Node code.)
 
-7. Open a third shell, navigate to the "server" top-level directory of this
+7. If you want to run the automated tests locally, instead run
+`TRUFFLE_ENV=test truffle deploy`, which populates the blockchain with a few
+test accounts and rewards subsequently assumed by the API test code.
+
+8. Open a third shell, navigate to the "server" top-level directory of this
 repo, and run `npm run test` to get the API running in test mode
 
-8. Open a fourth shell, navigate to the "server" top-level directory of this
+9. Open a fourth shell, navigate to the "server" top-level directory of this
 repo, and run `mocha` to run the API tests. They should pass.
 
-9. Once you've established that tests are passing, stop `npm run test` and
+10. Once you've established that tests are passing, stop `npm run test` and
 instead just run `npm start`. Voila! The API is running locally on port 3001.
 
 

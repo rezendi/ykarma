@@ -39,26 +39,27 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
     if (estError) {
       util.warn('est error', estError);
+      if (callback) { return callback(estError); }
       return res.json({'success':false, 'error':estError});
     }
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
       util.warn('send error', error);
+      if (callback) { return callback(error); }
       return res.json({'success':false, 'error':error});
     })
     .on('confirmation', (number, receipt) => {
       if (number >= minConfirmations && !notifying) {
         notifying = true;
         //console.log('result', receipt);
-        if (callback) {
-          return callback();
-        }
+        if (callback) { return callback(); }
         return res.json({"success":true, "result": receipt});
       }
     });
   })
-  .catch(function(error) {
-    util.warn('gas estimation call error', error);
-    return res.json({"success":false, "error": error});
+  .catch(function(exc) {
+    util.warn('gas estimation call error', exc);
+    if (callback) { return callback(exc); }
+    return res.json({"success":false, "error": exc});
   });
 };
 

@@ -7,8 +7,8 @@ const util = require('./util');
 const rewards = require('./rewards');
 const gifs = require('./slack_gifs');
 
-const OPEN_CONVERSATION_URL = process.env.NODE_ENV === "test" ? "/testOpenConversation" : "https://slack.com/api/conversations.open";
-const POST_MESSAGE_URL = process.env.NODE_ENV === "test" ? "/testPostMessage" : "https://slack.com/api/chat.postMessage";
+const OPEN_CONVERSATION_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testOpenConversation" : "https://slack.com/api/conversations.open";
+const POST_MESSAGE_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testPostMessage" : "https://slack.com/api/chat.postMessage";
 
 var fromAccount = null;
 eth.getFromAccount().then(address => {
@@ -17,12 +17,12 @@ eth.getFromAccount().then(address => {
 
 router.post('/testOpenConversation', function(req, res, next) {
   util.log("opening test conversation with", req.body)
-  res.json({success:true, body:req.body});
+  res.json({success:true, ok:true, channel:{id: "TestChannel"}, body:req.body});
 });
 
 router.post('/testPostMessage', function(req, res, next) {
   util.log("posting test message", req.body)
-  res.json({success:true, body:req.body});
+  res.json({success:true, ok:true, body:req.body});
 });
 
 router.post('/state', function(req, res, next) {
@@ -185,11 +185,17 @@ router.post('/yk', async function(req, res, next) {
 
   var vals = await prepareToSendKarma(req.body.team_id, req.body.user_id, text);
   if (!vals.error) {
-    sendKarma(res, vals, function() {
+    sendKarma(res, vals, function(error) {
+      if (error) {
+        return util.warn("sendKarma error", error);
+      }
       const body = {
         "response_type" : "in_channel",
         "text": `Sent! ${showGif ? gifs.getGIFFor(vals.amount) : ""}`
       };
+      if (!req.body.response_url) {
+        return util.warn("Bailing out, no response URL given");
+      }
       fetch(req.body.response_url, {
         method: 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
@@ -200,7 +206,7 @@ router.post('/yk', async function(req, res, next) {
     });
   }
   
-  return res.json({
+  res.json({
     "response_type" : vals.error ? "ephemeral" : "in_channel",
     "text" : vals.error ? vals.error : "Sending..."
   });
@@ -249,10 +255,13 @@ async function prepareToSendKarma(team_id, user_id, text) {
   const senderUrl = `slack:${team_id}-${user_id}`;
   const sender = await getAccountForUrl(senderUrl);
   if (sender.id === 0 || sender.communityId === 0) {
+    util.log("failed sender url", senderUrl);
     return { error: "Sorry! Your YKarma account is not set up for sending here", sender:sender, amount:amount };
   }
   if (sender.givable < amount) {
-    return { error: `Sorry! You don't have enough YKarma to do that. Your balance is ${givable}`, sender:sender, amount:amount };
+    util.log("failed sender url", senderUrl);
+    util.log("failed sender", sender);
+    return { error: `Sorry! You don't have enough YKarma to do that. Your balance is ${sender.givable}`, sender:sender, amount:amount };
   }
   
   const recipientUrl = `slack:${team_id}-${recipientId}`;
@@ -359,7 +368,10 @@ router.post('/event', async function(req, res, next) {
         text = vals.error;
         break;
       }
-      sendKarma(res, vals, function() {
+      sendKarma(res, vals, function(error) {
+        if (error) {
+          return util.warn("sendKarma error", error);
+        }
         postToChannel(req.body.event.channel, "Sent!", bot_token);
         var name = sender.metadata ? sender.metadata.name : sender.id;
         openChannelAndPost(vals.recipientUrl, `${name} has sent you ${vals.amount} karma!`);
@@ -410,7 +422,10 @@ router.post('/event', async function(req, res, next) {
       }
       var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId);
       rewards.getRewardFor(purchaseId, (reward) => {
-        eth.doSend(purchaseMethod, res, 1, 2, () => {
+        eth.doSend(purchaseMethod, res, 1, 2, (error) => {
+          if (error) {
+            return util.warn("doSend error", error);
+          }
           eth.getAccountFor(reward.vendorId, (vendor) => {
             util.log("reward purchased", reward);
             util.log("from", vendor);
@@ -429,13 +444,14 @@ router.post('/event', async function(req, res, next) {
   }
 
   postToChannel(req.body.event.channel, text, bot_token);
-  res.sendStatus(200);
+  res.json({text:text});
 });
 
 function postToChannel(channel, text, bot_token) {
   var body = {
     text: text,
-    channel: channel
+    channel: channel,
+    token: bot_token
   };
   fetch(POST_MESSAGE_URL, {
     method: 'POST',
@@ -452,7 +468,7 @@ async function openChannelAndPost(slackUrl, text) {
   }
 
   const teamId = slackUrl.substring(slackUrl.indexOf(":")+1, slackUrl.indexOf("-"));
-  const data = getFirebaseTeamData(teamId);
+  const data = await getFirebaseTeamData(teamId);
   if (data.error) {
     return console.log(data.error);
   }
@@ -476,20 +492,20 @@ async function openChannelAndPost(slackUrl, text) {
     return console.log("conversation open error", json);
   }
   
-  postToChannel(json,channel.id, text, bot_token);
+  postToChannel(json.channel.id, text, bot_token);
 }
 
 async function getFirebaseTeamData(team_id) {
   if (process.env.NODE_ENV === "test") {
-    return { "bot_token" : "test" };
+    return Promise.resolve({ error:null, vals: { "bot_token" : "test" }});
   }
   var docRef = firebase.db.collection('slackTeams').doc(team_id);
   var doc = await docRef.get();
   if (!doc.exists) {
     util.warn("no team data for", team_id);
-    return { error:"no team data", vals: null };
+    return Promise.resolve({ error:"no team data", vals: null });
   }
-  return {error:null, vals:doc.data()};
+  return Promise.resolve({error:null, vals:doc.data()});
 }
 
 module.exports = {
