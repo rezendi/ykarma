@@ -23,9 +23,9 @@ eth.getFromAccount().then(address => {
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.warn("setting up test data");
-    if (req.body.ykid) {
-      req.session.ykcid = parseInt(req.body.ykid, 10);
-      req.session.email = req.body.email;
+    if (req.params.ykid) {
+      req.session.ykcid = parseInt(req.params.ykid, 10);
+      req.session.email = req.params.email;
     } else {
       req.session.email = process.env.ADMIN_EMAIL;
       req.session.ykid = 2;

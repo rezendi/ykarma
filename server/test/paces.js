@@ -210,5 +210,21 @@ describe('Slack', function () {
 
   // assumes a reward added as part of deploy
   it('should run through various Slack functions', function (done) {
+    api.get('/api/accounts/setup').expect(200).end((err, res) => {
+      if (err) done (err);
+      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+      api.put('/api/accounts/addUrl')
+        .send({"url":"slack:TEST-USER1"})
+        .set('Cookie', TestCookies).expect(200)
+        .end(function (err, res) {
+          if (err) done (err);
+          expect(JSON.parse(res.text).success).to.equal('slack:TEST-USER1');
+          // POST to /yk to send ykarma between users
+          // ask YKarmaBot for help
+          // ask YKarmaBot for balance
+          // ask YKarmaBot for rewards
+        });
+    });
+  });
 });
   

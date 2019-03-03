@@ -14,6 +14,16 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
+router.post('/testOpenConversation', function(req, res, next) {
+  util.log("opening test conversation with", req.body)
+  res.json({success:true, body:req.body});
+});
+
+router.post('/testPostMessage', function(req, res, next) {
+  util.log("posting test message", req.body)
+  res.json({success:true, body:req.body});
+});
+
 router.post('/state', function(req, res, next) {
   req.session.slackState = req.body.state;
   util.log("slack state set");
@@ -830,14 +840,11 @@ router.post('/event', async function(req, res, next) {
   }
 
   console.log("message.im", req.body);
-  var docRef = firebase.db.collection('slackTeams').doc(req.body.team_id);
-  var doc = await docRef.get();
-  if (!doc.exists) {
-    console.log("no team data");
-    return res.send({success:false, error:"no team data"});
+  var data = await getFirebaseTeamData(req.body.team_id);
+  if (data.error) {
+    return res.send({success:false, error:data.error})
   }
-  
-  const bot_token = doc.data().bot_token;
+  const bot_token = data.vals.bot_token;
   if (!bot_token) {
     console.log("no bot token found");
     return res.send({success:false, error:"no token found"});
@@ -968,12 +975,11 @@ async function openChannelAndPost(slackUrl, text) {
   }
 
   const teamId = slackUrl.substring(slackUrl.indexOf(":")+1, slackUrl.indexOf("-"));
-  const docRef = firebase.db.collection('slackTeams').doc(teamId);
-  const doc = await docRef.get();
-  if (!doc.exists) {
-    return console.log("no team data for", slackUrl);
+  const data = getFirebaseTeamData(teamId);
+  if (data.error) {
+    return console.log(data.error);
   }
-  const bot_token = doc.data().bot_token;
+  const bot_token = data.vals.bot_token;
   if (!bot_token) {
     return console.log("no bot token for", slackUrl);
   }
@@ -994,6 +1000,19 @@ async function openChannelAndPost(slackUrl, text) {
   }
   
   postToChannel(json,channel.id, text, bot_token);
+}
+
+async function getFirebaseTeamData(team_id) {
+  if (process.env.NODE_ENV === "test") {
+    return { "bot_token" : "test" };
+  }
+  var docRef = firebase.db.collection('slackTeams').doc(team_id);
+  var doc = await docRef.get();
+  if (!doc.exists) {
+    util.warn("no team data for", team_id);
+    return { error:"no team data", vals: null };
+  }
+  return {error:null, vals:doc.data()};
 }
 
 module.exports = {
