@@ -12,7 +12,7 @@ redis.on('error', function (err) {
   }
 });
 
-var accountCache = {}
+var accountCache = {};
 
 var fromAccount = null;
 eth.getFromAccount().then(address => {
@@ -23,15 +23,20 @@ eth.getFromAccount().then(address => {
 router.get('/setup', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.warn("setting up test data");
-    req.session.email = process.env.ADMIN_EMAIL;
-    req.session.ykid = 2;
+    if (req.body.ykid) {
+      req.session.ykcid = parseInt(req.body.ykid, 10);
+      req.session.email = req.body.email;
+    } else {
+      req.session.email = process.env.ADMIN_EMAIL;
+      req.session.ykid = 2;
+    }
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
     util.log("set up test data", req.session);
   } else {
-    util.warn("setting up admin account");
+    util.warn("setting up admin account if not already created");
     getAccountForUrl('mailto:'+process.env.ADMIN_EMAIL, (account) => {
-      if (account.id !== '0') {
+      if (account.id !== 0) {
         return res.json({"success":true, 'message':'Redundant'});
       }
       var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Admin"}', '0x00', 'mailto:'+process.env.ADMIN_EMAIL);

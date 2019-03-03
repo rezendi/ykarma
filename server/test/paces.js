@@ -205,3 +205,10 @@ describe('Reward', function () {
   });
 
 });
+
+describe('Slack', function () {
+
+  // assumes a reward added as part of deploy
+  it('should run through various Slack functions', function (done) {
+});
+  

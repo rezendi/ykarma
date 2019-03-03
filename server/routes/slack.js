@@ -6,6 +6,9 @@ const eth = require('./eth');
 const util = require('./util');
 const rewards = require('./rewards');
 
+const OPEN_CONVERSATION_URL = process.env.NODE_ENV === "test" ? "/testOpenConversation" : "https://slack.com/api/conversations.open";
+const POST_MESSAGE_URL = process.env.NODE_ENV === "test" ? "/testPostMessage" : "https://slack.com/api/chat.postMessage";
+
 var fromAccount = null;
 eth.getFromAccount().then(address => {
   fromAccount = address;
@@ -950,7 +953,7 @@ function postToChannel(channel, text, bot_token) {
     text: text,
     channel: channel
   };
-  fetch("https://slack.com/api/chat.postMessage", {
+  fetch(POST_MESSAGE_URL, {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
@@ -980,8 +983,7 @@ async function openChannelAndPost(slackUrl, text) {
     users: userId,
     token: bot_token
   };
-  var url = "https://slack.com/api/conversations.open";
-  var response = await fetch(url, {
+  var response = await fetch(OPEN_CONVERSATION_URL, {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
