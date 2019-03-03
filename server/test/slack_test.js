@@ -11,7 +11,7 @@ describe('Slack', function () {
 
   // assumes a reward added as part of deploy
   it('send karma in-channel and via DM', function (done) {
-    this.timeout(5000);
+    this.timeout(10000);
     api.get('/api/accounts/setup?ykid=4').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -29,7 +29,22 @@ describe('Slack', function () {
             .end(function (err, res) {
               if (err) done (err);
               expect(JSON.parse(res.text).text).to.equal("Sending...");
-              done();
+              // list rewards
+              api.post('/api/slack/event')
+                .send({ "team_id":"TEST", "event": {"channel":"TestChannel", "type":"message.im", "user":"USER1", "text":"rewards"} })
+                .set('Cookie', TestCookies).expect(200)
+                .end(function (err, res) {
+                  if (err) done (err);
+                  expect(JSON.parse(res.text).text).to.equal("Fetching available rewards from blockchain...");
+                  api.post('/api/slack/event')
+                    .send({ "team_id":"TEST", "event": {"channel":"TestChannel", "type":"message.im", "user":"USER1", "text":"purchase 1"} })
+                    .set('Cookie', TestCookies).expect(200)
+                    .end(function (err, res) {
+                      if (err) done (err);
+                      expect(JSON.parse(res.text).text).to.equal("Attempting purchase...");
+                      done();
+                    });
+                });
             });
         });
     });

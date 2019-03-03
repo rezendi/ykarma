@@ -390,12 +390,12 @@ router.post('/event', async function(req, res, next) {
           util.log("No rewards available");
           postToChannel(req.body.event.channel, "No rewards available", bot_token);
         }
-        var rewards = [];
+        var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
           rewards.getRewardByIndex(0, sender.communityId, i, (reward) => {
-            rewards.push(reward);
-            if (rewards.length >= parseInt(totalRewards)) {
-              var retval = rewards.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
+            available.push(reward);
+            if (available.length >= parseInt(totalRewards)) {
+              var retval = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
               //TODO: structure more nicely
               text = "Available Rewards: " + JSON.stringify(retval);
               postToChannel(req.body.event.channel, text, bot_token);
@@ -434,7 +434,7 @@ router.post('/event', async function(req, res, next) {
           });
         });
       });
-      text = "Purchasing...";
+      text = "Attempting purchase...";
       break;
     case "flavors":
       text = "flavor handling goes here";
