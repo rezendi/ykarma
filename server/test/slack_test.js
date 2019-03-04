@@ -42,6 +42,7 @@ describe('Slack', function () {
                     .end(function (err, res) {
                       if (err) done (err);
                       expect(JSON.parse(res.text).text).to.equal("Attempting purchase...");
+                      // TODO check the various posts to /testOpenConversation and /testPostMessage for correctness
                       done();
                     });
                 });

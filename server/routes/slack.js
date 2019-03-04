@@ -373,8 +373,16 @@ router.post('/event', async function(req, res, next) {
           return util.warn("sendKarma error", error);
         }
         postToChannel(req.body.event.channel, "Sent!", bot_token);
-        var name = sender.metadata ? sender.metadata.name : sender.id;
-        openChannelAndPost(vals.recipientUrl, `${name} has sent you ${vals.amount} karma!`);
+        var name = sender.id;
+        var email = util.getEmailFrom(sender.urls);
+        if (sender.metadata && sender.metadata.name) {
+          name = sender.metadata.name;
+        } else if (email.length > 0) {
+          name = email;
+        }
+        var message = `${name} has sent you ${vals.amount} karma`;
+        message = vals.message ? message + ` with the message: ${vals.message}` : '!';
+        openChannelAndPost(vals.recipientUrl, message);
       });
       text = "Sending...";
       break;

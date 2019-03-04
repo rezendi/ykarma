@@ -42,7 +42,7 @@ https://www.ykarma.com/
 function sendRewardCreatedEmail(vendor, reward) {
   util.debug("Sending created email to", vendor ? vendor.urls : 'n/a');
   if (process.env.NODE_ENV === "test") return;
-  var vendorEmail = getEmailFrom(vendor.urls);
+  var vendorEmail = util.getEmailFrom(vendor.urls);
   if (vendorEmail === "") return;
   const msg = {
     to: vendorEmail,
@@ -68,9 +68,9 @@ https://www.ykarma.com/
 function sendRewardSoldEmail(reward, buyer, vendor) {
   util.debug("Sending selling email to", vendor.urls);
   if (process.env.NODE_ENV === "test") return;
-  var vendorEmail = getEmailFrom(vendor.urls);
+  var vendorEmail = util.getEmailFrom(vendor.urls);
   if (vendorEmail === "") return;
-  var buyerInfo = getEmailFrom(buyer.urls);
+  var buyerInfo = util.getEmailFrom(buyer.urls);
   if (!buyerInfo) {
     buyerInfo = buyer.urls ? buyer.urls.split(util.separator)[0] : 'n/a';
   }
@@ -99,9 +99,9 @@ https://www.ykarma.com/
 
 function sendRewardPurchasedEmail(reward, buyer, vendor) {
   if (process.env.NODE_ENV === "test") return;
-  var buyerEmail = getEmailFrom(buyer.urls);
+  var buyerEmail = util.getEmailFrom(buyer.urls);
   if (buyerEmail === "") return;
-  var vendorInfo = getEmailFrom(vendor.urls);
+  var vendorInfo = util.getEmailFrom(vendor.urls);
   if (!vendorInfo) {
     vendorInfo = vendor.urls ? vendor.urls.split(util.separator)[0] : 'n/a';
   }
@@ -126,18 +126,6 @@ https://www.ykarma.com/
 `,
   };
   sgMail.send(msg);
-}
-
-function getEmailFrom(urls) {
-  if (urls && urls.indexOf("mailto") >= 0) {
-    const urlArray = urls.split(util.separator);
-    for (var i in urlArray) {
-      if (urlArray[i].startsWith("mailto:")) {
-        return urlArray[i].replace("mailto:","");
-      }
-    }
-  }
-  return '';
 }
 
 function getRewardInfoFrom(reward) {

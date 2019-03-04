@@ -39,10 +39,24 @@ function debug(a, b) {
   }
 }
 
+function getEmailFrom(urls) {
+  if (urls && urls.indexOf("mailto") >= 0) {
+    const urlArray = urls.split(URL_SEPARATOR);
+    for (var i in urlArray) {
+      if (urlArray[i].startsWith("mailto:")) {
+        return urlArray[i].replace("mailto:","");
+      }
+    }
+  }
+  return '';
+}
+
+
 module.exports = {
   verifyURLs: verifyURLs,
   log:        log,
   debug:      debug,
   warn:       warn,
   separator:  URL_SEPARATOR,
+  getEmailFrom : getEmailFrom
 };
