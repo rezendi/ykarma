@@ -27,7 +27,7 @@ class Main extends React.Component {
       <main>
         { GA.init() && <GA.RouteTracker /> }
         <Switch>
-          <Loadable active={this.props.loading} color={'red'} background='white' spinner={true} animate={true} text={t('Stacking another block on the chain...')} >
+          <Loadable active={this.props.loading} color={'red'} background='white' spinner={true} animate={true} text={t('Stacking another block on the chain…')} >
             <Route exact path='/' component={Home}/>
             <Route exact path='/login' component={Login}/>
             <Route exact path='/finishSignIn' component={FinishSignIn}/>

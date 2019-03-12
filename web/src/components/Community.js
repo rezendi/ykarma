@@ -58,12 +58,12 @@ class Community extends React.Component {
     const { t } = this.props;
     if ((this.props.community === undefined || this.props.accounts === undefined) && this.props.user === undefined) {
       return (
-        <div>{t('Loading...')}</div>
+        <div>{t('Loading…')}</div>
       );
     }
     if (this.props.community.metadata === undefined) {
       return (
-        <div>{t('Server error..')}.</div>
+        <div>{t('Server error…')}.</div>
       );
     }
     if (this.state && this.state.editing) {
@@ -88,7 +88,7 @@ class Community extends React.Component {
                   {this.props.community.metadata.description}
                 </Col></Row>
                 <Row><Col md={12}>
-                  {t('You have')} { this.props.user.givable } {t('karma available to give.')}
+                  {t('You have')} { this.props.user.givable } {t('karma available to give')}
                   <hr/>
                 </Col></Row>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>

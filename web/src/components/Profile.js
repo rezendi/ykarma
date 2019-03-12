@@ -167,9 +167,9 @@ class Profile extends React.Component {
                       <i>@{ this.props.user.handle}</i>
                     </div> }
                     <div>
-                      {t('You have')} { this.props.user.givable } {t('karma available to give.')}
+                      {t('You have')} { this.props.user.givable } {t('karma available to give')}
                     </div>
-                    {t('You have')} { this.totalSpendable() } {t('karma to spend.')} ({ this.karmaBreakdown() })
+                    {t('You have')} { this.totalSpendable() } {t('karma to spend')} ({ this.karmaBreakdown() })
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
@@ -255,7 +255,7 @@ class Profile extends React.Component {
                 {this.props.vendedRewards.map(reward =>
                   <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                 )}
-                {t('You have sold')} {this.getTotalSoldRewards(this.props.vendedRewards)} {t('rewards for a total of')} {this.getTotalSoldKarma(this.props.vendedRewards)} {t('karma.')}
+                {t('You have sold')} {this.getTotalSoldRewards(this.props.vendedRewards)} {t('rewards for a total of')} {this.getTotalSoldKarma(this.props.vendedRewards)} {t('karma')}
               </Panel.Body>
             </Panel>
           </Col>

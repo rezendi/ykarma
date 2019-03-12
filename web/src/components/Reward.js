@@ -52,7 +52,7 @@ class Reward extends React.Component {
     const { t } = this.props;
     if (this.props.reward.id === undefined) {
       return (
-        <div>{t('Loading...')}</div>
+        <div>{t('Loading…')}</div>
       );
     }
     if (this.state && this.state.editing) {

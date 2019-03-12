@@ -12,7 +12,7 @@ class SignOut extends React.Component {
   render() {
     const { t } = this.props;
     return (
-      <div>{t('Logging you out...')}</div>
+      <div>{t('Logging you out…')}</div>
     )
   }
 }

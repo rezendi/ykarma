@@ -32,7 +32,7 @@ class FinishSignIn extends React.Component {
   render() {
     const { t } = this.props;
     return (
-      <div>{t('Logging you in...')}</div>
+      <div>{t('Logging you in…')}</div>
     )
   }
 }

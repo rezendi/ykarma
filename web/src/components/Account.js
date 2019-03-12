@@ -33,7 +33,7 @@ class Account extends React.Component {
     const { t } = this.props;
     if (!this.props.account.id) {
       return (
-        <div>Loading...</div>
+        <div>Loading…</div>
       );
     }
 
@@ -81,7 +81,7 @@ class Account extends React.Component {
                 {this.props.vendedRewards.map(reward =>
                   <RewardRow key={reward.id} reward={reward} showAvailable={true} />
                 )}
-                {t('Has sold')} {this.getTotalSoldRewards(this.props.vendedRewards)} {t('rewards for a total of')} {this.getTotalSoldKarma(this.props.vendedRewards)} {t('karma.')}
+                {t('Has sold')} {this.getTotalSoldRewards(this.props.vendedRewards)} {t('rewards for a total of')} {this.getTotalSoldKarma(this.props.vendedRewards)} {t('karma')}
               </Panel.Body>
             </Panel>
           </Col>

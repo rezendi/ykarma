@@ -25,44 +25,43 @@ const resources = {
       // Account
       'Has sold' : 'Has sold',
       "rewards for a total of" : "rewards for a total of",
-      "karma." : "karma.",
+      "karma" : "karma",
       
       // AccountForm
       
       // Community
-      "Loading..." : "Loading",
-      "Server error..." : "Server error",
+      "Loading…" : "Loading…",
+      "Server error…" : "Server error…",
       "members" : "members",
       "You have" : "You have",
-      "karma available to give." : "karma available to give.",
+      "karma available to give" : "karma available to give",
 
       // CommunityForm
       
       // FinishSignIn
-      "Logging you in..." : "Logging you in...",
+      "Logging you in…" : "Logging you in...",
 
       // Home
-      "You are not (yet) a member of any YKarma community." : "You are not (yet) a member of any YKarma community.",
-      "First login detected, populating your account..." : "First login detected, populating your account...",
-      "Please wait while we pile another block or two on the blockchain..." : "Please wait while we pile another block or two on the blockchain...",
+      "You are not (yet) a member of any YKarma community" : "You are not (yet) a member of any YKarma community.",
+      "First login detected, populating your account…" : "First login detected, populating your account...",
+      "Please wait while we pile another block or two on the blockchain…" : "Please wait while we pile another block or two on the blockchain...",
       "Howdy," : "Howdy,",
       "You are a member of" : "You are a member of",
       "which has" : "which has",
-      "members / invitees." : "members / invitees.",
-      "For every 100 you give, you get 10 to spend." : "For every 100 you give, you get 10 to spend.",
-      "karma" : "karma",
+      "members / invitees" : "members / invitees.",
+      "For every 100 you give, you get 10 to spend" : "For every 100 you give, you get 10 to spend.",
       "to" : "to",
       "because" : "because",
       "Give" : "Give",
       "Spend" : "Spend",
-      "total karma available to spend." : "total karma available to spend.",
+      "total karma available to spend" : "total karma available to spend.",
       "Top reward" : "Top reward",
       "View All Available Rewards" : "View All Available Rewards",
       "Given" : "Given",
       "Received" : "Received",
 
       // LinkEmail
-      "Linking your email..." : "Linking your email...",
+      "Linking your email…" : "Linking your email...",
 
       // Login
       "Email sent!" : "Email sent!",
@@ -73,13 +72,13 @@ const resources = {
       "Log In with Slack" : "Log In with Slack",
 
       // Main
-      "Stacking another block on the chain..." : "Stacking another block on the chain...",
+      "Stacking another block on the chain…" : "Stacking another block on the chain...",
       
       // Profile
       "Error" : "Error",
       "Nameless One" : "Nameless One",
       "Home" : "Home",
-      "karma to spend." : "karma to spend.",
+      "karma to spend" : "karma to spend.",
       "Add Twitter" : "Add Twitter",
       "Remove Twitter" : "Remove Twitter",
       "Add Email" : "Add Email",
@@ -124,7 +123,7 @@ const resources = {
       "Rewards you have offered" : "Rewards you have offered",
       
       // Sign Out
-      "Logging you out..." : "Logging you out...",
+      "Logging you out…" : "Logging you out...",
       
       // Tranche
       "unknown" : "unknown",
@@ -155,44 +154,43 @@ const resources = {
       // Account
       'Has sold' : "팔았습니다.",
       "rewards for a total of" : "보상 총액",
-      "karma." : "카르마.",
+      "karma" : "카르마",
       
       // AccountForm
       
       // Community
-      "Loading..." : "로딩",
-      "Server error..." : "서버 오류",
+      "Loading…" : "로딩",
+      "Server error…" : "서버 오류",
       "members" : "사용자",
       "You have" : "보유",
-      "karma available to give." : "줄 수 있는 카르마.",
+      "karma available to give" : "줄 수 있는 카르마",
 
       // CommunityForm
       
       // FinishSignIn
-      "Logging you in..." : "로그인 중입니다.",
+      "Logging you in…" : "로그인 중입니다",
 
       // Home
-      "You are not (yet) a member of any YKarma community." : "Y카르마 커뮤니티의 회원이 아닙니다.",
-      "First login detected, populating your account..." : "첫 로그인을 확인하고 계정을 생성중입니다. ",
-      "Please wait while we pile another block or two on the blockchain..." : "블록을 생성하는 동안 잠시만 기다려주세요.",
+      "You are not (yet) a member of any YKarma community" : "Y카르마 커뮤니티의 회원이 아닙니다.",
+      "First login detected, populating your account…" : "첫 로그인을 확인하고 계정을 생성중입니다. ",
+      "Please wait while we pile another block or two on the blockchain…" : "블록을 생성하는 동안 잠시만 기다려주세요.",
       "Howdy," : "안녕하세요,",
       "You are a member of" : "활동중인 커뮤니티",
       "which has" : "가지고 있는",
-      "members / invitees." : "멤버 / 초대.",
-      "For every 100 you give, you get 10 to spend." : "100을 줄 때 마다 10을 사용할 수 있습니다.",
-      "karma" : "카르마",
+      "members / invitees" : "멤버 / 초대.",
+      "For every 100 you give, you get 10 to spend" : "100을 줄 때 마다 10을 사용할 수 있습니다.",
       "to" : "to",
       "because" : "이유",
       "Give" : "보내기",
       "Spend" : "사용하기",
-      "total karma available to spend." : "사용할 수 있는 전체 카르마",
+      "total karma available to spend" : "사용할 수 있는 전체 카르마",
       "Top reward" : "최고 리워드",
       "View All Available Rewards" : "모든 리워드 확인하기",
       "Given" : "주어진",
       "Received" : "받은 ",
 
       // LinkEmail
-      "Linking your email..." : "이메일을 연결중입니다.",
+      "Linking your email…" : "이메일을 연결중입니다.",
 
       // Login
       "Email sent!" : "이메일을 보냈습니다.",
@@ -203,13 +201,13 @@ const resources = {
       "Log In with Slack" : "슬랙으로 로그인 하기 ",
 
       // Main
-      "Stacking another block on the chain..." : "체인에 다른 블록을 연결하고 있습니다.",
+      "Stacking another block on the chain…" : "체인에 다른 블록을 연결하고 있습니다.",
       
       // Profile
       "Error" : "에러",
       "Nameless One" : "무명인",
       "Home" : "홈",
-      "karma to spend." : "카르마를 사용할 수 있음.",
+      "karma to spend" : "카르마를 사용할 수 있음.",
       "Add Twitter" : "트위터 추가",
       "Remove Twitter" : "트위터 제거",
       "Add Email" : "이메일 추가",
@@ -254,7 +252,7 @@ const resources = {
       "Rewards you have offered" : "보상을 제안한 리워드",
       
       // Sign Out
-      "Logging you out..." : "로그아웃중입니다.…",
+      "Logging you out…" : "로그아웃중입니다.…",
       
       // Tranche
       "unknown" : "모르는 이",

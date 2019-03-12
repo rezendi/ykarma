@@ -25,7 +25,7 @@ class LinkEmail extends React.Component {
   render() {
     const { t } = this.props;
     return (
-      <div>{t('Linking your email...')}</div>
+      <div>{t('Linking your email…')}</div>
     )
   }
 }

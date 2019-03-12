@@ -46,7 +46,7 @@ class Home extends React.Component {
    if (!this.props.user || Object.keys(this.props.user).length === 0) {
       return (
         <Grid>
-          <Row>Loading...</Row><
+          <Row>{t('Loading…')}</Row><
         /Grid>
       );
     }
@@ -62,7 +62,7 @@ class Home extends React.Component {
     if (!this.props.user.community || !this.props.user.community.id) {
       return (
         <Grid>
-          <Row><Col md={12}>Hi, { this.props.user.displayName || this.props.user.email }! {t('You are not (yet) a member of any YKarma community.')}</Col></Row>
+          <Row><Col md={12}>Hi, { this.props.user.displayName || this.props.user.email }! {t('You are not (yet) a member of any YKarma community')}</Col></Row>
           <Readme/>
         </Grid>
       );
@@ -80,8 +80,8 @@ class Home extends React.Component {
       }, 6000);
       return (
         <Grid>
-          <Row>{t('First login detected, populating your account...')}</Row>
-          <Row>{t('Please wait while we pile another block or two on the blockchain...')}</Row>
+          <Row>{t('First login detected, populating your account…')}</Row>
+          <Row>{t('Please wait while we pile another block or two on the blockchain…')}</Row>
         </Grid>
       );
     }
@@ -99,7 +99,7 @@ class Home extends React.Component {
                   <Col md={12}>
                     {t('Howdy,')} { this.props.user.email || this.props.user.handle }!
                     &nbsp;
-                    {t('You are a member of')} { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } {t('which has')} { this.props.user.community.accounts } {t('members / invitees.')}
+                    {t('You are a member of')} { this.props.user.community.metadata ? this.props.user.community.metadata.name : 'no known community' } {t('which has')} { this.props.user.community.accounts } {t('members / invitees')}
                   </Col>
                 </Row>
               </Panel.Body>
@@ -116,8 +116,8 @@ class Home extends React.Component {
               <Panel.Body>
                 <Col md={12}>
                   <Row>
-                    {t('You have')} { this.props.user.givable } {t('karma available to give.')}
-                    <br/>{t('For every 100 you give, you get 10 to spend.')}
+                    {t('You have')} { this.props.user.givable } {t('karma available to give')}
+                    <br/>{t('For every 100 you give, you get 10 to spend')}
                     <hr/>
                   </Row>
                   <form onSubmit={this.props.handleSubmit(this.submitForm)}>
@@ -152,7 +152,7 @@ class Home extends React.Component {
               <Panel.Body>
                 <Col md={12}>
                   <Row>
-                    {t('You have')} { this.totalSpendable() } {t('total karma available to spend.')}
+                    {t('You have')} { this.totalSpendable() } {t('total karma available to spend')}
                     <Link className="pull-right" to="/profile">view details</Link>
                     <hr/>
                   </Row>
