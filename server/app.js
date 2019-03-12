@@ -29,11 +29,25 @@ if (process.env.NODE_ENV === "production") {
 }
 app.use(session(sessionConfig));
 
+var i18next = require("i18next");
+var middleware = require("i18next-express-middleware");
+const resources = require('./translations');
+i18next.use(middleware.LanguageDetector).init({
+  resources,
+  preload: ["en", "kr"],
+});
+app.use(
+  middleware.handle(i18next, {
+    removeLngFromUrl: false
+  })
+);
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
 
 app.use('/api', indexRouter);
 app.use('/api/accounts', accountsRouter);
