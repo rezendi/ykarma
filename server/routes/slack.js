@@ -97,7 +97,7 @@ router.get('/team_auth', function(req, res, next) {
   
   // for now only the admin can add to slack
   if (req.session.email !== process.env.ADMIN_EMAIL) {
-    return res.json({"success":false, "error": "Not authorized"});
+    return res.json({"success":false, "error": req.t("Not authorized")});
   }
   if (req.session.ykcid === 0) {
     return res.json({"success":false, "error": "No community"});
@@ -168,12 +168,12 @@ router.post('/yk', async function(req, res, next) {
   }
 
   var text = req.body.text || '';
-  if (text.startsWith('help')) {
+  if (text.startsWith(req.t('help'))) {
     const senderUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
     const sender = await getAccountForUrl(senderUrl);
     return res.json({
       "response_type" : "ephemeral",
-      "text" : `YKarma is a reputation cryptocurrency which you give to others, who can then use it to buy rewards. You currently have ${sender.givable} karma to give away to others, and ${sender.spendable} to spend on rewards. To send karma, use this slash command; for example, to send 10 karma to Alice with the message _for being awesome_, just type "/yk 10 to @alice for being awesome"`
+      "text" : req.t("ykarma_is") + ` ${sender.givable} ` + req.t("karma to give away to others, and") + ` ${sender.spendable} ` + req.t("to_spend_on")
     });
   }
     
@@ -183,7 +183,7 @@ router.post('/yk', async function(req, res, next) {
     text=text.replace("nogif ", "");
   }
 
-  var vals = await prepareToSendKarma(req.body.team_id, req.body.user_id, text);
+  var vals = await prepareToSendKarma(req, req.body.team_id, req.body.user_id, text);
   if (!vals.error) {
     sendKarma(res, vals, function(error) {
       if (error) {
@@ -191,7 +191,7 @@ router.post('/yk', async function(req, res, next) {
       }
       const body = {
         "response_type" : "in_channel",
-        "text": `Sent! ${showGif ? gifs.getGIFFor(vals.amount) : ""}`
+        "text": req.t("Sent!") +` ${showGif ? gifs.getGIFFor(vals.amount) : ""}`
       };
       if (!req.body.response_url) {
         return util.warn("Bailing out, no response URL given");
@@ -208,12 +208,12 @@ router.post('/yk', async function(req, res, next) {
   
   res.json({
     "response_type" : vals.error ? "ephemeral" : "in_channel",
-    "text" : vals.error ? vals.error : "Sending..."
+    "text" : vals.error ? vals.error : "Sending…"
   });
 });
 
 
-async function prepareToSendKarma(team_id, user_id, text) {
+async function prepareToSendKarma(req, team_id, user_id, text) {
   const words = text.split(" ");
   var amount = 0;
   var recipientId = '';
@@ -244,11 +244,11 @@ async function prepareToSendKarma(team_id, user_id, text) {
   }
   
   if (amount === 0) {
-    return { error: "Sorry! Valid amount not found." };
+    return { error: req.t("Sorry! Valid amount not found") };
   }
 
   if (recipientId === '' || recipientId === user_id) {
-    return { error: "Sorry! Valid recipient not found.", amount:amount };
+    return { error: req.t("Sorry! Valid recipient not found"), amount:amount };
   }
 
   // get the sender  
@@ -256,19 +256,19 @@ async function prepareToSendKarma(team_id, user_id, text) {
   const sender = await getAccountForUrl(senderUrl);
   if (sender.id === 0 || sender.communityId === 0) {
     util.log("failed sender url", senderUrl);
-    return { error: "Sorry! Your YKarma account is not set up for sending here", sender:sender, amount:amount };
+    return { error: req.t("Sorry! Your YKarma account is not set up for sending here"), sender:sender, amount:amount };
   }
   if (sender.givable < amount) {
     util.log("failed sender url", senderUrl);
     util.log("failed sender", sender);
-    return { error: `Sorry! You don't have enough YKarma to do that. Your balance is ${sender.givable}`, sender:sender, amount:amount };
+    return { error: req.t("Sorry! You don't have enough YKarma to do that. Your balance is") +` ${sender.givable}`, sender:sender, amount:amount };
   }
   
   const recipientUrl = `slack:${team_id}-${recipientId}`;
   util.warn("recipientUrl is", recipientUrl);
   const recipient = await getAccountForUrl(recipientUrl);
   if (recipient.id === 0 || recipient.communityId === 0) {
-    return { error: "Sorry! That YKarma account is not set up for receiving here", sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
+    return { error: req.t("Sorry! That YKarma account is not set up for receiving here"), sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
   }
   
   return { sender:sender, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
@@ -346,24 +346,24 @@ router.post('/event', async function(req, res, next) {
   var words = incoming.split(' ');
   var purpose = words[0];
   switch (purpose) {
-    case "help":
-      text = "You can check your balance with 'balance', send with 'send' eg 'send 10 to @alice for being awesome', view available rewards with 'rewards', or purchase a reward with 'purchase' eg 'purchase 23'.";
+    case req.t("help"):
+      text = req.t("bot_help");
       break;
-    case "balance":
+    case req.t("balance"):
       const availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
       availableMethod.call(function(error, available) {
         if (error) {
           util.log('getAvailable error', error);
-          postToChannel(req.body.event.channel, "Error getting available-to-spend amount", bot_token);
+          postToChannel(req.body.event.channel, req.t("Error getting available-to-spend amount"), bot_token);
         } else {
           // TODO: flavor breakdown?
-          postToChannel(req.body.event.channel, `You currently have a total of ${available} to spend. You can get an itemization by flavor with the 'flavors' command.`, bot_token);
+          postToChannel(req.body.event.channel, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
         }
       });
-      text = `You currently have ${sender.givable} to give away`;
+      text = req.t("You currently have") + ` ${sender.givable} ` + req.t("to give away");
       break;
-    case "send":
-      var vals = await prepareToSendKarma(req.body.team_id, req.body.event.user, incoming);
+    case req.t("send"):
+      var vals = await prepareToSendKarma(req, req.body.team_id, req.body.event.user, incoming);
       if (vals.error) {
         text = vals.error;
         break;
@@ -372,7 +372,7 @@ router.post('/event', async function(req, res, next) {
         if (error) {
           return util.warn("sendKarma error", error);
         }
-        postToChannel(req.body.event.channel, "Sent!", bot_token);
+        postToChannel(req.body.event.channel, req.t("Sent!"), bot_token);
         var name = sender.id;
         var email = util.getEmailFrom(sender.urls);
         if (sender.metadata && sender.metadata.name) {
@@ -380,23 +380,23 @@ router.post('/event', async function(req, res, next) {
         } else if (email.length > 0) {
           name = email;
         }
-        var message = `${name} has sent you ${vals.amount} karma`;
-        message = vals.message ? message + ` with the message: ${vals.message}` : '!';
+        var message = `${name} ` + req.t("has sent you") + ` ${vals.amount} ` + req.t("karma");
+        message = vals.message ? message + " " + req.t("with the message") + ` ${vals.message}` : '!';
         openChannelAndPost(vals.recipientUrl, message);
       });
-      text = "Sending...";
+      text = req.t("Sending…");
       break;
-    case "rewards":
+    case req.t("rewards"):
       const rewardsMethod = eth.contract.methods.getRewardsCount(sender.communityId, 0);
-      text = 'Fetching available rewards from blockchain...';
+      text = req.t('Fetching available rewards from the blockchain…');
       rewardsMethod.call(function(error, totalRewards) {
         if (error) {
           util.log('getListOfRewards error', error);
-          postToChannel(req.body.event.channel, "Error getting rewards", bot_token);
+          postToChannel(req.body.event.channel, req.t("Error getting rewards"), bot_token);
         }
         if (parseInt(totalRewards)===0) {
           util.log("No rewards available");
-          postToChannel(req.body.event.channel, "No rewards available", bot_token);
+          postToChannel(req.body.event.channel, req.t("No rewards available"), bot_token);
         }
         var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
@@ -405,17 +405,17 @@ router.post('/event', async function(req, res, next) {
             if (available.length >= parseInt(totalRewards)) {
               var retval = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
               //TODO: structure more nicely
-              text = "Available Rewards: " + JSON.stringify(retval);
+              text = req.t("Available Rewards") + " " + JSON.stringify(retval);
               postToChannel(req.body.event.channel, text, bot_token);
             }
           });
         }
       })
       .catch(function(error) {
-        text = `Error getting list of rewards ${error}`;
+        text = req.t("Error getting list of rewards") + ` ${error}`;
       });
       break;
-    case "purchase":
+    case req.t("purchase"):
       var purchaseId = 0;
       for (var i=1; i < words.length; i++) {
         var wordNum = parseInt(words[i], 10);
@@ -425,7 +425,7 @@ router.post('/event', async function(req, res, next) {
         }
       }
       if (purchaseId === 0) {
-        text = "Please tell me the ID of the reward you want to purchase";
+        text = req.t("Please tell me the ID of the reward you want to purchase");
         break;
       }
       var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId);
@@ -442,13 +442,13 @@ router.post('/event', async function(req, res, next) {
           });
         });
       });
-      text = "Attempting purchase...";
+      text = req.t("Attempting purchase…");
       break;
-    case "flavors":
+    case req.t("flavors"):
       text = "flavor handling goes here";
       break;
     default:
-      text = "Sorry, I didn't understand you. You can ask for help with 'help'.";
+      text = req.t("Sorry, I didn't understand you. You can ask for help with 'help'");
   }
 
   postToChannel(req.body.event.channel, text, bot_token);

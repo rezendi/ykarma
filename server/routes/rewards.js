@@ -97,7 +97,7 @@ function getListOfRewards(idType, id, res) {
 /* POST create a reward */
 router.post('/create', function(req, res, next) {
   if (!req.session.ykid) {
-    return res.json({"success":false, "error": "Not logged in"});
+    return res.json({"success":false, "error": req.t("Not logged in")});
   }
   var reward = req.body.reward;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag || '', JSON.stringify(reward.metadata), reward.flags || '0x00');
@@ -111,12 +111,12 @@ router.post('/create', function(req, res, next) {
 /* PUT update a reward */
 router.put('/update', function(req, res, next) {
   if (!req.session.ykid) {
-    return res.json({"success":false, "error": "Not logged in"});
+    return res.json({"success":false, "error": req.t("Not logged in")});
   }
   var reward = req.body.reward;
   getRewardFor(reward.id, (existing) => {
     if (req.session.ykid !== parseInt(existing.vendorId) && req.session.ykid !== ADMIN_ID) {
-      return res.json({"success":false, "error": "Not authorized"});
+      return res.json({"success":false, "error": req.t("Not authorized")});
     }
     //util.log("existing", existing);
     var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, JSON.stringify(reward.metadata || existing.metadata), reward.flags || existing.flags);
@@ -127,11 +127,11 @@ router.put('/update', function(req, res, next) {
 /* DELETE delete a reward */
 router.delete('/:id', function(req, res, next) {
   if (!req.session.ykid) {
-    return res.json({"success":false, "error": "Not logged in"});
+    return res.json({"success":false, "error": req.t("Not logged in")});
   }
   getRewardFor(req.params.id, (existing) => {
     if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
-      return res.json({"success":false, "error": "Not authorized"});
+      return res.json({"success":false, "error": req.t("Not authorized")});
     }
     var method = eth.contract.methods.deleteReward(existing.id);
     eth.doSend(method, res, 1, 3);
@@ -141,7 +141,7 @@ router.delete('/:id', function(req, res, next) {
 /* POST purchase a reward */
 router.post('/purchase', function(req, res, next) {
   if (!req.session.ykid) {
-    return res.json({"success":false, "error": "Not logged in"});
+    return res.json({"success":false, "error": req.t("Not logged in")});
   }
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
   getRewardFor(req.body.rewardId, (reward) => {

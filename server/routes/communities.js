@@ -61,7 +61,7 @@ router.get('/:id', function(req, res, next) {
 router.post('/create', function(req, res, next) {
   console.log("session", req.session);
   if (req.session.email !== process.env.ADMIN_EMAIL) {
-    return res.json({"success":false, "error": "Not authorized"});
+      return res.json({"success":false, "error": req.t("Not authorized")});
   }
   var community = req.body.community;
   community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : '0x00';
@@ -89,7 +89,7 @@ router.put('/update', function(req, res, next) {
   var community = req.body.community;
   community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : '0x00';
   if (req.session.email !== process.env.ADMIN_EMAIL && parseInt(req.session.communityAdminId) !== community.id) {
-    return res.json({"success":false, "error": "Not authorized"});
+      return res.json({"success":false, "error": req.t("Not authorized")});
   }
   util.log("community update", JSON.stringify(community));
   if (community.id === 0) {
@@ -109,7 +109,7 @@ router.put('/update', function(req, res, next) {
 /* DELETE remove community. */
 router.delete('/:id', function(req, res, next) {
   if (req.session.email !== process.env.ADMIN_EMAIL) {
-    return res.json({"success":false, "error": "Not authorized"});
+      return res.json({"success":false, "error": req.t("Not authorized")});
   }
   if (req.params.id === 0) {
     return res.json({"success":false, "error": 'Community not saved'});

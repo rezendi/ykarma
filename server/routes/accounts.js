@@ -81,7 +81,7 @@ router.get('/account/:id', function(req, res, next) {
   eth.getAccountFor(id, (account) => {
     if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityId) {
       util.warn('Unauthorized account request', req.session);
-      return res.json({"success":false, "error": "Not authorized"});
+      return res.json({"success":false, "error": req.t("Not authorized")});
     }
     util.debug('account', account);
     res.json(account);
@@ -95,7 +95,7 @@ router.get('/me', async function(req, res, next) {
   var id = await eth.getId();
   if (!id) {
     return res.status(400).send({
-      message: "web3 not connected"
+      message: req.t("web3 not connected")
     });
   }
   if (req.session.ykid) {
@@ -162,7 +162,7 @@ router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
   if (req.session.email !== url && req.session.handle !== url && req.session.email !== process.env.ADMIN_EMAIL) {
     util.warn("Not authorized", req.params.url);
-    return res.json({"success":false, "error": "Not authorized"});
+    return res.json({"success":false, "error": req.t("Not authorized")});
   }
   url = getLongUrlFromShort(url);
   if (url.startsWith('error')) {
@@ -178,7 +178,7 @@ router.get('/url/:url', function(req, res, next) {
 router.put('/replenish', function(req, res, next) {
   const id = parseInt(req.body.id || req.session.ykid);
   if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id) {
-    return res.json({"success":false, "error": "Not authorized"});
+    return res.json({"success":false, "error": req.t("Not authorized")});
   }
   var method = eth.contract.methods.replenish(id);
   eth.doSend(method, res);
@@ -213,7 +213,7 @@ router.put('/addUrl', function(req, res, next) {
   const existing = req.session.handle || req.session.email;
   var longExisting = getLongUrlFromShort(existing);
   if (longExisting.startsWith('error')) {
-    return res.json({"success":false, "error": "existing "+longExisting});
+    return res.json({"success":false, "error": req.t("existing") + " " + longExisting});
   }
   getAccountForUrl(url, (account) => {
     getSessionFromAccount(req, account);
@@ -244,7 +244,7 @@ router.put('/removeUrl', function(req, res, next) {
   }
   util.log("removing url", url);
   if (url.startsWith("error")) {
-    return res.json({"success":false, "error": "Invalid URL"});
+    return res.json({"success":false, "error": req.t("Invalid URL")});
   }
   var method = eth.contract.methods.removeUrlFromExistingAccount(req.session.ykid, url);
   eth.doSend(method, res, 1, 3, () => {
@@ -267,7 +267,7 @@ router.put('/update', function(req, res, next) {
     return res.json({"success":false, "error": 'Account ID not set'});
   }
   if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== account.id) {
-    return res.json({"success":false, "error": "Not authorized"});
+    return res.json({"success":false, "error": req.t("Not authorized")});
   }
   //console.log("About to edit", account);
   var method = eth.contract.methods.editAccount(
@@ -304,10 +304,10 @@ router.post('/give', function(req, res, next) {
   eth.getCommunityFor(req.session.ykcid, (community) => {
     if (isStrictCommunity(community)) {
       if (recipientUrl.startsWith("https://twitter.com/")) {
-        return res.json({"success":false, "error": `Closed community, can only give to @${community.domain} emails and/or via Slack`});
+        return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
       }
       if (recipientUrl.startsWith("mailto:") && recipientUrl.indexOf("@"+community.domain) <= 0) {
-        return res.json({"success":false, "error": `Closed community, can only give to @${community.domain} emails and/or via Slack`});
+        return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
       }
     }
     var method = eth.contract.methods.give(
