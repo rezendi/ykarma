@@ -48,7 +48,7 @@ contract('Paces', function(accounts) {
     // try adding and removing a URL
     await ykarma.addUrlToExistingAccount(1, "https://twitter.com/testacct");
     vals = await ykarma.accountForId(1);
-    assert.equal(vals[5], 'mailto:jon@rezendi.com||https://twitter.com/testacct', "Account URLs");
+    assert.equal(vals[5], 'mailto:jon@rezendi.com https://twitter.com/testacct', "Account URLs");
     await ykarma.removeUrlFromExistingAccount(1, "https://twitter.com/testacct");
     vals = await ykarma.accountForId(1);
     assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
@@ -75,6 +75,7 @@ contract('Paces', function(accounts) {
     assert.equal(dict[1].tags, "cool", "Giving");
     assert.equal(dict[1].block-1, dict[0].block, "Giving");
     vals = await ykarma.accountForId(2);
+
     assert.equal(JSON.parse(vals[9])[1]["message"], "Another quote-unquote message", "Giving received II");
     await ykarma.give(1, 'mailto:jay@rezendi.com', 40, 'Message Three');
     vals = await ykarma.accountForId(1);
@@ -83,12 +84,15 @@ contract('Paces', function(accounts) {
     assert.equal(vals[0], 2, "Getting an account by URL");
     await ykarma.addUrlToExistingAccount(2, "https://twitter.com/jayrezendi");
     vals = await ykarma.accountForId(2);
-    assert.equal(vals[5], 'mailto:jay@rezendi.com||https://twitter.com/jayrezendi', "Adding an URL");
+    assert.equal(vals[5], 'mailto:jay@rezendi.com https://twitter.com/jayrezendi', "Adding an URL");
     vals = await ykarma.accountForUrl("https://twitter.com/jayrezendi");
     assert.equal(vals[0], 2, "Getting an account by an added URL");
     await ykarma.removeUrlFromExistingAccount(2, "https://twitter.com/jayrezendi");
     vals = await ykarma.accountForId(2);
     assert.equal(vals[5], 'mailto:jay@rezendi.com', "Removing a URL");
+    
+    // test rewards with their cost 0 first
+    await ykarma.setRewardCreationCost(0);
     
     // create a reward, update it, delete it
     vals = await ykarma.getRewardsCount(2, 2);
@@ -166,6 +170,16 @@ contract('Paces', function(accounts) {
     await ykarma.replenish(1);
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '100', "Account replenished again after 100 blocks");
+
+    // check rewards which cost karma
+    await ykarma.setRewardCreationCost(10);
+    vals = await ykarma.getRewardsCount(1, 2);
+    assert.equal(""+vals, 3, "Vendor rewards count 3");
+    await ykarma.addNewReward(1, 10, 1, "alpha", '{"name":"My Costly Reward"}', '0x00');
+    vals = await ykarma.getRewardsCount(1, 2);
+    assert.equal(""+vals, 4, "Vendor rewards count 4");
+    vals = await ykarma.accountForId(1);
+    assert.equal(""+vals[7], '90', "Spent 10 giving karma on a reward");
   });
 });
 

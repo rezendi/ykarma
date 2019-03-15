@@ -15,7 +15,9 @@ contract YKarma is Oracular, YKStructs {
   YKAccounts accountData;
   YKCommunities communityData;
   YKRewards rewardData;
+
   bool public loadMode;
+  uint256 RewardCreationCost = 10;
 
   constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKRewards _rewards) public Oracular() {
     trancheData = _tranches;
@@ -45,14 +47,20 @@ contract YKarma is Oracular, YKStructs {
     loadMode = false;
   }
 
+  function setRewardCreationCost(uint256 _cost) public onlyOracle {
+    RewardCreationCost = _cost;
+  }
+
   /**
    * Giving and purchasing
    */
 
   function give(uint256 _giverId, string _url, uint256 _amount, string _message) public onlyOracle {
+    require (_giverId > 0);
     Account memory giver = accountData.accountForId(_giverId);
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
+    require (communityData.validateGive(giver, _url, _message));
     Community memory community = communityData.communityForId(giver.communityId);
     Account memory recipient = accountData.accountForId(accountData.accountIdForUrl(_url));
     if (recipient.id == 0) {
@@ -63,7 +71,9 @@ contract YKarma is Oracular, YKStructs {
 
   function purchase(uint256 _buyerId, uint256 _rewardId) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_rewardId);
-    require(reward.ownerId == 0); // for now
+    require(_buyerId > 0 && reward.ownerId == 0); // for now
+    Account memory buyer = accountData.accountForId(_buyerId);
+    require (communityData.validatePurchase(buyer, reward));
     trancheData.spend(_buyerId, reward.cost, reward.tag);
     uint256 redeemedId = rewardData.redeem(_buyerId, reward.id);
     accountData.redeem(_buyerId, redeemedId, reward.vendorId, reward.quantity > 1);
@@ -90,6 +100,7 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle {
+    require(_id > 0);
     communityData.editCommunity(_id, _adminAddress, _flags, _domain, _metadata, _tags);
   }
   
@@ -104,6 +115,10 @@ contract YKarma is Oracular, YKStructs {
   function getAccountCount(uint256 _communityId) public view returns (uint256) {
     Community memory c = communityData.communityForId(_communityId);
     return c.accountIds.length;
+  }
+  
+  function setCommunityValidator(uint256 _communityId, address _address) public onlyOracle {
+    communityData.setValidator(_communityId, _address);
   }
 
   /**
@@ -153,10 +168,14 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function editAccount(uint256 _id, address _newAddress, string _metadata, bytes32 _flags) public onlyOracle {
+    require(_id > 0);
     accountData.editAccount(_id, _newAddress, _metadata, _flags);
   }
   
   function addUrlToExistingAccount(uint256 _id, string _newUrl) public onlyOracle returns (bool) {
+    Account memory account = accountData.accountForId(_id);
+    require (account.id > 0);
+    require (communityData.validateUrl(account, _newUrl));
     return accountData.addUrlToAccount(_id, _newUrl);
   }
   
@@ -175,6 +194,10 @@ contract YKarma is Oracular, YKStructs {
    */
   function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
     Account memory vendor = accountData.accountForId(_vendorId);
+    require(vendor.id > 0);
+    if (RewardCreationCost > 0) {
+      trancheData.consume(_vendorId, RewardCreationCost); // throws an error if not enough
+    }
     uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
     accountData.addRewardToAccount(_vendorId, rewardId);
     communityData.addRewardToCommunity(vendor.communityId, rewardId);
@@ -188,7 +211,7 @@ contract YKarma is Oracular, YKStructs {
   
   function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_id);
-    require (reward.ownerId == 0);
+    require (reward.id > 0 && reward.ownerId == 0);
     rewardData.editReward(_id, _cost, _quantity, _tag, _metadata, _flags);
   }
 

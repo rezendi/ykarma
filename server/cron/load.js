@@ -61,6 +61,9 @@ async function loadV1(communities) {
     for (var j=0; j<accounts.length; j++) {
       var account = accounts[j];
       var urls = account.urls.split(util.separator);
+      if (urls.length==1) {
+        urls = account.urls.split(util.oldSeparator);
+      }
       var accountId = await addAccount(account, community.id, urls[0]);
       for (var k = 1; k < urls.length; k++) {
         addUrl(accountId, urls[k]);

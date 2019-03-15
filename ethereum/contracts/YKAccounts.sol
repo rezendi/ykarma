@@ -8,7 +8,7 @@ import "./YKStructs.sol";
 contract YKAccounts is Oracular, YKStructs {
   using strings for *;
 
-  string DELIM = "||"; // TODO: replace this with a simple " ", sigh
+  string DELIM = " ";
 
   uint256 maxAccountId;
   mapping(uint256 => Account) accounts;

@@ -29,16 +29,16 @@ contract YKTranches is Oracular, YKStructs {
   }
   
   function setExpiry(uint256 _expiry) public onlyOracle {
-    if (_expiry  > 0) { ExpiryBlocks = _expiry; }
+    if (_expiry > 0) { ExpiryBlocks = _expiry; }
   }
   function setRefresh(uint256 _refresh) public onlyOracle {
-    if (_refresh  > 0) { RefreshBlocks = _refresh; }
+    if (_refresh > 0) { RefreshBlocks = _refresh; }
   }
   function setReplenish(uint256 _replenish) public onlyOracle {
-    if (_replenish  > 0) { Replenish = _replenish; }
+    if (_replenish > 0) { Replenish = _replenish; }
   }
   function setBonus(uint256 _bonus) public onlyOracle {
-    if (_bonus  > 0) { Bonus = _bonus; }
+    if (_bonus > 0) { Bonus = _bonus; }
   }
   
   function availableToGive(uint256 _id) public view onlyOracle returns (uint256) {
@@ -47,6 +47,28 @@ contract YKTranches is Oracular, YKStructs {
       total = total.add(giving[_id].amounts[i]);
     }
     return total;
+  }
+  
+  function consume(uint256 _accountId, uint256 _amount) public onlyOracle {
+    if (_amount == 0) {
+      return;
+    }
+    require (availableToGive(_accountId) >= _amount);
+    uint256[] storage amounts = giving[_accountId].amounts;
+    uint256 accumulated;
+    for (uint256 i=0; i < amounts.length; i++) {
+      if (amounts[i] <= 0) {
+        continue;
+      }
+      if (accumulated.add(amounts[i]) >= _amount) {
+        amounts[i] = amounts[i].sub(_amount.sub(accumulated));
+        accumulated = _amount;
+        break;
+      } else {
+        accumulated = accumulated.add(amounts[i]);
+        amounts[i] = 0;
+      }
+    }
   }
   
   function performGive(Account sender, Account recipient, uint256 _amount, string _tags, string _message) public onlyOracle {

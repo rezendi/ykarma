@@ -1,5 +1,6 @@
 const URL = require('url').URL;
-const URL_SEPARATOR = '||';
+const URL_SEPARATOR = ' ';
+const OLD_URL_SEPARATOR = '||';
 
 const isValidUrl = (string) => {
   try {
@@ -58,5 +59,6 @@ module.exports = {
   debug:      debug,
   warn:       warn,
   separator:  URL_SEPARATOR,
+  oldSeparator: OLD_URL_SEPARATOR,
   getEmailFrom : getEmailFrom
 };

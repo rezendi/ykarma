@@ -4,11 +4,13 @@ pragma experimental ABIEncoderV2;
 import "./arachnid/strings.sol";
 import "./Oracular.sol";
 import "./YKStructs.sol";
+import "./YKValidator.sol";
 
 contract YKCommunities is Oracular, YKStructs {
   using strings for *;
 
   mapping(uint256 => Community) communities;
+  mapping(uint256 => address) validators;
   uint256 public maxCommunityId;
   
   function getMaxCommunityId() public view returns (uint256) {
@@ -83,6 +85,37 @@ contract YKCommunities is Oracular, YKStructs {
         rewardIds.length--;
       }
     }
+  }
+  
+  function setValidator(uint256 _id, address _address) public onlyOracle {
+    validators[_id] = _address;
+  }
+
+  function validateGive(Account giver, string _url, string _message) public view onlyOracle returns (bool) {
+    address validatorAddress = validators[giver.communityId];
+    if (validatorAddress == 0x0) {
+      return true;
+    }
+    YKValidator validator = YKValidator(validatorAddress);
+    return validator.validateGive(giver, _url, _message);
+  }
+  
+  function validatePurchase(Account buyer, Reward reward) public view onlyOracle returns (bool) {
+    address validatorAddress = validators[buyer.communityId];
+    if (validatorAddress == 0x0) {
+      return true;
+    }
+    YKValidator validator = YKValidator(validatorAddress);
+    return validator.validatePurchase(buyer, reward);
+  }
+
+  function validateUrl(Account account, string _url) public view onlyOracle returns (bool) {
+    address validatorAddress = validators[account.communityId];
+    if (validatorAddress == 0x0) {
+      return true;
+    }
+    YKValidator validator = YKValidator(validatorAddress);
+    return validator.validateUrl(account, _url);
   }
 
 }
