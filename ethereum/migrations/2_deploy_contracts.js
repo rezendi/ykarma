@@ -66,13 +66,13 @@ module.exports = (deployer, network, accounts) => {
       console.log("adding test data...")
       await yk.addNewAccount(1, 0, '{"name":"Test"}', '0x00', 'mailto:test@example.com');
       await yk.addNewAccount(1, 0, '{"name":"Test Two"}', '0x00', 'mailto:test2@example.com');
-      await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
       await yk.replenish(2);
-      await yk.give(2, 'mailto:'+adminEmail, 80, "Just a message");
+      await yk.give(2, 'mailto:'+adminEmail, 60, "Just a message");
       await yk.give(1, 'mailto:test@example.com', 20, "Another message");
       await yk.addNewAccount(1, 0, '{"name":"Test Three"}', '0x00', 'slack:TEST-USER1');
       await yk.addNewAccount(1, 0, '{"name":"Test Four"}', '0x00', 'slack:TEST-USER2');
       await yk.replenish(4);
+      await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
     }
   });
 };

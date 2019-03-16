@@ -33,7 +33,7 @@ describe('Account', function () {
                 .end(function (err, res) {
                   if (err) done (err);
                   var acct = JSON.parse(res.text);
-                  expect(acct.urls).to.equal("mailto:test@example.com||https://twitter.com/testuser");
+                  expect(acct.urls).to.equal("mailto:test@example.com https://twitter.com/testuser");
                   api.put('/api/accounts/removeUrl')
                     .send({"url":"@testuser"})
                     .set('Cookie', TestCookies).expect(200)

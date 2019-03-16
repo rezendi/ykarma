@@ -152,8 +152,9 @@ repo, and run `npm run test` to get the API running in test mode
 9. Open a fourth shell, navigate to the "server" top-level directory of this
 repo, and run `mocha` to run the API tests. They should pass.
 
-10. Once you've established that tests are passing, stop `npm run test` and
-instead just run `npm start`. Voila! The API is running locally on port 3001.
+10. Once you've established that tests are passing, stop all of those,
+restart ganache, run `truffle deploy` without TRUFFL_ENV set, and run `npm
+start` rather than `npm run test`. Voila! The API runs locally on port 3001.
 
 
 Web Development

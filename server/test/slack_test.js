@@ -21,27 +21,27 @@ describe('Slack', function () {
         .set('Cookie', TestCookies).expect(200)
         .end(function (err, res) {
           if (err) done (err);
-          expect(JSON.parse(res.text).text).to.equal("Sending...");
+          expect(JSON.parse(res.text).text).to.equal("Sending…");
           // send via YKBot
           api.post('/api/slack/event')
             .send({ "team_id":"TEST", "event": {"channel":"TestChannel", "type":"message.im", "user":"USER1", "text":"send 1 to <@USER2|test2> still testing"} })
             .set('Cookie', TestCookies).expect(200)
             .end(function (err, res) {
               if (err) done (err);
-              expect(JSON.parse(res.text).text).to.equal("Sending...");
+              expect(JSON.parse(res.text).text).to.equal("Sending…");
               // list rewards
               api.post('/api/slack/event')
                 .send({ "team_id":"TEST", "event": {"channel":"TestChannel", "type":"message.im", "user":"USER1", "text":"rewards"} })
                 .set('Cookie', TestCookies).expect(200)
                 .end(function (err, res) {
                   if (err) done (err);
-                  expect(JSON.parse(res.text).text).to.equal("Fetching available rewards from blockchain...");
+                  expect(JSON.parse(res.text).text).to.equal("Fetching available rewards from the blockchain…");
                   api.post('/api/slack/event')
                     .send({ "team_id":"TEST", "event": {"channel":"TestChannel", "type":"message.im", "user":"USER1", "text":"purchase 1"} })
                     .set('Cookie', TestCookies).expect(200)
                     .end(function (err, res) {
                       if (err) done (err);
-                      expect(JSON.parse(res.text).text).to.equal("Attempting purchase...");
+                      expect(JSON.parse(res.text).text).to.equal("Attempting purchase…");
                       // TODO check the various posts to /testOpenConversation and /testPostMessage for correctness
                       done();
                     });
