@@ -15,14 +15,26 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
+var testData = {};
+
 router.post('/testOpenConversation', function(req, res, next) {
   util.log("opening test conversation with", req.body)
+  testData.lastOpenConversation = req.body;
   res.json({success:true, ok:true, channel:{id: "TestChannel"}, body:req.body});
+});
+
+router.get('/lastOpenConversation', function(req, res, next) {
+  res.json({last:testData.lastOpenConversation});
 });
 
 router.post('/testPostMessage', function(req, res, next) {
   util.log("posting test message", req.body)
+  testData.lastPostMessage = req.body;
   res.json({success:true, ok:true, body:req.body});
+});
+
+router.get('/lastPostMessage', function(req, res, next) {
+  res.json({last:testData.lastPostMessage});
 });
 
 router.post('/state', function(req, res, next) {
@@ -466,7 +478,9 @@ function postToChannel(channel, text, bot_token) {
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
     body: JSON.stringify(body),
   }).then(function(response) {
-    util.log("Post response", response.status);
+    if (process.env.NODE_ENV !== 'test') {
+      util.log("Post to channel response", response.status);
+    }
   });
 }
 

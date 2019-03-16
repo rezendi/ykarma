@@ -4,6 +4,7 @@ var should = require('chai').should();
 var expect = require('chai').expect;
 var supertest = require('supertest');
 var api = supertest('http://localhost:3001');
+var slack = require('../routes/slack');
 
 var TestCookies = [];
 
@@ -49,6 +50,30 @@ describe('Slack', function () {
             });
         });
     });
+  });
+
+  it('send replenishment notification', function (done) {
+    var slackUrl = "slack:TEST-USER1";
+    var text = `Mocha testing open channel and post`;
+    slack.openChannelAndPost(slackUrl, text);
+    setTimeout(function() {
+      api.get('/api/slack/lastOpenConversation')
+        .end(function (err, res) {
+          if (err) done (err);
+          var last = JSON.parse(res.text).last;
+          expect(last.users).to.equal("USER1");
+          expect(last.token).to.equal("test");
+          api.get('/api/slack/lastPostMessage')
+            .end(function (err, res) {
+              if (err) done (err);
+              last = JSON.parse(res.text).last;
+              expect(last.text.split(" ")[0]).to.equal("Available");
+              expect(last.channel).to.equal("TestChannel");
+              expect(last.token).to.equal("test");
+              done();
+            });
+        });
+    }, 1000);
   });
 });
   
