@@ -55,7 +55,7 @@ async function populateTeam(communityId, teamId) {
   const docRef = firebase.db.collection('slackTeams').doc(teamId);
   const doc = await docRef.get();
   const token = doc.data().token;
-  const url = `https://slack.com/api/users.list?limit=256&token=${token}`;
+  const url = `https://slack.com/api/users.list?limit=256&token=${token}&include_locale=true`;
   const response = await fetch(url);
   const json = await response.json();
   if (!json.ok) {

@@ -5,11 +5,12 @@
   "scripts": {
     "start": "node ./bin/www",
     "test": "NODE_ENV=test node ./bin/www",
-    "cron": "node ./cron/cron.js",
-    "slack": "node ./cron/slackron.js",
-    "dump": "node ./cron/dump.js",
-    "load": "node ./cron/load.js",
-    "compare": "node ./cron/compare.js"
+    "cron": "node ./scripts/cron.js",
+    "slack": "node ./scripts/slackron.js",
+    "dump": "node ./scripts/dump.js",
+    "load": "node ./scripts/load.js",
+    "compare": "node ./scripts/compare.js",
+    "util": "node ./scripts/util.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
