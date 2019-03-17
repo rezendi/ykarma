@@ -17,7 +17,7 @@ contract YKarma is Oracular, YKStructs {
   YKRewards rewardData;
 
   bool public loadMode;
-  uint256 RewardCreationCost = 10;
+  uint256 RewardCreationCost;
 
   constructor(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKRewards _rewards) public Oracular() {
     trancheData = _tranches;

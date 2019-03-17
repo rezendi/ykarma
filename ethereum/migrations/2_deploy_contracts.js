@@ -12,7 +12,7 @@ const fs = require('fs');
 const envFile = '../server/.env';
 
 const isTesting = process.argv.slice(-1)[0] === 'test';
-const isInitialGeneration = true; // set false for the chain to be empty of initial community/account
+const isInitialGeneration = false; // set false for the chain to be empty of initial community/account
 
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];

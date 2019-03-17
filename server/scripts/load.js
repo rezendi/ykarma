@@ -64,15 +64,18 @@ async function loadV1(communities) {
       if (urls.length==1) {
         urls = account.urls.split(util.oldSeparator);
       }
+      console.log("urls", urls);
       var accountId = await addAccount(account, community.id, urls[0]);
       for (var k = 1; k < urls.length; k++) {
-        addUrl(accountId, urls[k]);
+        if(urls[k].length > 0) {
+          addUrl(accountId, urls[k]);
+        }
       }
       ids[account.id] = accountId;
       account.id = accountId;
       account.given.forEach(function(e) { e.sender - account.id; });
       tranches.push.apply(tranches, account.given);
-      await sleep(3000);
+      //await sleep(3000);
     }
     console.log("Accounts added", accounts.length);
 
@@ -80,7 +83,8 @@ async function loadV1(communities) {
     var tranches = tranches.sort(function(a, b){return a.block - b.block});
     for (var k=0; k<tranches.length; k++) {
       await addTranche(tranches[k]);
-      await sleep(3000);
+      console.log("tranche", tranches[k].block);
+      //await sleep(3000);
     }
     console.log("Tranches added", tranches.length);
 
@@ -94,14 +98,18 @@ async function loadV1(communities) {
     for (var j=0; j<accounts.length; j++) {
       var account = accounts[j];
       await addRewards(account.rewards);
-      await sleep(3000);
     }
     console.log("Rewards added");
   }
   
   // load complete, switch load mode off
+  console.log("Cleaning up...");
   const loadModeOff = eth.contract.methods.loadModeOff();
   doSend(loadModeOff);
+  const rewardCreationCost = eth.contract.methods.setRewardCreationCost(10);
+  doSend(rewardCreationCost);
+  sleep(3000);
+  console.log("Done.");
 }
 
 function addCommunity(community) {
@@ -206,7 +214,7 @@ async function addGivable(account) {
   while (toGive > 0) {
     const replenish = eth.contract.methods.replenish(account.id);
     await doSend(replenish);
-    console.log("replenished");
+    // console.log("replenished");
     toGive -= 100;
   }
 }
@@ -218,8 +226,10 @@ async function addRewards(rewards) {
   for (var i=0; i<rewards.length; i++) {
     var reward = rewards[i];
     var rewardId = await addReward(reward, i);
+    await sleep(3000);
     if (reward.ownerId) {
       await performPurchase(reward, rewardId);
+      await sleep(3000);
     }
   }
 }
