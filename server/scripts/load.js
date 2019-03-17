@@ -75,7 +75,7 @@ async function loadV1(communities) {
       account.id = accountId;
       account.given.forEach(function(e) { e.sender - account.id; });
       tranches.push.apply(tranches, account.given);
-      //await sleep(3000);
+      await sleep(3000);
     }
     console.log("Accounts added", accounts.length);
 
@@ -84,7 +84,7 @@ async function loadV1(communities) {
     for (var k=0; k<tranches.length; k++) {
       await addTranche(tranches[k]);
       console.log("tranche", tranches[k].block);
-      //await sleep(3000);
+      await sleep(3000);
     }
     console.log("Tranches added", tranches.length);
 
