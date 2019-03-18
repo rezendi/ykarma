@@ -13,7 +13,7 @@ class Account extends React.Component {
   }
   
   getUrlFrom = (urls, idx) => {
-    var url = (urls || '').split('||').length < idx ? null : (urls || '').split('||')[idx-1].replace("mailto:","").replace("https://twitter.com/","@")
+    var url = (urls || '').split(' ').length < idx ? null : (urls || '').split(' ')[idx-1].replace("mailto:","").replace("https://twitter.com/","@")
     return url;
   }
 

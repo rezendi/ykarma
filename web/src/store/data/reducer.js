@@ -48,7 +48,7 @@ export function accountReducer(state = initialState.account, action) {
 }
 
 function getTwitterHandleFromUrls(urlsString) {
-  const urls = urlsString.split("||");
+  const urls = urlsString.split(" ");
   for (var i in urls) {
     if (urls[i].indexOf("https://twitter.com/") === 0) {
       return urls[i].replace("https://twitter.com/","");

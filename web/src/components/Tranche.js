@@ -6,7 +6,7 @@ import { Row, Col } from 'react-bootstrap';
 class Tranche extends React.Component {
   getDetailString = (dict) => {
     var name = dict.name ? dict.name : this.props.t('unknown');
-    var url = (dict.urls || '').split("||")[0];
+    var url = (dict.urls || '').split(" ")[0];
     url = url.replace("mailto:",'');
     url = url.replace("https://twitter.com/","@");
     return `${name} (${url})`;
