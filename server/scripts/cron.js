@@ -167,7 +167,7 @@ function sendReplenishSlack(account) {
     }
   }
   if (slackUrl) {
-    var text = `You have been allocated ${amount} more YKarma to give away! Your giving balance is now ${balance}. These expire in a month or so, so give them away soon -`;
+    var text = `You have been allocated 100 more YKarma to give away! Your giving balance is now ${account.givable}. These expire in a month or so, so give them away soon -`;
     slack.openChannelAndPost(slackUrl, text);
   }
 }
