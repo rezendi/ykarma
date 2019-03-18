@@ -15,7 +15,7 @@ eth.web3.eth.getAccounts().then((ethAccounts) => {
 });
 
 function doTheThing() {  
-  var method = eth.contract.methods.accountForUrl("jon@rezendi.com");
+  var method = eth.contract.methods.accountForUrl("mailto:jon@rezendi.com");
   method.call(function(error, result) {
     if (error) {
       console.log('getAccountForUrl error', error);
@@ -30,7 +30,7 @@ function sendReplenishSlack(account) {
   console.log("sending slack notification to", account.urls);
   if (process.env.NODE_ENV === "test" || !account.urls) return;
   var slackUrl = null;
-  const urls = account.urls.split("||");
+  const urls = account.urls.split(" ");
   // TODO: what to do about accounts with multiple Slack URLs? Notify all? Notify latest, as per current code, might be best...
   for (var i in urls) {
     if (urls[i].startsWith("slack:")) {

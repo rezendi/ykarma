@@ -124,7 +124,7 @@ function sendReplenishEmail(account) {
   console.log("sending email to", account.urls);
   if (process.env.NODE_ENV === "test" || !account.urls || account.urls.indexOf("mailto") === -1) return;
   var recipientEmail = null;
-  const urls = account.urls.split("||");
+  const urls = account.urls.split(" ");
   for (var i in urls) {
     if (urls[i].startsWith("mailto:")) {
       recipientEmail = urls[i].replace("mailto:","");
@@ -159,7 +159,7 @@ function sendReplenishSlack(account) {
   console.log("sending slack notification to", account.urls);
   if (process.env.NODE_ENV === "test" || !account.urls) return;
   var slackUrl = null;
-  const urls = account.urls.split("||");
+  const urls = account.urls.split(" ");
   // TODO: what to do about accounts with multiple Slack URLs? Notify all? Notify latest, as per current code, might be best...
   for (var i in urls) {
     if (urls[i].startsWith("slack:")) {
