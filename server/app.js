@@ -35,6 +35,7 @@ const resources = require('./translations');
 i18next.use(middleware.LanguageDetector).init({
   resources,
   preload: ["en", "kr"],
+  fallbackLng: 'en',
 });
 app.use(
   middleware.handle(i18next, {
