@@ -27,22 +27,21 @@ contract YKarma is Oracular, YKStructs {
     loadMode = true;
   }
   
-  function updateTrancheContract(YKTranches _tranches) onlyOracle public {
-    trancheData = _tranches;
+  function updateContracts(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKRewards _rewards) onlyOracle public {
+    if (_tranches != address(0)) {
+      trancheData = _tranches;
+    }
+    if (_accounts != address(0)) {
+      accountData = _accounts;
+    }
+    if (_communities != address(0)) {
+      communityData = _communities;
+    }
+    if (_rewards != address(0)) {
+      rewardData = _rewards;
+    }
   }
 
-  function updateAccountsContract(YKAccounts _accounts) onlyOracle public {
-    accountData = _accounts;
-  }
-
-  function updateCommunitiesContract(YKCommunities _communities) onlyOracle public {
-    communityData = _communities;
-  }
-
-  function updateRewardsContract(YKRewards _rewards) onlyOracle public {
-    rewardData = _rewards;
-  }
-  
   function loadModeOff() onlyOracle public {
     loadMode = false;
   }
@@ -113,8 +112,7 @@ contract YKarma is Oracular, YKStructs {
   }
   
   function getAccountCount(uint256 _communityId) public view returns (uint256) {
-    Community memory c = communityData.communityForId(_communityId);
-    return c.accountIds.length;
+    return communityData.communityForId(_communityId).accountIds.length;
   }
   
   function setCommunityValidator(uint256 _communityId, address _address) public onlyOracle {
@@ -152,13 +150,11 @@ contract YKarma is Oracular, YKStructs {
   
   function accountWithinCommunity(uint256 _communityId, uint256 _idx) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
     Community memory community = communityData.communityForId(_communityId);
-    uint256 accountId = community.accountIds[_idx];
-    return accountForId(accountId);
+    return accountForId(community.accountIds[_idx]);
   }
   
   function accountForUrl(string _url) public view returns (uint256, uint256, address, bytes32, string, string, uint256, uint256, string, string) {
-    uint256 id = accountData.accountIdForUrl(_url);
-    return accountForId(id);
+    return accountForId(accountData.accountIdForUrl(_url));
   }
   
   function addNewAccount(uint256 _communityId, address _address, string _metadata, bytes32 _flags, string _url) public onlyOracle returns (uint256) {
@@ -189,6 +185,12 @@ contract YKarma is Oracular, YKStructs {
     accountData.deleteAccount(_id);
   }
   
+  // only works if URL list has no common sources
+  function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
+    accountData.mergeAccounts(_id1, _id2);
+    trancheData.mergeAccounts(_id1, _id2);
+  }
+
   /**
    * Reward methods
    */
@@ -229,8 +231,7 @@ contract YKarma is Oracular, YKStructs {
       Account memory account = accountData.accountForId(_id);
       return _idType == 1 ? account.rewardIds.length : account.offerIds.length;
     }
-    Community memory community = communityData.communityForId(_id);
-    return community.rewardIds.length;
+    return communityData.communityForId(_id).rewardIds.length;
   }
 
   function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
@@ -239,7 +240,6 @@ contract YKarma is Oracular, YKStructs {
       return rewardForId(accountRewardId);
     }
     Community memory community = communityData.communityForId(_id);
-    uint256 rewardId = community.rewardIds[_idx];
-    return rewardForId(rewardId);
+    return rewardForId(community.rewardIds[_idx]);
   }
 }

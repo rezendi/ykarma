@@ -202,6 +202,28 @@ contract YKTranches is Oracular, YKStructs {
     }
   }
   
+  // you lose all your givable, but keep your spendable
+  // the merged-in account's txns are prepended to your pile
+  function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
+    //given
+    uint256[] memory tranches2 = given[_id2];
+    for (uint256 i=0; i < tranches2.length; i++) {
+      tranches[tranches2[i]].sender = _id2;
+      given[_id1].push(tranches2[i]);
+    }
+    given[_id2] = given[_id1];
+    delete given[_id1];
+
+    //received
+    tranches2 = received[_id2];
+    for (i=0; i < tranches2.length; i++) {
+      tranches[tranches2[i]].recipient = _id2;
+      received[_id1].push(tranches2[i]);
+    }
+    received[_id2] = received[_id1];
+    delete received[_id1];
+  }
+  
   function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
     strings.slice memory s1 = _tag.toSlice();
     if (s1.empty()) {

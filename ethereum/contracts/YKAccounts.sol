@@ -109,7 +109,7 @@ contract YKAccounts is Oracular, YKStructs {
     }
     delete accounts[_id];
   }
-
+  
   function urlIsValid(string _url) public pure returns (bool) {
     // TODO more than this
     return bytes(_url).length > 0 && _url.toSlice()._len < 256 && _url.toSlice().copy().find(":".toSlice())._len != 0;
@@ -140,5 +140,31 @@ contract YKAccounts is Oracular, YKStructs {
       }
     }
   }
+
+  function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
+    // basiclly we zero out account 1 and move it all to account 2
+    // don't change communityId, userAddress, flags, or metadata
+    
+    //first, merge URLs
+    strings.slice memory urls = accounts[_id1].urls.toSlice();
+    string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
+    for(uint256 i = 0; i < separated.length; i++) {
+      separated[i] = urls.split(DELIM.toSlice()).toString();
+      addUrlToAccount(_id2, separated[i]);
+    }
+
+    // then, merge rewards
+    for (i = accounts[_id1].rewardIds.length-1; i>=0; i--) {
+      uint256 rewardId = accounts[_id1].rewardIds[i];
+      accounts[_id2].rewardIds.push(rewardId);
+      delete accounts[_id1].rewardIds[i];
+    }
+    for (i = accounts[_id1].offerIds.length-1; i>=0; i--) {
+      rewardId = accounts[_id1].offerIds[i];
+      accounts[_id2].offerIds.push(rewardId);
+      delete accounts[_id1].offerIds[i];
+    }
+  }
+
 }
 
