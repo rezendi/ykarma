@@ -94,26 +94,17 @@ class Profile extends React.Component {
     return user.metadata.name;
   }
   
-  totalSpendable() {
-    var total = 0;
-    const spendable = this.props.user.received || [];
-    for (var i=0; i < spendable.length; i++) {
-      total += parseInt(spendable[i].available, 10);
-    }
-    return total;
-  }
-
   karmaBreakdown() {
-    if (this.totalSpendable() === 0) {
-      return 0;
+    if (this.props.user.spendable === 0) {
+      return '';
     }
     var myTags = {};
-    const spendable = this.props.user.received || [];
-    for (var i=0; i < spendable.length; i++) {
-      const tags = spendable[i].tags.split(",");
+    const received = this.props.user.received || [];
+    for (var i=0; i < received.length; i++) {
+      const tags = received[i].tags.split(",");
       for (var j in tags) {
         var tag = tags[j];
-        myTags[tag] = myTags[tag] ? myTags[tag] + spendable[i].available : spendable[i].available;
+        myTags[tag] = myTags[tag] ? myTags[tag] + received[i].available : received[i].available;
       }
     }
 
@@ -169,7 +160,7 @@ class Profile extends React.Component {
                     <div>
                       {t('You have')} { this.props.user.givable } {t('karma available to give')}
                     </div>
-                    {t('You have')} { this.totalSpendable() } {t('karma to spend')} ({ this.karmaBreakdown() })
+                    {t('You have')} { this.props.user.spendable } {t('karma to spend')} ({ this.karmaBreakdown() })
                   </Col>
                   { this.props.user.providerData && this.props.user.providerData.length > 0 && this.props.user.providerData[0].photoURL &&
                   <Col md={4}>
@@ -281,7 +272,7 @@ class Profile extends React.Component {
                 {t('My Given Karma')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given && this.props.user.given.map((tranche, idx) =>
+                {this.props.user.given && this.props.user.given.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -293,7 +284,7 @@ class Profile extends React.Component {
                 {t('My Received Karma')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received && this.props.user.received.map((tranche, idx) =>
+                {this.props.user.received && this.props.user.received.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>

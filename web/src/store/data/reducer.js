@@ -75,6 +75,7 @@ export function userReducer(state = initialState.user, action) {
         urls:           yk.urls || '',
         handle:         getTwitterHandleFromUrls(yk.urls || ''),
         givable:        yk.givable  || 0,
+        spendable:      yk.spendable || 0,
         given:          yk.given || [],
         received:       yk.received || [],
         community:      yk.community || {},

@@ -152,6 +152,23 @@ router.get('/me', async function(req, res, next) {
   }
 });
 
+router.get('/full', async function(req, res, next) {
+  var method = eth.contract.methods.trancheTotalsForId(req.session.ykid);
+  // possibly eventually page these
+  method.call(function(error, totals) {
+    method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[0], true);
+    method.call(function(error, given) {
+      method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[1], false);
+      method.call(function(error, received) {
+        var account = req.session.account;
+        account.given = given;
+        account.received = received;
+        hydrateAccount(account);
+      });
+    });
+  });
+});
+
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;

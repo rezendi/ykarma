@@ -24,15 +24,6 @@ class Home extends React.Component {
     });
   }
 
-  totalSpendable() {
-    var total = 0;
-    const spendable = this.props.user.received || [];
-    for (var i=0; i < spendable.length; i++) {
-      total += parseInt(spendable[i].available, 10);
-    }
-    return total;
-  }
-
   getTopReward() {
     for (var i in this.props.rewards) {
       if (this.props.rewards[i].ownerId === 0)
@@ -152,7 +143,7 @@ class Home extends React.Component {
               <Panel.Body>
                 <Col md={12}>
                   <Row>
-                    {t('You have')} { this.totalSpendable() } {t('total karma available to spend')}
+                    {t('You have')} { this.props.user.spendable } {t('total karma available to spend')}
                     <Link className="pull-right" to="/profile">view details</Link>
                     <hr/>
                   </Row>
@@ -184,7 +175,7 @@ class Home extends React.Component {
                 {t('Given')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given.map((tranche, idx) =>
+                {this.props.user.given.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -197,7 +188,7 @@ class Home extends React.Component {
                 {t('Received')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received.map((tranche, idx) =>
+                {this.props.user.received.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
