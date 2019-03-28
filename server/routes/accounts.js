@@ -69,9 +69,6 @@ router.get('/for/:communityId', function(req, res, next) {
         });
       }
     }
-  })
-  .catch(function(error) {
-    util.log('getAccountCount call error', error);
   });
 });
 
@@ -98,6 +95,7 @@ router.get('/me', async function(req, res, next) {
       message: req.t("web3 not connected")
     });
   }
+
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
@@ -119,8 +117,7 @@ router.get('/me', async function(req, res, next) {
             eth.getCommunityFor(req.session.ykcid, (community) => {
               account.community = community;
               hydrateAccount(account, () => {
-                account.given = account.given.reverse();
-                account.received = account.received.reverse();
+                account.spendable = 0;
                 res.json(account);
               });
             });
@@ -131,8 +128,6 @@ router.get('/me', async function(req, res, next) {
         eth.getCommunityFor(req.session.ykcid, (community) => {
           account.community = community;
           hydrateAccount(account, () => {
-            account.given = account.given.reverse();
-            account.received = account.received.reverse();
             res.json(account);
           });
         });
@@ -140,7 +135,7 @@ router.get('/me', async function(req, res, next) {
 
     });
   } else {
-  var url = req.session.email || req.session.handle;
+    var url = req.session.email || req.session.handle;
     url = getLongUrlFromShort(url);
     if (url.startsWith('error')) {
       return res.json({"success":false, "error": url});
@@ -390,9 +385,6 @@ router.post('/token/set', function(req, res, next) {
     }
     util.debug("post token session", req.session);
     res.json({"success":true});
-  }).catch(function(error) {
-    console.log("error", error);
-    res.json({"success":false, "error":error});
   });
 });
 
@@ -408,10 +400,6 @@ function getAccountWithinCommunity(communityId, idx, callback) {
       var account = eth.getAccountFromResult(result);
       callback(account);
     }
-  })
-  .catch(function(error) {
-    util.warn('accountWithinCommunity call error ' + id, error);
-    callback({});
   });
 }
 
@@ -426,9 +414,6 @@ function getAccountForUrl(url, callback) {
       var account = eth.getAccountFromResult(result);
       callback(account);
     }
-  })
-  .catch(function(error) {
-    util.warn('getAccountForUrl call error ' + url, error);
   });
 }
 
@@ -443,10 +428,6 @@ function getAccountWithinCommunity(communityId, idx, callback) {
       var account = eth.getAccountFromResult(result);
       callback(account);
     }
-  })
-  .catch(function(error) {
-    util.warn('accountWithinCommunity call error ' + id, error);
-    callback({});
   });
 }
 
@@ -455,24 +436,32 @@ function hydrateAccount(account, done) {
   if (account.given.length===0 && account.received.length===0) {
     done();
   }
-  for (var i = 0; i < account.given.length; i++) {
-    var given = account.given[i];
-    hydrateTranche(given, true, () => {
-      hydrated += 1;
-      if (hydrated == account.given.length + account.received.length) {
-        done();
-      }
-    });
-  }
-  for (var j = 0; j < account.received.length; j++) {
-    var received = account.received[j];
-    hydrateTranche(received, false, () => {
-      hydrated += 1;
-      if (hydrated == account.given.length + account.received.length) {
-        done();
-      }
-    });
-  }
+  var method = eth.contract.methods.availableToSpend(account.id, '');
+  method.call(function(error, result) {
+    if (error) {
+      util.warn('availableToSpend error', error);
+    } else {
+      account.spendable = result;
+    }
+    for (var i = 0; i < account.given.length; i++) {
+      var given = account.given[i];
+      hydrateTranche(given, true, () => {
+        hydrated += 1;
+        if (hydrated == account.given.length + account.received.length) {
+          done();
+        }
+      });
+    }
+    for (var j = 0; j < account.received.length; j++) {
+      var received = account.received[j];
+      hydrateTranche(received, false, () => {
+        hydrated += 1;
+        if (hydrated == account.given.length + account.received.length) {
+          done();
+        }
+      });
+    }
+  });
 }
 
 function hydrateTranche(tranche, given, done) {

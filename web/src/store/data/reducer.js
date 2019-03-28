@@ -75,8 +75,8 @@ export function userReducer(state = initialState.user, action) {
         urls:           yk.urls || '',
         handle:         getTwitterHandleFromUrls(yk.urls || ''),
         givable:        yk.givable  || 0,
-        given:          yk.given || {},
-        received:       yk.received || {},
+        given:          yk.given || [],
+        received:       yk.received || [],
         community:      yk.community || {},
       }
     case types.TWITTER_ADDED:

@@ -309,10 +309,6 @@ function getAccountForUrl(url) {
         var account = eth.getAccountFromResult(result);
         resolve(account);
       }
-    })
-    .catch(function(error) {
-      util.warn('getAccountForUrl call error ' + url, error);
-      reject(error);
     });
   });
 }

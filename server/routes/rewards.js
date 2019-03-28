@@ -88,9 +88,6 @@ function getListOfRewards(idType, id, res) {
         });
       }
     }
-  })
-  .catch(function(error) {
-    util.warn('getListOfRewards call error', error);
   });
 }
 
@@ -171,10 +168,6 @@ function getRewardFor(id, callback) {
       var reward = eth.getRewardFromResult(result);
       callback(reward);
     }
-  })
-  .catch(function(error) {
-    util.warn('getRewardFor call error ' + id, error);
-    callback({});
   });
 }
 
@@ -187,10 +180,6 @@ function getRewardByIndex(idType, accountId, idx, callback) {
       var reward = eth.getRewardFromResult(result);
       callback(reward);
     }
-  })
-  .catch(function(error) {
-    util.warn('getRewardByIndex call error ' + id, error);
-    callback({});
   });
 }
 

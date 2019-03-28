@@ -41,10 +41,6 @@ router.get('/', function(req, res, next) {
         });
       }
     }
-  })
-  .catch(function(error) {
-    console.log('getCommunityCount call error', error);
-    res.json({"success":false, "error": error});
   });
 });
 
