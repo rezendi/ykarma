@@ -1,5 +1,4 @@
 const util = require('./util');
-const rewards = require('./rewards');
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -50,14 +49,14 @@ function sendRewardCreatedEmail(vendor, reward) {
     from: 'do-not-respond@ykarma.com',
     subject: `You just created a reward!`,
     text: `
-You just created the reward ${rewards.getRewardInfoFrom(reward)}
+You just created the reward ${util.getRewardInfoFrom(reward)}
 Well done! Your community thanks you.
 
 YKarma
 https://www.ykarma.com/
 `,
     html: `
-<p>You just created the reward ${rewards.getRewardInfoFrom(reward)}</p>
+<p>You just created the reward ${util.getRewardInfoFrom(reward)}</p>
 <p>Well done! Your community thanks you.</p>
 <hr/>
 <a href="https://www.ykarma.com/">YKarma</a>
@@ -80,7 +79,7 @@ function sendRewardSoldEmail(reward, buyer, vendor) {
     from: 'do-not-respond@ykarma.com',
     subject: `You just sold a reward!`,
     text: `
-Your reward ${rewards.getRewardInfoFrom(reward)}
+Your reward ${util.getRewardInfoFrom(reward)}
 was just sold to ${buyerInfo}
 You should connect with them to give them the reward!
 
@@ -88,7 +87,7 @@ YKarma
 https://www.ykarma.com/
 `,
     html: `
-<p>Your reward <b>${rewards.getRewardInfoFrom(reward)}</b></p>
+<p>Your reward <b>${util.getRewardInfoFrom(reward)}</b></p>
 <p>was just sold to <b>${buyerInfo}</b></p>
 <p>You should connect with them to give them the reward!</p>
 <hr/>
@@ -111,7 +110,7 @@ function sendRewardPurchasedEmail(reward, buyer, vendor) {
     from: 'do-not-respond@ykarma.com',
     subject: `You just bought a reward!`,
     text: `
-You just purchased the reward ${rewards.getRewardInfoFrom(reward)}
+You just purchased the reward ${util.getRewardInfoFrom(reward)}
 from vendor ${vendorInfo}
 You should connect with them to claim the reward!
 
@@ -119,7 +118,7 @@ YKarma
 https://www.ykarma.com/
 `,
     html: `
-<p>You just purchased the reward <b>${rewards.getRewardInfoFrom(reward)}</b></p>
+<p>You just purchased the reward <b>${util.getRewardInfoFrom(reward)}</b></p>
 <p>from vendor <b>${vendorInfo}</b></p>
 <p>You should connect with them to claim the reward!</p>
 <hr/>

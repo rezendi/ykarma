@@ -64,6 +64,11 @@ function getSlackUrlFrom(urls) {
   return '';
 }
 
+function getRewardInfoFrom(reward) {
+  const metadata = reward.metadata ? reward.metadata : {'name':'n/a', 'description':'n/a'};
+  return `${metadata.name} -- ${metadata.description ? metadata.description : ''} (id: ${reward.id}, cost: ${reward.cost})`;
+}
+
 
 module.exports = {
   verifyURLs: verifyURLs,
@@ -73,5 +78,6 @@ module.exports = {
   separator:  URL_SEPARATOR,
   oldSeparator: OLD_URL_SEPARATOR,
   getEmailFrom : getEmailFrom,
-  getSlackUrlFrom : getSlackUrlFrom
+  getSlackUrlFrom : getSlackUrlFrom,
+  getRewardInfoFrom: getRewardInfoFrom
 };

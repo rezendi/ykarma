@@ -38,11 +38,13 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
   var errored = false;
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
     if (estError) {
+      util.warn('error running', method._method);
       util.warn('est error', estError);
       if (callback) { return callback(estError); }
       return res.json({'success':false, 'error':estError});
     }
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
+      util.warn('error running', method._method);
       util.warn('send error', error);
       if (callback) { return callback(error); }
       return res.json({'success':false, 'error':error});
@@ -56,11 +58,6 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
       }
     });
   })
-  .catch(function(exc) {
-    util.warn('gas estimation call error', exc);
-    if (callback) { return callback(exc); }
-    return res.json({"success":false, "error": exc});
-  });
 };
 
 function getAccountFor(id, callback) {
