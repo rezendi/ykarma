@@ -149,8 +149,8 @@ router.post('/purchase', function(req, res, next) {
         email.sendRewardSoldEmail(reward, req.session.account, vendor);
         let vendorSlackUrl = util.getSlackUrlFrom(vendor.urls);
         if (vendorSlackUrl) {
-          let buyerInfo = util.getEmailFrom(req.session.account.urls);
-          let buyerInfo = buyerInfo ? buyerInfo : buyer.urls;
+          var buyerInfo = util.getEmailFrom(req.session.account.urls);
+          buyerInfo = buyerInfo ? buyerInfo : buyer.urls;
           slack.openChannelAndPost(vendorSlackUrl, `You just sold the reward ${getRwardInfoFrom(reward)} to ${buyerInfo}!`);
         }
 
