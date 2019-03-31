@@ -6,7 +6,7 @@ import { withTranslation } from 'react-i18next';
 import firebase from 'firebase/app'
 import 'firebase/auth';
 import { auth } from '../fbase';
-import { loadOwnedRewards, loadVendedRewards, setLoading } from '../store/data/actions'
+import { loadOwnedRewards, loadVendedRewards, loadAllTranches, setLoading } from '../store/data/actions'
 import Api from '../store/Api';
 import Tranche from './Tranche';
 import RewardRow from './RewardRow';
@@ -89,6 +89,7 @@ class Profile extends React.Component {
   getName = (user) => {
     if (!user || !user.uid)
       return this.props.t("Nameless One");
+    this.props.loadAllTranches(); // this feels
     if (!user.metadata || !user.metadata.name)
       return user.displayName || this.props.t("Nameless One");
     return user.metadata.name;
@@ -137,6 +138,9 @@ class Profile extends React.Component {
 
   render() {
     const { t } = this.props;
+    if (this.props.user && this.props.user.uid) {
+      this.props.loadAllTranches(); // this feels hack-y af but we have to wait for Firebase to get us the current user
+    }
     return (
       <Grid>
         <Row>
@@ -272,7 +276,7 @@ class Profile extends React.Component {
                 {t('My Given Karma')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given && this.props.user.given.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
+                {this.props.user.given && this.props.user.given.sort((a,b) => { return a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -284,7 +288,7 @@ class Profile extends React.Component {
                 {t('My Received Karma')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received && this.props.user.received.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
+                {this.props.user.received && this.props.user.received.sort((a,b) => { return a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -321,6 +325,7 @@ function mapDispatchToProps(dispatch) {
   return {
     loadVendedRewards: () => dispatch(loadVendedRewards()),
     loadOwnedRewards: () => dispatch(loadOwnedRewards()),
+    loadAllTranches: () => dispatch(loadAllTranches()),
     setLoading: (active) => dispatch(setLoading(active)),
   }
 }

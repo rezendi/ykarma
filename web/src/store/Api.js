@@ -132,6 +132,17 @@ class Api {
     });
   }
 
+  static loadAllTranches() {
+    return fetch('/api/accounts/full', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+    }).catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+
   static fetchMessages(messageIds) {
     return fetch('/api/accounts/translateMessageIds', {
       method: 'POST',

@@ -248,3 +248,21 @@ export function setLoading(active) {
 export function loadingSet(active) {
   return { type: types.LOADING, active};
 }
+
+export function loadAllTranches() {
+  return function(dispatch) {
+    return Api.loadAllTranches().then(result => {
+      return result.json().then(json => {
+        dispatch(loadAllTranchesSuccess(json));
+      });
+    }).catch(error => {
+      console.log("error", error);
+      throw(error);
+    });
+  };
+}
+
+export function loadAllTranchesSuccess(account) {
+  return { type: types.LOAD_ALL_TRANCHES_SUCCESS, account};
+}
+

@@ -88,7 +88,7 @@ router.get('/account/:id', function(req, res, next) {
 
 /* GET account details */
 router.get('/me', async function(req, res, next) {
-  util.log("me session", req.session);
+  util.debug("me session", req.session);
   var id = await eth.getId();
   if (!id) {
     return res.status(400).send({
@@ -117,8 +117,11 @@ router.get('/me', async function(req, res, next) {
             eth.getCommunityFor(req.session.ykcid, (community) => {
               account.community = community;
               hydrateAccount(account, () => {
-                account.spendable = 0;
-                res.json(account);
+                var method = eth.contract.methods.availableToSpend(account.id, '');
+                method.call(function(error, result) {
+                  account.spendable = error ? account.spendable : result;
+                  res.json(account);
+                });
               });
             });
           });
@@ -128,7 +131,11 @@ router.get('/me', async function(req, res, next) {
         eth.getCommunityFor(req.session.ykcid, (community) => {
           account.community = community;
           hydrateAccount(account, () => {
-            res.json(account);
+            var method = eth.contract.methods.availableToSpend(account.id, '');
+            method.call(function(error, result) {
+              account.spendable = error ? account.spendable : result;
+              res.json(account);
+            });
           });
         });
       }
@@ -161,9 +168,12 @@ router.get('/full', async function(req, res, next) {
       method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[1], false);
       method.call(function(error, received) {
         var account = req.session.account;
-        account.given = given;
-        account.received = received;
-        hydrateAccount(account);
+        account.given = JSON.parse(given);
+        account.received = JSON.parse(received);
+        hydrateAccount(account, () => {
+          console.log("hydrated", account);
+          res.json(account);
+        });
       });
     });
   });
@@ -313,6 +323,9 @@ router.post('/give', function(req, res, next) {
   if (recipientUrl.startsWith('error')) {
     return res.json({"success":false, "error": recipientUrl});
   }
+  if (parseInt(req.body.amount) === 0) {
+    return res.json({"success":false, "error": "recipientUrl"});
+  }
   eth.getCommunityFor(req.session.ykcid, (community) => {
     if (isStrictCommunity(community)) {
       if (recipientUrl.startsWith("https://twitter.com/")) {
@@ -325,7 +338,7 @@ router.post('/give', function(req, res, next) {
     var method = eth.contract.methods.give(
       sender,
       recipientUrl,
-      req.body.amount,
+      parseInt(req.body.amount),
       req.body.message || ''
     );
     eth.doSend(method, res, 1, 4, function() {
@@ -453,32 +466,26 @@ function hydrateAccount(account, done) {
   if (account.given.length===0 && account.received.length===0) {
     done();
   }
-  var method = eth.contract.methods.availableToSpend(account.id, '');
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('availableToSpend error', error);
-    } else {
-      account.spendable = result;
-    }
-    for (var i = 0; i < account.given.length; i++) {
-      var given = account.given[i];
-      hydrateTranche(given, true, () => {
-        hydrated += 1;
-        if (hydrated == account.given.length + account.received.length) {
-          done();
-        }
-      });
-    }
-    for (var j = 0; j < account.received.length; j++) {
-      var received = account.received[j];
-      hydrateTranche(received, false, () => {
-        hydrated += 1;
-        if (hydrated == account.given.length + account.received.length) {
-          done();
-        }
-      });
-    }
-  });
+  for (var i = 0; i < account.given.length; i++) {
+    var given = account.given[i];
+    hydrateTranche(given, true, () => {
+      hydrated += 1;
+      if (hydrated == account.given.length + account.received.length) {
+        done();
+      }
+    });
+  }
+  account.spendable = 0;
+  for (var j = 0; j < account.received.length; j++) {
+    var received = account.received[j];
+    account.spendable += received.available;
+    hydrateTranche(received, false, () => {
+      hydrated += 1;
+      if (hydrated == account.given.length + account.received.length) {
+        done();
+      }
+    });
+  }
 }
 
 function hydrateTranche(tranche, given, done) {

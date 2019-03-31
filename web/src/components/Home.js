@@ -175,7 +175,7 @@ class Home extends React.Component {
                 {t('Given')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.given.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
+                {this.props.user.given.sort((a,b) => { return a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>
@@ -188,7 +188,7 @@ class Home extends React.Component {
                 {t('Received')}
               </Panel.Heading>
               <Panel.Body>
-                {this.props.user.received.sort((a,b) => { a.block - b.block }).map((tranche, idx) =>
+                {this.props.user.received.sort((a,b) => { return a.block - b.block }).map((tranche, idx) =>
                   <Tranche key={idx} json={tranche}/>
                 )}
               </Panel.Body>

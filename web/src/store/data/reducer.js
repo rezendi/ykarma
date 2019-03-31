@@ -82,6 +82,14 @@ export function userReducer(state = initialState.user, action) {
       }
     case types.TWITTER_ADDED:
       return { ...state, handle: action.handle }
+    case types.LOAD_ALL_TRANCHES_SUCCESS:
+      console.log("full action", action.account.spendable)
+      return {
+        ...state,
+        given: action.account ? action.account.given : state.given,
+        received: action.account ? action.account.received : state.received,
+        spendable: action.account ? action.account.spendable : state.spendable
+      }
     case types.NO_USER:
       return {};
     default:
