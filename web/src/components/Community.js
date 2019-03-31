@@ -92,9 +92,12 @@ class Community extends React.Component {
                   <hr/>
                 </Col></Row>
                 <form onSubmit={this.props.handleSubmit(this.submitForm)}>
-                  {this.props.accounts.map((account,idx) =>
+                  {this.props.accounts.sort((a,b) => { return a.id < b.id }).map((account,idx) =>
                     <CommunityMember key={idx} member={account} senderId={this.props.user.ykid}/>
                   )}
+                  <Row>
+                    <hr/>
+                  </Row>
                   <Row>
                     <Col md={8}>&nbsp;</Col>
                     <Col md={4}><input type="submit" value="Give"/></Col>

@@ -1,4 +1,5 @@
 const util = require('./util');
+const rewards = require('./rewards');
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -49,14 +50,14 @@ function sendRewardCreatedEmail(vendor, reward) {
     from: 'do-not-respond@ykarma.com',
     subject: `You just created a reward!`,
     text: `
-You just created the reward ${getRewardInfoFrom(reward)}
+You just created the reward ${rewards.getRewardInfoFrom(reward)}
 Well done! Your community thanks you.
 
 YKarma
 https://www.ykarma.com/
 `,
     html: `
-<p>You just created the reward ${getRewardInfoFrom(reward)}</p>
+<p>You just created the reward ${rewards.getRewardInfoFrom(reward)}</p>
 <p>Well done! Your community thanks you.</p>
 <hr/>
 <a href="https://www.ykarma.com/">YKarma</a>
@@ -79,7 +80,7 @@ function sendRewardSoldEmail(reward, buyer, vendor) {
     from: 'do-not-respond@ykarma.com',
     subject: `You just sold a reward!`,
     text: `
-Your reward ${getRewardInfoFrom(reward)}
+Your reward ${rewards.getRewardInfoFrom(reward)}
 was just sold to ${buyerInfo}
 You should connect with them to give them the reward!
 
@@ -87,7 +88,7 @@ YKarma
 https://www.ykarma.com/
 `,
     html: `
-<p>Your reward <b>${getRewardInfoFrom(reward)}</b></p>
+<p>Your reward <b>${rewards.getRewardInfoFrom(reward)}</b></p>
 <p>was just sold to <b>${buyerInfo}</b></p>
 <p>You should connect with them to give them the reward!</p>
 <hr/>
@@ -110,7 +111,7 @@ function sendRewardPurchasedEmail(reward, buyer, vendor) {
     from: 'do-not-respond@ykarma.com',
     subject: `You just bought a reward!`,
     text: `
-You just purchased the reward ${getRewardInfoFrom(reward)}
+You just purchased the reward ${rewards.getRewardInfoFrom(reward)}
 from vendor ${vendorInfo}
 You should connect with them to claim the reward!
 
@@ -118,7 +119,7 @@ YKarma
 https://www.ykarma.com/
 `,
     html: `
-<p>You just purchased the reward <b>${getRewardInfoFrom(reward)}</b></p>
+<p>You just purchased the reward <b>${rewards.getRewardInfoFrom(reward)}</b></p>
 <p>from vendor <b>${vendorInfo}</b></p>
 <p>You should connect with them to claim the reward!</p>
 <hr/>
@@ -126,11 +127,6 @@ https://www.ykarma.com/
 `,
   };
   sgMail.send(msg);
-}
-
-function getRewardInfoFrom(reward) {
-  const metadata = reward.metadata ? reward.metadata : {'name':'n/a', 'description':'n/a'};
-  return `${metadata.name} -- ${metadata.description} (id: ${reward.id}, cost: ${reward.cost})`;
 }
 
 module.exports = {

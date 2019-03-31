@@ -41,11 +41,23 @@ function debug(a, b) {
 }
 
 function getEmailFrom(urls) {
-  if (urls && urls.indexOf("mailto") >= 0) {
+  if (urls && urls.indexOf("mailto:") >= 0) {
     const urlArray = urls.split(URL_SEPARATOR);
     for (var i in urlArray) {
       if (urlArray[i].startsWith("mailto:")) {
         return urlArray[i].replace("mailto:","");
+      }
+    }
+  }
+  return '';
+}
+
+function getSlackUrlFrom(urls) {
+  if (urls && urls.indexOf("slack:") >= 0) {
+    const urlArray = urls.split(URL_SEPARATOR);
+    for (var i in urlArray) {
+      if (urlArray[i].startsWith("slack:")) {
+        return urlArray[i];
       }
     }
   }
@@ -60,5 +72,6 @@ module.exports = {
   warn:       warn,
   separator:  URL_SEPARATOR,
   oldSeparator: OLD_URL_SEPARATOR,
-  getEmailFrom : getEmailFrom
+  getEmailFrom : getEmailFrom,
+  getSlackUrlFrom : getSlackUrlFrom
 };

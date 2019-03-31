@@ -147,6 +147,12 @@ router.post('/purchase', function(req, res, next) {
         util.log("reward purchased", reward);
         email.sendRewardPurchasedEmail(reward, req.session.account, vendor);
         email.sendRewardSoldEmail(reward, req.session.account, vendor);
+        var buyerInfo = util.getEmailFrom(buyer.urls) ? util.getEmailFrom(buyer.urls) : buyer.urls ? buyer.urls.split(util.separator)[0] : 'n/a';
+        var vendorSlackUrl = util.getSlackUrlFrom(vendor.urls);
+        if (vendorSlackUrl) {
+          slack.openChannelAndPost(vendorSlackUrl, `You just sold the reward ${getRwardInfoFrom(reward)} to ${buyerInfo}!`);
+        }
+
         return res.json({"success":true, "result": reward});
       });
     });
@@ -183,10 +189,16 @@ function getRewardByIndex(idType, accountId, idx, callback) {
   });
 }
 
+function getRewardInfoFrom(reward) {
+  const metadata = reward.metadata ? reward.metadata : {'name':'n/a', 'description':'n/a'};
+  return `${metadata.name} -- ${metadata.description} (id: ${reward.id}, cost: ${reward.cost})`;
+}
+
 
 
 module.exports = {
   router: router,
   getRewardByIndex: getRewardByIndex,
-  getRewardFor: getRewardFor
+  getRewardFor: getRewardFor,
+  getRewardInfoFrom: getRewardInfoFrom
 };
