@@ -92,10 +92,10 @@ class Account extends React.Component {
 }
 
 function mapStateToProps(state, ownProps) {
-  console.log("account", state.account);
+  //console.log("account", state.account);
   return {
     account: state.account,
-    vended: state.rewards.vended || [],
+    vended: state.account.vended || [],
   }
 }
 
