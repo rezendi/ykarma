@@ -10,6 +10,30 @@ var TestCookies = [];
 
 describe('Slack', function () {
 
+  it('test open channel and post', function (done) {
+    var slackUrl = "slack:TEST-USER1";
+    var text = `Mocha testing open channel and post`;
+    slack.openChannelAndPost(slackUrl, text);
+    setTimeout(() => {
+      api.get('/api/slack/lastOpenConversation')
+        .end(function (err, res) {
+          if (err) done (err);
+          var last = JSON.parse(res.text).last;
+          expect(last.users).to.equal("USER1");
+          expect(last.token).to.equal("test");
+          api.get('/api/slack/lastPostMessage')
+            .end(function (err, res) {
+              if (err) done (err);
+              last = JSON.parse(res.text).last;
+              expect(last.text.split(" ")[0]).to.equal("Mocha");
+              expect(last.channel).to.equal("TestChannel");
+              expect(last.token).to.equal("test");
+              done();
+            });
+        });
+    }, 500);
+  });
+
   // assumes a reward added as part of deploy
   it('send karma in-channel and via DM', function (done) {
     this.timeout(10000);
@@ -52,28 +76,5 @@ describe('Slack', function () {
     });
   });
 
-  it('send replenishment notification', function (done) {
-    var slackUrl = "slack:TEST-USER1";
-    var text = `Mocha testing open channel and post`;
-    slack.openChannelAndPost(slackUrl, text);
-    setTimeout(function() {
-      api.get('/api/slack/lastOpenConversation')
-        .end(function (err, res) {
-          if (err) done (err);
-          var last = JSON.parse(res.text).last;
-          expect(last.users).to.equal("USER1");
-          expect(last.token).to.equal("test");
-          api.get('/api/slack/lastPostMessage')
-            .end(function (err, res) {
-              if (err) done (err);
-              last = JSON.parse(res.text).last;
-              expect(last.text.split(" ")[0]).to.equal("Available");
-              expect(last.channel).to.equal("TestChannel");
-              expect(last.token).to.equal("test");
-              done();
-            });
-        });
-    }, 1000);
-  });
 });
   
