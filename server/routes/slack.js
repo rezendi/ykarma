@@ -480,37 +480,35 @@ router.post('/event', async function(req, res, next) {
             if (available.length >= parseInt(totalRewards)) {
               available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
               blocks = [
-	{
-		"type": "section",
-		"text": {
-			"type": "mrkdwn",
-			"text": "*Available rewards:*"
-		}
-	},
-	{
-		"type": "divider"
-	}];
+               {
+                  "type": "section",
+                  "text": {
+                     "type": "mrkdwn",
+                     "text": "*Available rewards:*"
+                  }
+               },
+               {"type": "divider" }
+              ];
 
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
                 blocks = blocks.concat([{
-		"type": "section",
-		"text": {
-			"type": "mrkdwn",
-			"text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${util.getSlackUserIdFrom(vendor.urls)}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
-		}
-	},
-	{
-		"type": "divider"
-	},
-   {
-		"type": "section",
-		"text": {
-			"type": "mrkdwn",
-			"text": "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'."
-		}
-   }]);
+                  "type": "section",
+                  "text": {
+                     "type": "mrkdwn",
+                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${util.getSlackUserIdFrom(vendor.urls)}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
+                  }
+                  },
+                  { "type": "divider" }
+               ]);
               }
+              blocks = blocks.concat([{
+               "type": "section",
+               "text": {
+                  "type": "mrkdwn",
+                  "text": "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'."
+               }}]
+              );
               postToChannel(slackChannelId, blocks, bot_token);
             }
           });

@@ -67,7 +67,7 @@ function getSlackUrlFrom(urls) {
 function getSlackUserIdFrom(urls) {
   let url = getSlackUrlFrom(urls);
   if (url && url.indexOf("-") > 0) {
-    return url.subsstring(url.indexOf("-")+1);
+    return url.substring(url.indexOf("-")+1);
   }
   return url;
 }
