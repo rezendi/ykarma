@@ -463,9 +463,32 @@ router.post('/event', async function(req, res, next) {
           rewards.getRewardByIndex(0, sender.communityId, i, (reward) => {
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
-              var retval = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
-              //TODO: structure more nicely
-              text = req.t("Available Rewards") + " " + JSON.stringify(retval);
+              available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
+              text = `[
+	{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "*Available rewards:	*"
+		}
+	},
+	{
+		"type": "divider"
+	},`;
+              for (var j = 0; i< available.length; j++) {
+                text += `
+	{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "_${available.id}_ *${available.metadata.name}*\n ${available.metadata.description}"
+		}
+	},
+	{
+		"type": "divider"
+	},`;
+              }
+              text += ']';
               postToChannel(slackChannelId, text, bot_token);
             }
           });
