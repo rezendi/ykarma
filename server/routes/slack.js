@@ -369,6 +369,7 @@ function getAccountForUrl(url) {
   });
 }
 
+// TODO: break this into multiple methods
 router.post('/event', async function(req, res, next) {
 
   if (req.body.type==="url_verification") {
@@ -492,11 +493,12 @@ router.post('/event', async function(req, res, next) {
 
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
+                let vendorSlackId = util.getSlackUserIdFrom(vendor.urls);
                 blocks = blocks.concat([{
                   "type": "section",
                   "text": {
                      "type": "mrkdwn",
-                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${util.getSlackUserIdFrom(vendor.urls)}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
+                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${vendorSlackId}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
                   }
                   },
                   { "type": "divider" }
@@ -509,7 +511,7 @@ router.post('/event', async function(req, res, next) {
                   "text": "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'."
                }}]
               );
-              postToChannel(slackChannelId, blocks, bot_token);
+              postToChannel(slackChannelId, blocks, bot_token, 'Available Rewards');
             }
           });
         }
@@ -572,7 +574,8 @@ router.post('/event', async function(req, res, next) {
   res.json({text:text});
 });
 
-function postToChannel(channel, input, bot_token) {
+// this didn't start off this ugly
+function postToChannel(channel, input, bot_token, notificationText='') {
   var body = {
     text: input,
     channel: channel,
@@ -581,6 +584,7 @@ function postToChannel(channel, input, bot_token) {
   if (Array.isArray(input)) {
     body = {
       blocks: input,
+      text: notificationText,
       channel: channel,
       token: bot_token
     };

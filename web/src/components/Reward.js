@@ -1,8 +1,9 @@
 import React from 'react';
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
-import { loadReward, setLoading } from '../store/data/actions'
+import { loadReward, loadAccount, setLoading } from '../store/data/actions'
 import RewardForm from './RewardForm';
 import Api from '../store/Api';
 
@@ -16,6 +17,14 @@ class Reward extends React.Component {
     this.setState({editing: this.state.editing ? false : true});
   };
   
+  getName = (account) => {
+    return account.metadata.name || this.getUrlFrom(account.urls);
+  }
+  
+  getUrlFrom = (urls) => {
+    return (urls || '').split(' ')[0].replace("mailto:","").replace("https://twitter.com/","@").replace("slack:","#");
+  }
+
   getSpendable = () => {
     const received = this.props.user.received;
     if (!received) {
@@ -60,6 +69,10 @@ class Reward extends React.Component {
         <RewardForm reward = {this.props.reward}/>
       );
     }
+    if (this.props.reward.vendorId && !this.props.vendor.id) {
+      console.log("calling load");
+      this.props.loadVendor(this.props.reward.vendorId);
+    }
     return (
       <Grid>
         <Row>
@@ -67,6 +80,10 @@ class Reward extends React.Component {
             <Panel>
               <Panel.Heading>
                 {this.props.reward.metadata.name} { this.props.user.ykid===this.props.reward.vendorId && <Button bsStyle="link" onClick={this.toggleEditing}>edit</Button>}
+                  (Offered by&nbsp;
+                  { this.props.vendor &&
+                    <Link to={`/account/${this.props.vendor.id}`}>{this.getName(this.props.vendor)}</Link>
+                  })
               </Panel.Heading>
               <Panel.Body>
                 <Row>
@@ -100,13 +117,15 @@ class Reward extends React.Component {
 function mapStateToProps(state, ownProps) {
   return {
     user: state.user,
-    reward: state.rewards.reward
+    reward: state.rewards.reward,
+    vendor: state.account
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     loadReward: (rewardId) => dispatch(loadReward(rewardId)),
+    loadVendor: (vendorId) => dispatch(loadAccount(vendorId)),
     setLoading: (active) => dispatch(setLoading(active)),
   }
 }
