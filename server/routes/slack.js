@@ -1,11 +1,26 @@
+const express = require('express');
+const router = express.Router();
+const fetch = require('node-fetch');
+const firebase = require('./firebase');
+const eth = require('./eth');
+const email = require('./emails');
+const util = require('./util');
+const rewards = require('./rewards');
+const gifs = require('./slack_gifs');
+
+const OPEN_CONVERSATION_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testOpenConversation" : "https://slack.com/api/conversations.open";
+const POST_MESSAGE_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testPostMessage" : "https://slack.com/api/chat.postMessage";
+
 // verification
 
 const crypto = require('crypto');
 const qs = require('qs');
 const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 
-var verifySlack = (req, res, next) => {
+router.use('*', (req, res, next) => {
+  console.log("in verify");
    if (process.env.NODE_ENV==="test") {
+      util.debug("test slack call");
       return next();
    }
    var slackSignature = req.headers['x-slack-signature'];
@@ -31,22 +46,7 @@ var verifySlack = (req, res, next) => {
    } else {
           return res.status(400).send('Verification failed');
    }
-}
-
-// everything else
-
-const express = require('express');
-const router = express.Router();
-const fetch = require('node-fetch');
-const firebase = require('./firebase');
-const eth = require('./eth');
-const email = require('./emails');
-const util = require('./util');
-const rewards = require('./rewards');
-const gifs = require('./slack_gifs');
-
-const OPEN_CONVERSATION_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testOpenConversation" : "https://slack.com/api/conversations.open";
-const POST_MESSAGE_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testPostMessage" : "https://slack.com/api/chat.postMessage";
+});
 
 var fromAccount = null;
 eth.getFromAccount().then(address => {
@@ -591,6 +591,5 @@ async function getFirebaseTeamData(team_id) {
 
 module.exports = {
   router : router,
-  openChannelAndPost : openChannelAndPost,
-  verifySlack : verifySlack
+  openChannelAndPost : openChannelAndPost
 };
