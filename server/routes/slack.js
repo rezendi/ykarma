@@ -475,7 +475,7 @@ router.post('/event', async function(req, res, next) {
 	{
 		"type": "divider"
 	},`;
-              for (var j=0; i< available.length; j++) {
+              for (var j=0; j< available.length; j++) {
                 text += `
 	{
 		"type": "section",
