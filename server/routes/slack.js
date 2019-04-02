@@ -339,15 +339,30 @@ function sendKarma(res, vals, callback) {
   eth.doSend(method, res, 1, 4, callback);
 }
 
+function getAccountFor(id) {
+  return new Promise(function(resolve, reject) {
+    let method = eth.contract.methods.accountForId(id);
+    method.call(function(error, result) {
+      if (error) {
+        util.warn('getAccountFor error', error);
+      } else {
+        util.debug('getAccountFor result', result);
+        let account = eth.getAccountFromResult(result);
+        resolve(account);
+      }
+    });
+  });
+}
+
 function getAccountForUrl(url) {
   return new Promise(function(resolve, reject) {
-    var method = eth.contract.methods.accountForUrl(url);
+    let method = eth.contract.methods.accountForUrl(url);
     method.call(function(error, result) {
       if (error) {
         util.warn('getAccountForUrl error', error);
       } else {
         util.debug('getAccountForUrl result', result);
-        var account = eth.getAccountFromResult(result);
+        let account = eth.getAccountFromResult(result);
         resolve(account);
       }
     });
@@ -460,7 +475,7 @@ router.post('/event', async function(req, res, next) {
         }
         var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
-          rewards.getRewardByIndex(0, sender.communityId, i, (reward) => {
+          rewards.getRewardByIndex(0, sender.communityId, i, async (reward) => {
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
               available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
@@ -477,16 +492,24 @@ router.post('/event', async function(req, res, next) {
 	}];
 
               for (var j=0; j< available.length; j++) {
+                let vendor = await getAccountFor(available.vendorId);
                 blocks = blocks.concat([{
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": `_${available[j].id}_ *${available[j].metadata.name}*\n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available.quantity} _required tag_: ${available[j].tag}`
+			"text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${util.getSlackUserIdFrom(vendor.urls)}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
 		}
 	},
 	{
 		"type": "divider"
-	}]);
+	},
+   {
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'."
+		}
+   }]);
               }
               postToChannel(slackChannelId, blocks, bot_token);
             }

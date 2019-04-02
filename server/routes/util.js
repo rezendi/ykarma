@@ -64,6 +64,14 @@ function getSlackUrlFrom(urls) {
   return '';
 }
 
+function getSlackUserIdFrom(urls) {
+  let url = getSlackUrlFrom(urls);
+  if (url && url.indexOf("-") > 0) {
+    return url.subsstring(url.indexOf("-")+1);
+  }
+  return url;
+}
+
 function getRewardInfoFrom(reward) {
   const metadata = reward.metadata ? reward.metadata : {'name':'n/a', 'description':'n/a'};
   return `${metadata.name} -- ${metadata.description ? metadata.description : ''} (id: ${reward.id}, cost: ${reward.cost})`;
@@ -79,5 +87,6 @@ module.exports = {
   oldSeparator: OLD_URL_SEPARATOR,
   getEmailFrom : getEmailFrom,
   getSlackUrlFrom : getSlackUrlFrom,
+  getSlackUserIdFrom : getSlackUserIdFrom,
   getRewardInfoFrom: getRewardInfoFrom
 };
