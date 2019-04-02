@@ -464,32 +464,31 @@ router.post('/event', async function(req, res, next) {
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
               available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
-              text = `[
+              blocks = [
 	{
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": "*Available rewards:	*"
+			"text": "*Available rewards:*"
 		}
 	},
 	{
 		"type": "divider"
-	},`;
+	}];
+
               for (var j=0; j< available.length; j++) {
-                text += `
-	{
+                blocks = blocks.concat([{
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": "_${available[j].id}_ *${available[j].metadata.name}*\n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available.quantity} _required tag_: ${available[j].tag}"
+			"text": `_${available[j].id}_ *${available[j].metadata.name}*\n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available.quantity} _required tag_: ${available[j].tag}`
 		}
 	},
 	{
 		"type": "divider"
-	},`;
+	}]);
               }
-              text += ']';
-              postToChannel(slackChannelId, text, bot_token);
+              postToChannel(slackChannelId, blocks, bot_token);
             }
           });
         }
@@ -552,12 +551,19 @@ router.post('/event', async function(req, res, next) {
   res.json({text:text});
 });
 
-function postToChannel(channel, text, bot_token) {
+function postToChannel(channel, input, bot_token) {
   var body = {
-    text: text,
+    text: input,
     channel: channel,
     token: bot_token
   };
+  if (Array.isArray(input)) {
+    body = {
+      blocks: input,
+      channel: channel,
+      token: bot_token
+    };
+  }
   fetch(POST_MESSAGE_URL, {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${bot_token}`},
