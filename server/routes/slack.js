@@ -475,13 +475,13 @@ router.post('/event', async function(req, res, next) {
 	{
 		"type": "divider"
 	},`;
-              for (var j = 0; i< available.length; j++) {
+              for (var j=0; i< available.length; j++) {
                 text += `
 	{
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": "_${available.id}_ *${available.metadata.name}*\n ${available.metadata.description}"
+			"text": "_${available[j].id}_ *${available[j].metadata.name}*\n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available.quantity} _required tag_: ${available[j].tag}"
 		}
 	},
 	{
