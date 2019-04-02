@@ -492,7 +492,7 @@ router.post('/event', async function(req, res, next) {
 	}];
 
               for (var j=0; j< available.length; j++) {
-                let vendor = await getAccountFor(available.vendorId);
+                let vendor = await getAccountFor(available[j].vendorId);
                 blocks = blocks.concat([{
 		"type": "section",
 		"text": {
