@@ -18,7 +18,6 @@ const qs = require('qs');
 const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 
 router.use('*', (req, res, next) => {
-  console.log("in verify");
    if (process.env.NODE_ENV==="test") {
       util.debug("test slack call");
       return next();
@@ -28,9 +27,11 @@ router.use('*', (req, res, next) => {
    var timestamp = req.headers['x-slack-request-timestamp'];
    var time = Math.floor(new Date().getTime()/1000);
    if (Math.abs(time - timestamp) > 300) {
+      util.log("ignoring request");
       return res.status(400).send('Ignore this request.');
    }
    if (!slackSigningSecret) {
+      util.log("Empty signing secret");
       return res.status(400).send('Slack signing secret is empty.');
    }
    var sigBasestring = 'v0:' + timestamp + ':' + requestBody;
@@ -44,7 +45,8 @@ router.use('*', (req, res, next) => {
       ) {
           next();
    } else {
-          return res.status(400).send('Verification failed');
+      util.log("verification failed");
+      return res.status(400).send('Verification failed');
    }
 });
 
