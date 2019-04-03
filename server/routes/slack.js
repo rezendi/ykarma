@@ -494,13 +494,12 @@ router.post('/event', async function(req, res, next) {
 
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
-                let vendorSlackId = util.getSlackUserIdFrom(vendor.urls);
-                let vendorInfo = vendorSlackId ? `<@${vendorSlackId}>` : vendor.urls;
+                let vendorInfo = util.getSlackUserIdFrom(vendor.urls) ? `<@${util.getSlackUserIdFrom(vendor.urls)}>` : vendor.urls;
                 blocks = blocks.concat([{
                   "type": "section",
                   "text": {
                      "type": "mrkdwn",
-                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${vendorInfo}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
+                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from ${vendorInfo} \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
                   }
                   },
                   { "type": "divider" }
