@@ -99,7 +99,7 @@ router.post('/create', function(req, res, next) {
   var reward = req.body.reward;
   var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag || '', JSON.stringify(reward.metadata), reward.flags || '0x00');
   eth.doSend(method, res, 1, 2, () => {
-    email.sendRewardCreatedEmail(req.session.account, reward);
+    email.sendRewardCreatedEmail(req, reward, req.session.account);
     util.log("reward created", reward);
     return res.json({"success":true, "result": reward});
   });
@@ -145,8 +145,8 @@ router.post('/purchase', function(req, res, next) {
     eth.doSend(method, res, 1, 2, () => {
       eth.getAccountFor(reward.vendorId, (vendor) => {
         util.log("reward purchased", reward);
-        email.sendRewardPurchasedEmail(reward, req.session.account, vendor);
-        email.sendRewardSoldEmail(reward, req.session.account, vendor);
+        email.sendRewardPurchasedEmail(req, reward, req.session.account, vendor);
+        email.sendRewardSoldEmail(req, reward, req.session.account, vendor);
         let vendorSlackUrl = util.getSlackUrlFrom(vendor.urls);
         if (vendorSlackUrl) {
           var buyerInfo = util.getEmailFrom(req.session.account.urls);

@@ -325,9 +325,9 @@ router.post('/give', function(req, res, next) {
           // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
           let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
           if (sendEmail) {
-            util.log("sending mail", req.body.recipient);
+            util.debug("sending mail to", req.body.recipient);
             const senderName = req.session.name || req.session.email;
-            email.sendKarmaSentEmail(senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
+            email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
             if (!hasNeverLoggedIn(recipient)) {
               return res.json( { "success":true } );
             }

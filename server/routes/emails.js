@@ -3,7 +3,7 @@ const util = require('./util');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-function sendKarmaSentEmail(sender, recipientEmail, amount, message, hasNeverLoggedIn) {
+function sendKarmaSentEmail(req, sender, recipientEmail, amount, message, hasNeverLoggedIn) {
   if (process.env.NODE_ENV === "test") return;
   var recipientEmail = recipientEmail.replace("mailto:","");
   if (recipientEmail.indexOf("@") < 0) {
@@ -39,7 +39,7 @@ https://www.ykarma.com/
   sgMail.send(msg);  
 }
 
-function sendRewardCreatedEmail(vendor, reward) {
+function sendRewardCreatedEmail(req, reward, vendor) {
   util.debug("Sending created email to", vendor ? vendor.urls : 'n/a');
   if (process.env.NODE_ENV === "test") return;
   var vendorEmail = util.getEmailFrom(vendor.urls);
@@ -65,7 +65,7 @@ https://www.ykarma.com/
   sgMail.send(msg);  
 }
 
-function sendRewardSoldEmail(reward, buyer, vendor) {
+function sendRewardSoldEmail(req, reward, buyer, vendor) {
   util.debug("Sending selling email to", vendor.urls);
   if (process.env.NODE_ENV === "test") return;
   var vendorEmail = util.getEmailFrom(vendor.urls);
@@ -97,7 +97,7 @@ https://www.ykarma.com/
   sgMail.send(msg);
 }
 
-function sendRewardPurchasedEmail(reward, buyer, vendor) {
+function sendRewardPurchasedEmail(req, reward, buyer, vendor) {
   if (process.env.NODE_ENV === "test") return;
   var buyerEmail = util.getEmailFrom(buyer.urls);
   if (buyerEmail === "") return;

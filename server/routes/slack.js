@@ -548,8 +548,8 @@ router.post('/event', async function(req, res, next) {
           // send notifications
           eth.getAccountFor(reward.vendorId, (vendor) => {
             util.log("from", vendor);
-            email.sendRewardPurchasedEmail(reward, sender, vendor);
-            email.sendRewardSoldEmail(reward, sender, vendor);
+            email.sendRewardPurchasedEmail(req, reward, sender, vendor);
+            email.sendRewardSoldEmail(req, reward, sender, vendor);
             let vendorSlackUrl = util.getSlackUrlFrom(vendor.urls);
             if (vendorSlackUrl) {
               // TODO check they're on the same slack team
