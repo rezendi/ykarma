@@ -565,7 +565,7 @@ router.post('/event', async function(req, res, next) {
     // Leaderboard
     // TODO translate
     case "leaderboard":
-      communities.getLeaderboard(communityId, (error, leaders) => {
+      communities.getLeaderboard(sender.communityId, (error, leaders) => {
          if (error) {
             postToChannel(slackChannelId, "Could not get leaderboard, sorry!", bot_token);
          } else {
