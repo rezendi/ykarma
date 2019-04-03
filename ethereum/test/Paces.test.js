@@ -21,9 +21,6 @@ contract('Paces', function(accounts) {
 
     await ykarma.loadModeOff();
 
-    // let accountData2 = await YKAccounts.new();
-    // await ykarma.updateContracts('0x00', accountData2.address, '0x00', '0x00')
-    
     // add a little data
     await ykarma.addNewCommunity(accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');
     var count = await ykarma.getCommunityCount();
@@ -183,6 +180,9 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals, 4, "Vendor rewards count 4");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '90', "Spent 10 giving karma on a reward");
+
+    // merge accounts
+    // await ykarma.mergeAccounts(1, 2);
   });
 });
 

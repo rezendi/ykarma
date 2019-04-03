@@ -185,7 +185,7 @@ contract YKarma is Oracular, YKStructs {
     accountData.deleteAccount(_id);
   }
   
-  // only works if URL list has no common sources
+  // only works if URL list has no common sources?
   function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
     accountData.mergeAccounts(_id1, _id2);
     trancheData.mergeAccounts(_id1, _id2);
