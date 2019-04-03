@@ -53,6 +53,71 @@ router.get('/:id', function(req, res, next) {
   });
 });
 
+/* GET account list */
+router.get('/:communityId/accounts', function(req, res, next) {
+  const communityId = parseInt(req.params.communityId);
+  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykcid !== communityId) {
+    util.log("not allowed to get accounts for", communityId);
+    return res.json([]);
+  }
+  util.log("getting accounts for",communityId);
+  var accounts = [];
+  var method = eth.contract.methods.getAccountCount(communityId);
+  method.call(function(error, result) {
+    if (error) {
+      util.warn('getAccountCount error', error);
+      res.json([]);
+    } else {
+      util.log('getAccountCount result', result);
+      for (var i = 0; i < result; i++) {
+        getAccountWithinCommunity(communityId, i, (account) => {
+          accounts.push(account);
+          if (accounts.length >= result) {
+            // console.log('accounts', accounts);
+            var activeAccounts = accounts.filter(acct => !hasNeverLoggedIn(acct));
+            return res.json(activeAccounts);
+          }
+        });
+      }
+    }
+  });
+});
+
+/* GET community leaderboard */
+router.get('/:id/leaderboard', function(req, res, next) {
+  const communityId = parseInt(req.params.id);
+  var leaders = [];
+  var method = eth.contract.methods.getAccountCount(communityId);
+  method.call(function(error, accountCount) {
+    if (error) {
+      util.warn('getAccountCount error', error);
+      res.json([]);
+    } else {
+      util.log('getAccountCount result', accountCount);
+      for (var i = 0; i < accountCount; i++) {
+        getAccountWithinCommunity(communityId, i, (account) => {
+          method = eth.contract.methods.availableToSpend(account.id, '');
+          method.call(function(error, spendable) {
+            leaders.push({
+              id: account.id,
+              spendable: parseInt(spendable) || 0,
+              metadata: account.metadata,
+              urls: account.urls,
+            });
+            if (leaders.length >= accountCount) {
+              // console.log('accounts', accounts);
+              leaders = leaders.sort((a,b) => { return a.spendable - b.spendable });
+              let maxLength = accountCount < 10 ? 3 : accountCount < 20 ? 5 : 10;
+              leaders.length = Math.min(leaders.length, maxLength);
+              return res.json(leaders);
+            }
+          });
+        });
+      }
+    }
+  });
+});
+
 /* POST new community. */
 router.post('/create', function(req, res, next) {
   console.log("session", req.session);
@@ -113,5 +178,27 @@ router.delete('/:id', function(req, res, next) {
   var method = eth.contract.methods.deleteCommunity(req.params.id);
   eth.doSend(method,res);
 });
+
+function getAccountWithinCommunity(communityId, idx, callback) {
+  var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
+  // console.log("accountWithinCommunity idx "+idx, communityId);
+  method.call(function(error, result) {
+    if (error) {
+      util.warn('accountWithinCommunity error', error);
+    } else {
+      // console.log('accountWithinCommunity result', result);
+      var account = eth.getAccountFromResult(result);
+      callback(account);
+    }
+  });
+}
+
+function hasNeverLoggedIn(account) {
+  return account.id === 0 || account.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
+}
+
+function isStrictCommunity(community) {
+  return community.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
+}
 
 module.exports = router;

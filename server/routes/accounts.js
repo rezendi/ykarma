@@ -42,36 +42,6 @@ router.get('/setup', function(req, res, next) {
 });
 
 
-/* GET account list */
-router.get('/for/:communityId', function(req, res, next) {
-  const communityId = parseInt(req.params.communityId);
-  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykcid !== communityId) {
-    util.log("not allowed to get accounts for", communityId);
-    return res.json([]);
-  }
-  util.log("getting accounts for",communityId);
-  var accounts = [];
-  var method = eth.contract.methods.getAccountCount(communityId);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getAccountCount error', error);
-      res.json([]);
-    } else {
-      util.log('getAccountCount result', result);
-      for (var i = 0; i < result; i++) {
-        getAccountWithinCommunity(communityId, i, (account) => {
-          accounts.push(account);
-          if (accounts.length >= result) {
-            // console.log('accounts', accounts);
-            var activeAccounts = accounts.filter(acct => !hasNeverLoggedIn(acct));
-            return res.json(activeAccounts);
-          }
-        });
-      }
-    }
-  });
-});
-
 /* GET account details */
 router.get('/account/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
@@ -419,20 +389,6 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-function getAccountWithinCommunity(communityId, idx, callback) {
-  var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
-  // console.log("accountWithinCommunity idx "+idx, communityId);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('accountWithinCommunity error', error);
-    } else {
-      // console.log('accountWithinCommunity result', result);
-      var account = eth.getAccountFromResult(result);
-      callback(account);
-    }
-  });
-}
-
 function getAccountForUrl(url, callback) {
   var method = eth.contract.methods.accountForUrl(url);
   // util.log("method", method);
@@ -441,20 +397,6 @@ function getAccountForUrl(url, callback) {
       util.warn('getAccountForUrl error', error);
     } else {
       util.debug('getAccountForUrl result', result);
-      var account = eth.getAccountFromResult(result);
-      callback(account);
-    }
-  });
-}
-
-function getAccountWithinCommunity(communityId, idx, callback) {
-  var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
-  // console.log("accountWithinCommunity idx "+idx, communityId);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('accountWithinCommunity error', error);
-    } else {
-      // console.log('accountWithinCommunity result', result);
       var account = eth.getAccountFromResult(result);
       callback(account);
     }

@@ -21,7 +21,7 @@ class Api {
   }
 
   static loadAccountsFor(communityId) {
-    return fetch(`/api/accounts/for/${communityId}`, { credentials: 'include'})
+    return fetch(`/api/communities/${communityId}/accounts/`, { credentials: 'include'})
       .then(response => {
         return response.json();
     }).catch(error => {
