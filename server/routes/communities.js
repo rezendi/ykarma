@@ -86,35 +86,12 @@ router.get('/:communityId/accounts', function(req, res, next) {
 /* GET community leaderboard */
 router.get('/:id/leaderboard', function(req, res, next) {
   const communityId = parseInt(req.params.id);
-  var leaders = [];
-  var method = eth.contract.methods.getAccountCount(communityId);
-  method.call(function(error, accountCount) {
+  getLeaderboard(communityId, (error, leaders) => {
     if (error) {
-      util.warn('getAccountCount error', error);
-      res.json([]);
-    } else {
-      util.log('getAccountCount result', accountCount);
-      for (var i = 0; i < accountCount; i++) {
-        getAccountWithinCommunity(communityId, i, (account) => {
-          method = eth.contract.methods.availableToSpend(account.id, '');
-          method.call(function(error, spendable) {
-            leaders.push({
-              id: account.id,
-              spendable: parseInt(spendable) || 0,
-              metadata: account.metadata,
-              urls: account.urls,
-            });
-            if (leaders.length >= accountCount) {
-              // console.log('accounts', accounts);
-              leaders = leaders.sort((a,b) => { return a.spendable - b.spendable });
-              let maxLength = accountCount < 10 ? 3 : accountCount < 20 ? 5 : 10;
-              leaders.length = Math.min(leaders.length, maxLength);
-              return res.json(leaders);
-            }
-          });
-        });
-      }
+      util.warn("leaderboard error", error);
+      return res.json({"success":false, "error":error});
     }
+    return res.json({"success":true, "leaderboard":leaders});
   });
 });
 
@@ -197,8 +174,42 @@ function hasNeverLoggedIn(account) {
   return account.id === 0 || account.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
 }
 
-function isStrictCommunity(community) {
-  return community.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
+function getLeaderboard(communityId, callback) {
+  var leaders = [];
+  var method = eth.contract.methods.getAccountCount(communityId);
+  method.call(function(error, accountCount) {
+    if (error) {
+      util.warn('getAccountCount error', error);
+      callback(error, null);
+    } else {
+      util.log('getAccountCount result', accountCount);
+      for (var i = 0; i < accountCount; i++) {
+        getAccountWithinCommunity(communityId, i, (account) => {
+          method = eth.contract.methods.availableToSpend(account.id, '');
+          method.call(function(error, spendable) {
+            leaders.push({
+              id: account.id,
+              metadata: account.metadata || {},
+              urls: account.urls || '',
+              spendable: parseInt(spendable) || 0,
+              filterOut: hasNeverLoggedIn(account),
+            });
+            if (leaders.length >= accountCount) {
+              // console.log('accounts', accounts);
+              leaders = leaders.filter(a => !a.filterOut);
+              leaders = leaders.sort((a,b) => { return a.spendable - b.spendable });
+              let maxLength = leaders.length < 10 ? 3 : leaders.length < 20 ? 5 : 10;
+              leaders.length = Math.min(leaders.length, maxLength);
+              callback(null, leaders);
+            }
+          });
+        });
+      }
+    }
+  });
 }
 
-module.exports = router;
+module.exports = {
+  router: router,
+  getLeaderboard: getLeaderboard
+};

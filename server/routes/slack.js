@@ -6,6 +6,7 @@ const eth = require('./eth');
 const email = require('./emails');
 const util = require('./util');
 const rewards = require('./rewards');
+const communities = require('./communities');
 const gifs = require('./slack_gifs');
 
 const OPEN_CONVERSATION_URL = process.env.NODE_ENV === "test" ? "http://localhost:3001/api/slack/testOpenConversation" : "https://slack.com/api/conversations.open";
@@ -494,11 +495,12 @@ router.post('/event', async function(req, res, next) {
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
                 let vendorSlackId = util.getSlackUserIdFrom(vendor.urls);
+                let vendorInfo = vendorSlackId ? `<@${vendorSlackId}>` : vendor.urls;
                 blocks = blocks.concat([{
                   "type": "section",
                   "text": {
                      "type": "mrkdwn",
-                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${vendorSlackId}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
+                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from <@${vendorInfo}> \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
                   }
                   },
                   { "type": "divider" }
@@ -560,6 +562,33 @@ router.post('/event', async function(req, res, next) {
       text = req.t("Attempting purchase…");
       break;
 
+    // Leaderboard
+    // TODO translate
+    case "leaderboard":
+      communities.getLeaderboard(communityId, (error, leaders) => {
+         if (error) {
+            postToChannel(slackChannelId, "Could not get leaderboard, sorry!", bot_token);
+         } else {
+            var blocks = [];
+            for (var i=0; i<leaders.length; i++) {
+               let leader = leaders[i];
+               let leaderInfo = util.getSlackUserIdFrom(leader.urls) ? `<@${util.getSlackUserIdFrom(leader.urls)}>` : leader.urls;
+               blocks.concat([
+                  {
+                     "type": "section",
+                     "text": {
+                        "type": "mrkdwn",
+                        "text": `*${i}* | ${leader.spendable} YK | _${leaderInfo}_`
+                     }
+                  }, { "type": "divider" }
+               ]);
+              postToChannel(slackChannelId, blocks, bot_token, 'Leaderboard');
+            }
+         }
+      });
+      text = "Getting leaderboard…";
+      break;
+      
     // Flavors
     case req.t("flavors"):
       text = "flavor handling goes here";

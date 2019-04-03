@@ -28,7 +28,11 @@ describe('Slack', function () {
               expect(last.text.split(" ")[0]).to.equal("Mocha");
               expect(last.channel).to.equal("TestChannel");
               expect(last.token).to.equal("test");
-              done();
+              api.get('/api/slack/lastPostMessage')
+                .end(function (err, res) {
+                  if (err) done (err);
+                  done();
+                });
             });
         });
     }, 500);

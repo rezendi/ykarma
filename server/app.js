@@ -52,7 +52,7 @@ app.use(bodyParser.json());
 
 app.use('/api', indexRouter);
 app.use('/api/accounts', accountsRouter);
-app.use('/api/communities', communitiesRouter);
+app.use('/api/communities', communitiesRouter.router);
 app.use('/api/rewards', rewardsRouter.router);
 app.use('/api/slack', slackRouter.router);
 

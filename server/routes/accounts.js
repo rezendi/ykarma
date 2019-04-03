@@ -28,6 +28,7 @@ router.get('/setup', function(req, res, next) {
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
     util.log("set up test data", req.session);
+    return res.json({"success":true});
   } else {
     util.warn("setting up admin account if not already created");
     getAccountForUrl('mailto:'+process.env.ADMIN_EMAIL, (account) => {
@@ -36,9 +37,9 @@ router.get('/setup', function(req, res, next) {
       }
       var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Admin"}', '0x00', 'mailto:'+process.env.ADMIN_EMAIL);
       doSend(method, res, 1, 2);
+      return res.json({"success":true});
     });
   }
-  return res.json({"success":true});
 });
 
 
