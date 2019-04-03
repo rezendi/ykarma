@@ -578,7 +578,7 @@ router.post('/event', async function(req, res, next) {
                      "type": "section",
                      "text": {
                         "type": "mrkdwn",
-                        "text": `*${i}* | ${leader.spendable} YK | _${leaderInfo}_`
+                        "text": `*${i}* | ${leader.spendable} YK | ${leaderInfo}`
                      }
                   }, { "type": "divider" }
                ]);
