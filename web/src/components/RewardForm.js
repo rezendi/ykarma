@@ -74,23 +74,17 @@ class RewardForm extends React.Component {
               </Col>
             </Row>
              <Row>
-              <Col md={1}>
+              <Col md={2}>
                 <label htmlFor="cost">{t('Cost')}</label>
               </Col>
               <Col md={3}>
                 <Field name="cost" component="input" size="8" placeholder="? karma" type="text"/>
               </Col>
-              <Col md={1}>
-                <label htmlFor="quantity">{t('Qty')}</label>
+              <Col md={2}>
+                <label htmlFor="quantity">{t('Quantity')}</label>
               </Col>
               <Col md={3}>
                 <Field name="quantity" component="input" size="4" type="text"/>
-              </Col>
-              <Col md={1}>
-                <label htmlFor="tag">{t('Karma Flavor')}</label>
-              </Col>
-              <Col md={3}>
-                <Field name="tag" component="input" size="8" type="text"/>
               </Col>
             </Row>
             <Row>

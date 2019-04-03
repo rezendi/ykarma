@@ -418,7 +418,7 @@ router.post('/event', async function(req, res, next) {
     
     // Get help
     case req.t("help"):
-      text = req.t("bot_help") + ". You can also view the current leaderboard with 'leaderboard'.";
+      text = req.t("bot_help") + ". " + req.t("You can also view the current leaderboard with 'leaderboard'") + ".";
       break;
     
     // Get balance
@@ -486,7 +486,7 @@ router.post('/event', async function(req, res, next) {
                   "type": "section",
                   "text": {
                      "type": "mrkdwn",
-                     "text": "*Available rewards:*"
+                     "text": "*"+req.t('Available rewards')+":*"
                   }
                },
                {"type": "divider" }
@@ -510,10 +510,10 @@ router.post('/event', async function(req, res, next) {
                "type": "section",
                "text": {
                   "type": "mrkdwn",
-                  "text": "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'."
+                  "text": req.t("To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'")
                }}]
               );
-              postToChannel(slackChannelId, blocks, bot_token, 'Available Rewards');
+              postToChannel(slackChannelId, blocks, bot_token, req.t('Available Rewards'));
             }
           });
         }
@@ -564,10 +564,10 @@ router.post('/event', async function(req, res, next) {
 
     // Leaderboard
     // TODO translate
-    case "leaderboard":
+    case req.t("leaderboard"):
       communities.getLeaderboard(sender.communityId, (error, leaders) => {
          if (error) {
-            postToChannel(slackChannelId, "Could not get leaderboard, sorry!", bot_token);
+            postToChannel(slackChannelId, req.t("Could not get leaderboard, sorry!"), bot_token);
          } else {
             var blocks = [];
             for (var i=0; i<leaders.length; i++) {
@@ -583,10 +583,10 @@ router.post('/event', async function(req, res, next) {
                   }, { "type": "divider" }
                ]);
             }
-            postToChannel(slackChannelId, blocks, bot_token, 'Leaderboard');
+            postToChannel(slackChannelId, blocks, bot_token, req.t('Leaderboard'));
          }
       });
-      text = "Getting leaderboard…";
+      text = req.t("Getting leaderboard…");
       break;
       
     // Flavors

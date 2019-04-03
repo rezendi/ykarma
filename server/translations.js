@@ -42,6 +42,12 @@ const resources = {
       "Attempting purchase…" : "Attempting purchase…",
       "flavors" : "flavors",
       "Sorry, I didn't understand you. You can ask for help with 'help'" : "Sorry, I didn't understand you. You can ask for help with 'help'",
+      "leaderboard" : "leaderboard",
+      "You can also view the current leaderboard with 'leaderboard'" : "You can also view the current leaderboard with 'leaderboard'",
+      "Could not get leaderboard, sorry!" : "Could not get leaderboard, sorry!",
+      "Getting leaderboard…" : "Getting leaderboard…",
+      "Available rewards" : "Available rewards",
+      "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'" : "To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'",
       
       // Emails
       
