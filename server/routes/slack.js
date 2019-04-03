@@ -418,7 +418,7 @@ router.post('/event', async function(req, res, next) {
     
     // Get help
     case req.t("help"):
-      text = req.t("bot_help");
+      text = req.t("bot_help") + ". You can also view the current leaderboard with 'leaderboard'.";
       break;
     
     // Get balance

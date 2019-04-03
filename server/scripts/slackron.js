@@ -32,8 +32,8 @@ function populateSlack() {
     } else {
       for (var i = 1; i <= result; i++) {
         eth.getCommunityFor(i, (community) => {
-          const metadata = community.metadata || {};
-          const slackTeams = metadata.slackTeams || [];
+          let metadata = community.metadata || {};
+          let slackTeams = metadata.slackTeams || [];
           for (var j=0; j<slackTeams.length; j++) {
             populateTeam(community.id, slackTeams[j]);
           }
@@ -52,21 +52,31 @@ function populateSlack() {
 // for the moment, arbitrary limit of 256 users
 
 async function populateTeam(communityId, teamId) {
-  const docRef = firebase.db.collection('slackTeams').doc(teamId);
-  const doc = await docRef.get();
-  const token = doc.data().token;
-  const url = `https://slack.com/api/users.list?limit=256&token=${token}&include_locale=true`;
-  const response = await fetch(url);
-  const json = await response.json();
+  let docRef = firebase.db.collection('slackTeams').doc(teamId);
+  let doc = await docRef.get();
+  let token = doc.data().token;
+  let url = `https://slack.com/api/users.list?limit=256&token=${token}&include_locale=true`;
+  let response = await fetch(url);
+  let json = await response.json();
   if (!json.ok) {
     return console.log("user list failed", json.error);
   }
-  const members = json.members || [];
+  let members = json.members || [];
   for (var i=0; i<members.length; i++) {
-    const member = members[i];
+    let member = members[i];
     // console.log("member", member);
     if (!member.deleted && !member.profile.bot_id && member.name!=="slackbot") {
       addUserIfAppropriate(communityId, member.team_id, member.id, member.profile.email, member.real_name);
+      // update info from slack
+      var userDocRef = firebase.db.collection('slackUsers').doc(`#${member.team_id}-${member.id}`);
+      userDocRef.set({
+          'name'  : member.name,
+          'userId': member.id,
+          'teamId': member.team_id,
+          'avatar': member.profile.image_72,
+          'locale': member.profile.locale,
+          'email' : member.profile.email,
+      }, { merge: true });
     }
   }
 }
@@ -77,7 +87,7 @@ async function populateTeam(communityId, teamId) {
 // create a YK account for their slack URL, add their email
 
 function addUserIfAppropriate(communityId, teamId, userId, userEmail, userName) {
-  const slackUrl = `slack:${teamId}-${userId}`;
+  let slackUrl = `slack:${teamId}-${userId}`;
   var method = eth.contract.methods.accountForUrl(slackUrl);
   method.call(function(error, result) {
     if (error) {
@@ -92,7 +102,7 @@ function addUserIfAppropriate(communityId, teamId, userId, userEmail, userName) 
         console.log("no email for", userName);
         addNewUser(communityId, teamId, userId, userEmail, userName);
       }
-      const emailUrl = `mailto:${userEmail}`;
+      let emailUrl = `mailto:${userEmail}`;
       var method2 = eth.contract.methods.accountForUrl(emailUrl);
       method2.call(function(error, result) {
         if (error) {
@@ -114,7 +124,7 @@ function addUserIfAppropriate(communityId, teamId, userId, userEmail, userName) 
 
 function addNewUser(communityId, teamId, userId, userEmail, userName) {
   console.log("adding new slack user with email", userEmail);
-  const slackUrl = `slack:${teamId}-${userId}`;
+  let slackUrl = `slack:${teamId}-${userId}`;
   var method = eth.contract.methods.addNewAccount(
     communityId,
     '',
@@ -132,7 +142,7 @@ function addNewUser(communityId, teamId, userId, userEmail, userName) {
         console.log("newly generated account id", accountId);
         if (userEmail && userEmail.length === 0 || userEmail.indexOf('@') > 0) {
           console.log("adding email to newly generated account", userEmail);
-          const emailUrl = `mailto:${userEmail}`;
+          let emailUrl = `mailto:${userEmail}`;
           var method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
           doSend(method3);
         }
