@@ -573,7 +573,7 @@ router.post('/event', async function(req, res, next) {
             for (var i=0; i<leaders.length; i++) {
                let leader = leaders[i];
                let leaderInfo = util.getSlackUserIdFrom(leader.urls) ? `<@${util.getSlackUserIdFrom(leader.urls)}>` : leader.urls;
-               blocks.concat([
+               blocks = blocks.concat([
                   {
                      "type": "section",
                      "text": {
@@ -582,8 +582,8 @@ router.post('/event', async function(req, res, next) {
                      }
                   }, { "type": "divider" }
                ]);
-              postToChannel(slackChannelId, blocks, bot_token, 'Leaderboard');
             }
+            postToChannel(slackChannelId, blocks, bot_token, 'Leaderboard');
          }
       });
       text = "Getting leaderboard…";
