@@ -197,7 +197,7 @@ function getLeaderboard(communityId, callback) {
             if (leaders.length >= accountCount) {
               // console.log('accounts', accounts);
               leaders = leaders.filter(a => !a.filterOut);
-              leaders = leaders.sort((a,b) => { return a.spendable - b.spendable });
+              leaders = leaders.sort((a,b) => { return b.spendable - a.spendable });
               let maxLength = leaders.length < 10 ? 3 : leaders.length < 20 ? 5 : 10;
               leaders.length = Math.min(leaders.length, maxLength);
               callback(null, leaders);
