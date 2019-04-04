@@ -54,7 +54,8 @@ function getCommunityData(community, callback) {
     } else if (parseInt(accountCount) === 0) {
       callback(community);
     } else {
-      for (var i = 0; i < accountCount; i++) {
+      for (var i = 0; i < accountCount+2; i++) {
+        console.log("idx", i);
         let method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
         method2.call(function(error2, result2) {
           if (error2) {
@@ -63,7 +64,7 @@ function getCommunityData(community, callback) {
             let account = eth.getAccountFromResult(result2);
             getAccountData(account, function(hydratedAccount) {
               // console.log("hydrated", hydratedAccount);
-              console.log(`idx ${i} id ${account.id} urls`, account.urls);
+              console.log(`id ${account.id} urls`, account.urls);
               community.accounts.push(hydratedAccount);
               if (community.accounts.length >= parseInt(accountCount)) {
                 callback(community);

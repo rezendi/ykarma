@@ -125,7 +125,7 @@ function addUserIfAppropriate(communityId, teamId, userId, userEmail, userName) 
 function addNewUser(communityId, teamId, userId, userEmail, userName) {
   console.log("adding new slack user with email", userEmail);
   let slackUrl = `slack:${teamId}-${userId}`;
-  var method = eth.contract.methods.addNewAccount(
+  let method = eth.contract.methods.addNewAccount(
     communityId,
     '',
     `{"name":"${userName}"}`,
@@ -133,20 +133,20 @@ function addNewUser(communityId, teamId, userId, userEmail, userName) {
     slackUrl
   );
   doSend(method,1, 2, () => {
-    var method2 = eth.contract.methods.accountForUrl(slackUrl);
+    let method2 = eth.contract.methods.accountForUrl(slackUrl);
     method2.call(function(error, result) {
       if (error) {
         console.log('getAccountForUrl error from '+slackUrl, error);
       } else {
-        var accountId = parseInt(result[0], 10);
+        let accountId = parseInt(result[0], 10);
         console.log("newly generated account id", accountId);
         if (userEmail && userEmail.length === 0 || userEmail.indexOf('@') > 0) {
           console.log("adding email to newly generated account", userEmail);
           let emailUrl = `mailto:${userEmail}`;
-          var method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
+          let method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
           doSend(method3);
         }
-        var replenish = eth.contract.methods.replenish(accountId);
+        let replenish = eth.contract.methods.replenish(accountId);
         doSend(replenish);
       }
     });
