@@ -30,7 +30,7 @@ function doDump() {
             communities.push(hydratedCommunity);
             console.log("result", parseInt(result));
             if (communities.length === parseInt(result)) {
-              const json = '{"version": "' + VERSION + '", "timestamp": " '+ timestamp + '", "communities": ' + JSON.stringify(communities) + '}';
+              let json = '{"version": "' + VERSION + '", "timestamp": " '+ timestamp + '", "communities": ' + JSON.stringify(communities) + '}';
               fs.writeFile(dumpFile, json, 'utf8', (err2) => {
                 if (err2) throw err2;
                 console.log("Dump written", dumpFile);
@@ -46,25 +46,26 @@ function doDump() {
 function getCommunityData(community, callback) {
   community.accounts = [];
   // dump accounts
-  const method = eth.contract.methods.getAccountCount(community.id);
-  method.call(function(error, result) {
-    console.log("account count", result);
+  let method = eth.contract.methods.getAccountCount(community.id);
+  method.call(function(error, accountCount) {
+    console.log("account count", accountCount);
     if (error) {
       console.log('getAccountCount error', error);
-    } else if (parseInt(result) === 0) {
+    } else if (parseInt(accountCount) === 0) {
       callback(community);
     } else {
-      for (var i = 0; i < result; i++) {
-        const method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
+      for (var i = 0; i < accountCount; i++) {
+        let method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
         method2.call(function(error2, result2) {
           if (error2) {
             console.log('accountWithinCommunity error', error2);
           } else {
-            const account = eth.getAccountFromResult(result2);
+            let account = eth.getAccountFromResult(result2);
             getAccountData(account, function(hydratedAccount) {
               // console.log("hydrated", hydratedAccount);
+              console.log(`idx ${i} id ${account.id} urls`, account.urls);
               community.accounts.push(hydratedAccount);
-              if (community.accounts.length === parseInt(result)) {
+              if (community.accounts.length >= parseInt(accountCount)) {
                 callback(community);
               }
             });
@@ -79,7 +80,7 @@ function getAccountData(account, callback) {
   // console.log("account id", account.id);
 
   // TODO: add accessors in YKAccounts to get full giving data
-  const method = eth.contract.methods.lastReplenished(account.id);
+  let method = eth.contract.methods.lastReplenished(account.id);
   method.call(function(error, result) {
     if (error) {
       console.log('lastReplenished error', error);
@@ -92,18 +93,18 @@ function getAccountData(account, callback) {
 
 function getTranchesData(account, callback) {
   // TODO: add accessors in YKAccounts to get full giving data
-  const method = eth.contract.methods.trancheTotalsForId(account.id);
+  let method = eth.contract.methods.trancheTotalsForId(account.id);
   method.call(function(error, totals) {
     if (error) {
       console.log('trancheTotalsForId error', error);
     } else {
-      const method2 = eth.contract.methods.tranchesForId(account.id, 1, totals[0], true);
+      let method2 = eth.contract.methods.tranchesForId(account.id, 1, totals[0], true);
       method2.call(function(error2, result2) {
         if (error2) {
           console.log('tranchesForId sent error', error2);
         } else {
           account.given = JSON.parse(result2);
-          const method3 = eth.contract.methods.tranchesForId(account.id, 1, totals[1], false);
+          let method3 = eth.contract.methods.tranchesForId(account.id, 1, totals[1], false);
           method3.call(function(error3, result3) {
             if (error3) {
               console.log('tranchesForId received error', error2);
@@ -121,7 +122,7 @@ function getTranchesData(account, callback) {
 // TODO get reward parentId, created, and sold -- especially the first is important, but currently breaks the EVM stack limit
 function getRewardsData(account, callback) {
   account.rewards = [];
-  const method = eth.contract.methods.getRewardsCount(account.id, 2);
+  let method = eth.contract.methods.getRewardsCount(account.id, 2);
   method.call(function(error, result) {
     if (error) {
       console.log('getRewardsCount error', error);
@@ -130,7 +131,7 @@ function getRewardsData(account, callback) {
       callback(account);
     } else {
       for (var i = 0; i < result; i++) {
-        const method2 = eth.contract.methods.rewardByIdx(account.id, i, 2);
+        let method2 = eth.contract.methods.rewardByIdx(account.id, i, 2);
         method2.call(function(error2, result2) {
           if (error2) {
             console.log('rewardByIdx error', error2);
