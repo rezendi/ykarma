@@ -54,7 +54,8 @@ function getCommunityData(community, callback) {
     } else if (parseInt(accountCount) === 0) {
       callback(community);
     } else {
-      for (var i = 0; i < accountCount+2; i++) {
+      let realAccountCount = accountCount+2;
+      for (var i = 0; i < realAccountCount; i++) {
         console.log("idx", i);
         let method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
         method2.call(function(error2, result2) {

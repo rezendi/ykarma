@@ -168,6 +168,7 @@ contract YKAccounts is Oracular, YKStructs {
       account2.offerIds.push(account1.offerIds[k]);
     }
     delete account1.offerIds;
+    account1.flags = 0x1; // mark as never logged in
   }
 
 }
