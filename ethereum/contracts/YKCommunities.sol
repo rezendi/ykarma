@@ -45,6 +45,7 @@ contract YKCommunities is Oracular, YKStructs {
   }
   
   function editCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle {
+    require(_id > 0);
     communities[_id].adminAddress  = _adminAddress;
     communities[_id].flags         = _flags;
     communities[_id].domain        = _domain;

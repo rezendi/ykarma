@@ -18,7 +18,6 @@ contract('Paces', function(accounts) {
     await accountData.addOracle(ykarma.address);
     await communityData.addOracle(ykarma.address);
     await rewardData.addOracle(ykarma.address);
-
     await ykarma.loadModeOff();
 
     // add a little data
@@ -182,7 +181,7 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals[7], '90', "Spent 10 giving karma on a reward");
 
     // merge accounts
-    // await ykarma.mergeAccounts(1, 2);
+    await ykarma.mergeAccounts(1, 2);
   });
 });
 

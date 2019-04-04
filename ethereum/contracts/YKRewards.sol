@@ -81,4 +81,15 @@ contract YKRewards is Oracular, YKStructs {
     delete rewards[_id];
   }
   
+  // TODO: replace with something far more efficient!
+  function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
+    for (uint256 i = 1; i <= maxRewardId; i++) {
+      if (rewards[i].ownerId == _id1) {
+        rewards[i].ownerId = _id2;
+      }
+      if (rewards[i].vendorId == _id1) {
+        rewards[i].vendorId = _id2;
+      }
+    }
+  }
 }

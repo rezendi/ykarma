@@ -65,6 +65,7 @@ contract YKAccounts is Oracular, YKStructs {
   }
   
   function editAccount(uint256 _id, address _newAddress, string _newMetadata, bytes32 _newFlags) public onlyOracle {
+    require (_id > 0);
     if (_newAddress != accounts[_id].userAddress) {
       if (accounts[_id].userAddress != 0) {
         delete accountsByAddress[accounts[_id].userAddress];
@@ -141,29 +142,32 @@ contract YKAccounts is Oracular, YKStructs {
     }
   }
 
-  function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
+  function merge(uint256 _id1, uint256 _id2) public onlyOracle {
     // basiclly we zero out account 1 and move it all to account 2
     // don't change communityId, userAddress, flags, or metadata
     
     //first, merge URLs
-    strings.slice memory urls = accounts[_id1].urls.toSlice();
-    string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
-    for(uint256 i = 0; i < separated.length; i++) {
-      separated[i] = urls.split(DELIM.toSlice()).toString();
-      addUrlToAccount(_id2, separated[i]);
+    Account storage account1 = accounts[_id1];
+    Account storage account2 = accounts[_id2];
+
+    strings.slice memory urls1 = account1.urls.toSlice();
+    strings.slice memory delimUrls = DELIM.toSlice().concat(urls1).toSlice();
+    account2.urls = account2.urls.toSlice().concat(delimUrls);
+    for(uint256 i = 0; i <= urls1.count(DELIM.toSlice()); i++) {
+      string memory url = urls1.split(DELIM.toSlice()).toString();
+      removeUrlFromAccount(_id1, url);
+      accountsByUrl[url] = _id2;
     }
 
     // then, merge rewards
-    for (i = accounts[_id1].rewardIds.length-1; i>=0; i--) {
-      uint256 rewardId = accounts[_id1].rewardIds[i];
-      accounts[_id2].rewardIds.push(rewardId);
-      delete accounts[_id1].rewardIds[i];
+    for (uint256 j = 0; j < account1.rewardIds.length; j++) {
+      account2.rewardIds.push(account1.rewardIds[j]);
     }
-    for (i = accounts[_id1].offerIds.length-1; i>=0; i--) {
-      rewardId = accounts[_id1].offerIds[i];
-      accounts[_id2].offerIds.push(rewardId);
-      delete accounts[_id1].offerIds[i];
+    delete account1.rewardIds;
+    for (uint256 k = 0; k < account1.offerIds.length; k++) {
+      account2.offerIds.push(account1.offerIds[k]);
     }
+    delete account1.offerIds;
   }
 
 }

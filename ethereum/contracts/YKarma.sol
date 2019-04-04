@@ -27,18 +27,18 @@ contract YKarma is Oracular, YKStructs {
     loadMode = true;
   }
   
-  function updateContracts(YKTranches _tranches, YKAccounts _accounts, YKCommunities _communities, YKRewards _rewards) onlyOracle public {
-    if (_tranches != address(0)) {
-      trancheData = _tranches;
+  function updateContract(address _address, uint256 idx) onlyOracle public {
+    if (idx==1) {
+      trancheData = YKTranches(_address);
     }
-    if (_accounts != address(0)) {
-      accountData = _accounts;
+    if (idx==2) {
+      accountData = YKAccounts(_address);
     }
-    if (_communities != address(0)) {
-      communityData = _communities;
+    if (idx==3) {
+      communityData = YKCommunities(_address);
     }
-    if (_rewards != address(0)) {
-      rewardData = _rewards;
+    if (idx==4) {
+      rewardData = YKRewards(_address);
     }
   }
 
@@ -185,10 +185,11 @@ contract YKarma is Oracular, YKStructs {
     accountData.deleteAccount(_id);
   }
   
-  // only works if URL list has no common sources?
+  // only works if URL list has no common sources
   function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
-    accountData.mergeAccounts(_id1, _id2);
+    accountData.merge(_id1, _id2);
     trancheData.mergeAccounts(_id1, _id2);
+    rewardData.mergeAccounts(_id1, _id2);
   }
 
   /**

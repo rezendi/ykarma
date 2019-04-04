@@ -202,7 +202,7 @@ contract YKTranches is Oracular, YKStructs {
     }
   }
   
-  // you lose all your givable, but keep your spendable
+  // you lose the merged-in account's givable, but keep its spendable
   // the merged-in account's txns are prepended to your pile
   function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
     //given
