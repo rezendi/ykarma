@@ -147,6 +147,9 @@ contract YKTranches is Oracular, YKStructs {
     uint256[] storage trancheIds = received[_spenderId];
     for (uint256 i=0; i < trancheIds.length; i++) {
       Tranche storage tranche = tranches[trancheIds[i]];
+      if (tranche.available <= 0) {
+        continue;
+      }
       if (!tagsIncludesTag(tranche.tags, _tag)) {
         continue;
       }
@@ -205,22 +208,32 @@ contract YKTranches is Oracular, YKStructs {
   // you lose the merged-in account's givable, but keep its spendable
   // the merged-in account's txns are prepended to your pile
   function mergeAccounts(uint256 _id1, uint256 _id2) public onlyOracle {
-    //given
-    uint256[] memory tranches2 = given[_id2];
+
+    //given: move them from id2 to id1, then reassign
+    uint256[] memory tranches2 = given[_id1];
+    uint256 trancheId;
+    Tranche storage tranche = tranches[0];
     for (uint256 i=0; i < tranches2.length; i++) {
-      tranches[tranches2[i]].sender = _id2;
-      given[_id1].push(tranches2[i]);
+      trancheId = tranches2[i];
+      tranche = tranches[trancheId];
+      tranche.sender = _id2;
+      if (tranche.recipient != _id2) {
+        given[_id2].push(trancheId);
+      }
     }
-    given[_id2] = given[_id1];
     delete given[_id1];
 
     //received
-    tranches2 = received[_id2];
-    for (i=0; i < tranches2.length; i++) {
-      tranches[tranches2[i]].recipient = _id2;
-      received[_id1].push(tranches2[i]);
+    tranches2 = received[_id1];
+    for (uint256 j=0; j < tranches2.length; j++) {
+      trancheId = tranches2[j];
+      tranche = tranches[trancheId];
+      tranche.recipient = _id2;
+      if (tranche.sender == _id1) {
+        tranche.sender = _id2;
+      }
+      received[_id2].push(trancheId);
     }
-    received[_id2] = received[_id1];
     delete received[_id1];
   }
   

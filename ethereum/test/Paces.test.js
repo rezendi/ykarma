@@ -143,16 +143,6 @@ contract('Paces', function(accounts) {
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[0].available, 30, "Karma spent");
     
-    await ykarma.deleteAccount(2);
-    vals = await ykarma.accountForId(2);
-    assert.equal(vals[0], 0);
-
-    vals = await ykarma.communityForId(2);
-    assert.equal(vals[0], 2, "Community not deleted");
-    await ykarma.deleteCommunity(2);
-    vals = await ykarma.communityForId(2);
-    assert.equal(vals[0], 0, "Community deleted");
-    
     // replenish should still fail
     await ykarma.recalculateBalances(1);
     await ykarma.replenish(1);
@@ -181,7 +171,30 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals[7], '90', "Spent 10 giving karma on a reward");
 
     // merge accounts
-    await ykarma.mergeAccounts(1, 2);
+    await ykarma.replenish(2);
+    await ykarma.addNewReward(2, 10, 1, "alpha", '{"name":"My Merged Reward"}', '0x00');
+    vals = await ykarma.accountForId(1);
+    vals = await ykarma.accountForId(2);
+    await ykarma.mergeAccounts(2, 1);
+    vals = await ykarma.accountForId(2);
+    vals = await ykarma.accountForId(1);
+    assert.equal(vals[5], 'mailto:jon@rezendi.com mailto:jay@rezendi.com', "Merged Account URLs");
+    assert.equal(parseInt(vals[6]), 1, "Reward transferred");
+    vals = await ykarma.rewardForId(4);
+    assert.equal(vals[2], 1, "Merge transferred owned reward");
+    vals = await ykarma.rewardForId(6);
+    assert.equal(vals[1], 1, "Merge transferred offered reward");
+    // TODO add more merge tests for tranches -- inspected by eye but need automated testing
+
+    await ykarma.deleteAccount(2);
+    vals = await ykarma.accountForId(2);
+    assert.equal(vals[0], 0, "Account deleted");
+
+    vals = await ykarma.communityForId(2);
+    assert.equal(vals[0], 2, "Community not deleted");
+    await ykarma.deleteCommunity(2);
+    vals = await ykarma.communityForId(2);
+    assert.equal(vals[0], 0, "Community deleted");
   });
 });
 
@@ -200,3 +213,26 @@ function increaseBlock() {
     })
   })
 }
+
+function getAccountFrom(result) {
+  // console.log("result",result);
+  var metadata = {};
+  try { metadata = JSON.parse(result[4] || '{}'); } catch(e) { util.warn("bad metadata", result); }
+  var given = [];
+  try { given = JSON.parse(result[8] || '[]'); } catch(e) { util.warn("bad given", result); }
+  var received = [];
+  try { received = JSON.parse(result[9] || '[]'); } catch(e) { util.warn("bad received", result); }
+  return {
+    id:           parseInt(result[0], 10),
+    communityId:  parseInt(result[1], 10),
+    userAddress:  result[2],
+    flags:        result[3],
+    metadata:     metadata,
+    urls:         result[5],
+    rewards:      parseInt(result[6]),
+    givable:      parseInt(result[7], 10),
+    given:        given,
+    received:     received,
+  };
+}
+
