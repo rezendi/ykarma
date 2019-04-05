@@ -60,7 +60,7 @@ describe('Account', function () {
     api.get('/api/accounts/setup?ykid=2').expect(200).end((err, res) => {
       if (err) done (err);
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
-      api.get('/api/accounts/for/1')
+      api.get('/api/communities/1/accounts')
       .set('Cookie', TestCookies).expect(200)
       .end(function (err, res) {
         if (err) done (err);
