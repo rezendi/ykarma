@@ -525,7 +525,7 @@ function getLongUrlFromShort(shortUrl) {
 }
 
 function hasNeverLoggedIn(account) {
-  let noSlackUrl = !util.getSlackUrlFrom(account.urls);
+  let noSlackUrl = (account.urls || '').indexOf("slack:") >= 0;
   let noWebLogin = account.flags === '0x0000000000000000000000000000000000000000000000000000000000000001';
   return account.id === 0 || (noWebLogin && noSlackUrl);
 }

@@ -494,7 +494,8 @@ router.post('/event', async function(req, res, next) {
 
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
-                let vendorInfo = util.getSlackUserIdFrom(vendor.urls) ? `<@${util.getSlackUserIdFrom(vendor.urls)}>` : vendor.urls;
+                var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
+                vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
                 blocks = blocks.concat([{
                   "type": "section",
                   "text": {
@@ -549,9 +550,11 @@ router.post('/event', async function(req, res, next) {
             util.log("from", vendor);
             email.sendRewardPurchasedEmail(req, reward, sender, vendor);
             email.sendRewardSoldEmail(req, reward, sender, vendor);
-            let vendorSlackUrl = util.getSlackUrlFrom(vendor.urls);
+            var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
+            vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
+            postToChannel(slackChannelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
+            let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, slackTeamId);
             if (vendorSlackUrl) {
-              // TODO check they're on the same slack team
               let buyerInfo = `<@${slackUserId}>`;
               openChannelAndPost(vendorSlackUrl, `You just sold the reward ${util.getRewardInfoFrom(reward)} to ${buyerInfo}!`);
             }
@@ -571,16 +574,15 @@ router.post('/event', async function(req, res, next) {
             var blocks = [];
             for (var i=0; i<leaders.length; i++) {
                let leader = leaders[i];
-               let leaderInfo = util.getSlackUserIdFrom(leader.urls) ? `<@${util.getSlackUserIdFrom(leader.urls)}>` : leader.urls;
-               blocks = blocks.concat([
-                  {
-                     "type": "section",
-                     "text": {
-                        "type": "mrkdwn",
-                        "text": `*${i}* | ${leader.spendable} YK | ${leaderInfo}`
-                     }
-                  }, { "type": "divider" }
-               ]);
+               var leaderInfo = util.getSlackUserIdForTeam(leader.urls, slackTeamId);
+               leaderInfo = leaderInfo ? `<@${leaderInfo}>` : leader.urls;
+               blocks.push({
+                  "type": "section",
+                  "text": {
+                     "type": "mrkdwn",
+                     "text": `*${i}* | ${leader.spendable} YK | ${leaderInfo}`
+                  }
+               });
             }
             postToChannel(slackChannelId, blocks, bot_token, req.t('Leaderboard'));
          }

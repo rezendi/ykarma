@@ -147,7 +147,7 @@ router.post('/purchase', function(req, res, next) {
         util.log("reward purchased", reward);
         email.sendRewardPurchasedEmail(req, reward, req.session.account, vendor);
         email.sendRewardSoldEmail(req, reward, req.session.account, vendor);
-        let vendorSlackUrl = util.getSlackUrlFrom(vendor.urls);
+        let vendorSlackUrl = util.getSlackUrlForSameTeam(vendor.urls, req.session.account.urls);
         if (vendorSlackUrl) {
           var buyerInfo = util.getEmailFrom(req.session.account.urls);
           buyerInfo = buyerInfo ? buyerInfo : buyer.urls;

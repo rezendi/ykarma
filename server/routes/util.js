@@ -52,6 +52,16 @@ function getEmailFrom(urls) {
   return '';
 }
 
+// TODO actually implement this
+function getSlackUrlForSameTeam(urls, comparisonUrls) {
+  return getSlackUrlFrom(urls);
+}
+
+// TODO actually implement this
+function getSlackUrlForTeam(urls, teamId) {
+  return getSlackUrlFrom(urls);
+}
+
 function getSlackUrlFrom(urls) {
   if (urls && urls.indexOf("slack:") >= 0) {
     const urlArray = urls.split(URL_SEPARATOR);
@@ -62,6 +72,11 @@ function getSlackUrlFrom(urls) {
     }
   }
   return '';
+}
+
+// TODO actually implement this
+function getSlackUserIdForTeam(urls, teamId) {
+  return getSlackUserIdFrom(urls);
 }
 
 function getSlackUserIdFrom(urls) {
