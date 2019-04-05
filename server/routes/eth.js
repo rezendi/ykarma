@@ -35,7 +35,6 @@ const getId = function() {
 
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
   var notifying = false;
-  var errored = false;
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
     if (estError) {
       util.warn('error running', method._method);
