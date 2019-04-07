@@ -19,7 +19,7 @@ contract YKStructs {
 
   struct Account {
     uint256 id;
-    uint256 communityId;
+    uint256[] communityIds;
     address userAddress;
     bytes32 flags;
     string metadata;

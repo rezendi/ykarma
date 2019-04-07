@@ -322,28 +322,4 @@ contract YKTranches is Oracular, YKStructs {
     return s2;
   }
 
-  function uint2str(uint i) internal pure returns (string) {
-    if (i == 0) return "0";
-    uint j = i;
-    uint len;
-    while (j != 0){
-      len++;
-      j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint k = len - 1;
-    while (i != 0){
-      bstr[k--] = byte(48 + i % 10);
-      i /= 10;
-    }
-    return string(bstr);
-  }
-  
-  // not currently used
-  function sendMessageOk(Account sender, Account recipient) internal view returns (bool) {
-    if (sender.communityId == recipient.communityId) {
-      return !(sender.flags & FLAG_NO_MESSAGES == FLAG_NO_MESSAGES);
-    }
-    return !(sender.flags & FLAG_NO_EXTERNAL_MESSAGES == FLAG_NO_EXTERNAL_MESSAGES);
-  }
 }

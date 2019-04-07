@@ -41,11 +41,13 @@ contract YKRewards is Oracular, YKStructs {
   }
   
   function editReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle returns (uint256) {
-    rewards[_id].cost     = _cost;
-    rewards[_id].quantity = _quantity;
-    rewards[_id].tag      = _tag;
-    rewards[_id].metadata = _metadata;
-    rewards[_id].flags    = _flags;
+    Reward memory reward = rewardForId(_id);
+    require (reward.id > 0 && reward.ownerId == 0);
+    reward.cost     = _cost;
+    reward.quantity = _quantity;
+    reward.tag      = _tag;
+    reward.metadata = _metadata;
+    reward.flags    = _flags;
   }
   
   function redeem(uint256 _spenderId, uint256 _rewardId) public onlyOracle returns (uint256) {
