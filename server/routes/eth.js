@@ -37,13 +37,13 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
   var notifying = false;
   method.estimateGas({gas: GAS}, function(estError, gasAmount) {
     if (estError) {
-      util.warn('error running', method._method);
+      util.warn('error running', method);
       util.warn('est error', estError);
       if (callback) { return callback(estError); }
       return res.json({'success':false, 'error':estError});
     }
     method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
-      util.warn('error running', method._method);
+      util.warn('error running', method);
       util.warn('send error', error);
       if (callback) { return callback(error); }
       return res.json({'success':false, 'error':error});

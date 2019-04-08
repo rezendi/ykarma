@@ -62,47 +62,36 @@ router.get('/me', async function(req, res, next) {
   if (req.session.ykid) {
     eth.getAccountFor(req.session.ykid, (account) => {
       getSessionFromAccount(req, account);
-
-      // set account as active, and replenish, if not
-      if (hasNeverLoggedIn(account)) {
-        util.warn("Marking account active and replenishing");
-        var method = eth.contract.methods.editAccount(
-          account.id,
-          account.userAddress,
-          JSON.stringify(account.metadata),
-          util.BYTES_ZERO
-        );
-        eth.doSend(method, res, 1, 2, () => {
-          redis.del(`account-${account.id}`); // clear our one redis cache
-          method = eth.contract.methods.replenish(account.id);
-          eth.doSend(method, res, 1, 2, () => {
-            // populate community and tranche data
-            eth.getCommunityFor(req.session.ykcid, (community) => {
-              account.community = community;
-              hydrateAccount(account, () => {
-                var method = eth.contract.methods.availableToSpend(account.id, '');
-                method.call(function(error, result) {
-                  account.spendable = error ? account.spendable : result;
-                  res.json(account);
-                });
+      eth.getCommunityFor(req.session.ykcid, (community) => {
+        account.community = community;
+        hydrateAccount(account, async () => {
+          var method = eth.contract.methods.availableToSpend(account.id, '');
+          try {
+            let spendable = await method.call();
+            account.spendable = parseInt(spendable);
+            // set account as active, and replenish, if not
+            if (!hasNeverLoggedIn(account)) {
+              return res.json(account);
+            }
+            util.warn("Marking account active and replenishing");
+            method = eth.contract.methods.editAccount(
+              account.id,
+              account.userAddress,
+              JSON.stringify(account.metadata),
+              util.BYTES_ZERO
+            );
+            eth.doSend(method, res, 1, 2, () => {
+              redis.del(`account-${account.id}`); // clear our one redis cache
+              method = eth.contract.methods.replenish(account.id);
+              eth.doSend(method, res, 1, 2, () => {
+                res.json(account);
               });
             });
-          });
+          } catch(error) {
+            util.warn("account config error", error);
+          }
         });
-      } else {
-        // populate community and tranche data
-        eth.getCommunityFor(req.session.ykcid, (community) => {
-          account.community = community;
-          hydrateAccount(account, () => {
-            var method = eth.contract.methods.availableToSpend(account.id, '');
-            method.call(function(error, result) {
-              account.spendable = error ? account.spendable : result;
-              res.json(account);
-            });
-          });
-        });
-      }
-
+      });
     });
   } else {
     var url = req.session.email || req.session.handle;
@@ -124,22 +113,24 @@ router.get('/me', async function(req, res, next) {
 
 router.get('/full', async function(req, res, next) {
   var method = eth.contract.methods.trancheTotalsForId(req.session.ykid);
-  // possibly eventually page these
-  method.call(function(error, totals) {
+  try {
+    let totals = await method.call();
     method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[0], true);
-    method.call(function(error, given) {
-      method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[1], false);
-      method.call(function(error, received) {
-        var account = req.session.account;
-        account.given = JSON.parse(given);
-        account.received = JSON.parse(received);
-        hydrateAccount(account, () => {
-          console.log("hydrated", account);
-          res.json(account);
-        });
-      });
+    // possibly eventually page these
+    let given = await method.call();
+    method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[1], false);
+    let received = await method.call();
+    var account = req.session.account;
+    account.given = JSON.parse(given);
+    account.received = JSON.parse(received);
+    hydrateAccount(account, () => {
+      console.log("hydrated", account);
+      res.json(account);
     });
-  });
+  } catch(error) {
+    util.warn("error getting full profile", error);
+    res.json(req.session.account);
+  }
 });
 
 /* GET account details */
@@ -382,18 +373,16 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-function getAccountForUrl(url, callback) {
+async function getAccountForUrl(url, callback) {
   var method = eth.contract.methods.accountForUrl(url);
   // util.log("method", method);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getAccountForUrl error', error);
-    } else {
-      util.debug('getAccountForUrl result', result);
-      var account = eth.getAccountFromResult(result);
-      callback(account);
-    }
-  });
+  try {
+    let result = await method.call();
+    var account = eth.getAccountFromResult(result);
+    callback(account);
+  } catch(error) {
+    util.debug('getAccountForUrl result', result);
+  }
 }
 
 function hydrateAccount(account, done) {
