@@ -16,7 +16,7 @@ router.get('/setup', function(req, res, next) {
     if (community.id !== 0) {
       return res.json({"success":true, 'message':'Redundant'});
     }
-    var method = eth.contract.methods.addEditCommunity(0, 0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
+    var method = eth.contract.methods.addEditCommunity(0, util.ADDRESS_ZERO, util.BYTES_ZERO, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
     eth.doSend(method, res);
   });
 });
@@ -102,7 +102,7 @@ router.post('/create', function(req, res, next) {
       return res.json({"success":false, "error": req.t("Not authorized")});
   }
   var community = req.body.community;
-  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : '0x00';
+  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : BYTES_ZERO;
   util.log("community", JSON.stringify(community));
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
@@ -114,8 +114,8 @@ router.post('/create', function(req, res, next) {
   }
   var method = eth.contract.methods.addEditCommunity(
     0,
-    community.addressAdmin,
-    community.flags || '0x00',
+    community.addressAdmin || util.ADDRESS_ZERO,
+    community.flags || util.BYTES_ZERO,
     community.domain || '',
     JSON.stringify(community.metadata),
     tags,
@@ -126,7 +126,7 @@ router.post('/create', function(req, res, next) {
 /* PUT edit community */
 router.put('/update', function(req, res, next) {
   var community = req.body.community;
-  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : '0x00';
+  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : BYTES_ZERO;
   if (req.session.email !== process.env.ADMIN_EMAIL && parseInt(req.session.communityAdminId) !== community.id) {
       return res.json({"success":false, "error": req.t("Not authorized")});
   }
@@ -136,8 +136,8 @@ router.put('/update', function(req, res, next) {
   }
   var method = eth.contract.methods.addEditCommunity(
     parseInt(community.id),
-    community.addressAdmin || 0,
-    community.flags || '0x00',
+    community.addressAdmin || util.ADDRESS_ZERO,
+    community.flags || util.BYTES_ZERO,
     community.domain || '',
     JSON.stringify(community.metadata),
     community.tags || '',

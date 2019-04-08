@@ -70,7 +70,7 @@ router.get('/me', async function(req, res, next) {
           account.id,
           account.userAddress,
           JSON.stringify(account.metadata),
-          '0x00'
+          util.BYTES_ZERO
         );
         eth.doSend(method, res, 1, 2, () => {
           redis.del(`account-${account.id}`); // clear our one redis cache
@@ -259,7 +259,7 @@ router.put('/update', function(req, res, next) {
     account.id,
     account.userAddress,
     JSON.stringify(account.metadata),
-    account.flags || '0x00'
+    account.flags || util.BYTES_ZERO
   );
   eth.doSend(method, res);
   redis.del(`account-${account.id}`); // clear our one cache

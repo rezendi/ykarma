@@ -196,8 +196,8 @@ router.get('/team_auth', function(req, res, next) {
         community.metadata.slackTeams = slackTeams;
         var method = eth.contract.methods.addEditCommunity(
           parseInt(community.id),
-          community.addressAdmin || 0,
-          community.flags || '0x00',
+          community.addressAdmin || util.ADDRESS_ZERO,
+          community.flags || util.BYTES_ZERO,
           community.domain || '',
           JSON.stringify(community.metadata),
           community.tags || '',

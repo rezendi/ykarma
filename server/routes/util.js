@@ -1,6 +1,10 @@
 const URL = require('url').URL;
+
 const URL_SEPARATOR = ' ';
 const OLD_URL_SEPARATOR = '||';
+
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';
+const BYTES_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 const isValidUrl = (string) => {
   try {
@@ -100,6 +104,8 @@ module.exports = {
   warn:       warn,
   separator:  URL_SEPARATOR,
   oldSeparator: OLD_URL_SEPARATOR,
+  ADDRESS_ZERO: ADDRESS_ZERO,
+  BYTES_ZERO: BYTES_ZERO,
   getEmailFrom : getEmailFrom,
   getSlackUrlFrom : getSlackUrlFrom,
   getSlackUserIdFrom : getSlackUserIdFrom,
