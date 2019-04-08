@@ -10,31 +10,27 @@ var TestCookies = [];
 
 describe('Slack', function () {
 
-  it('test open channel and post', function (done) {
+  it('test open channel and post', async function (done) {
     var slackUrl = "slack:TEST-USER1";
     var text = `Mocha testing open channel and post`;
     slack.openChannelAndPost(slackUrl, text);
-    setTimeout(() => {
-      api.get('/api/slack/lastOpenConversation')
-        .end(function (err, res) {
-          if (err) done (err);
-          var last = JSON.parse(res.text).last;
-          expect(last.users).to.equal("USER1");
-          expect(last.token).to.equal("test");
-          api.get('/api/slack/lastPostMessage')
-            .end(function (err, res) {
-              if (err) done (err);
-              last = JSON.parse(res.text).last;
-              expect(last.text.split(" ")[0]).to.equal("Mocha");
-              expect(last.channel).to.equal("TestChannel");
-              expect(last.token).to.equal("test");
-              api.get('/api/slack/lastPostMessage')
-                .end(function (err, res) {
-                  if (err) done (err);
-                  done();
-                });
-            });
-        });
+    setTimeout(async () => {
+      try {
+        var res = await api.get('/api/slack/lastOpenConversation');
+        var last = JSON.parse(res.text).last;
+        expect(last.users).to.equal("USER1");
+        expect(last.token).to.equal("test");
+        res = api.get('/api/slack/lastPostMessage');
+        console.log("test", res.text);
+        last = JSON.parse(res.text).last;
+        expect(last.text.split(" ")[0]).to.equal("Mocha");
+        expect(last.channel).to.equal("TestChannel");
+        expect(last.token).to.equal("test");
+        res = api.get('/api/slack/lastPostMessage');
+        done();
+      } catch(err) {
+        done(err);
+      }
     }, 500);
   });
 

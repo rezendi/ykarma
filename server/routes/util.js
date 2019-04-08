@@ -108,6 +108,9 @@ module.exports = {
   BYTES_ZERO: BYTES_ZERO,
   getEmailFrom : getEmailFrom,
   getSlackUrlFrom : getSlackUrlFrom,
+  getSlackUrlForTeam : getSlackUrlForTeam,
+  getSlackUrlForSameTeam : getSlackUrlForSameTeam,
   getSlackUserIdFrom : getSlackUserIdFrom,
+  getSlackUserIdForTeam : getSlackUserIdForTeam,
   getRewardInfoFrom: getRewardInfoFrom
 };
