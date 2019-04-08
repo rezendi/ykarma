@@ -59,21 +59,16 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
   })
 };
 
-function getAccountFor(id, callback) {
+async function getAccountFor(id, callback) {
   var method = contract.methods.accountForId(id);
   util.log("accountForId", id);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getAccountFor error', error);
-    } else {
-      //console.log('getAccountFor result', result);
-      var account = getAccountFromResult(result);
-      callback(account);
-    }
-  })
-  .catch(function(error) {
-    console.warn('getAccountFor call error ' + id, error);
-  });
+  try {
+    let result = method.call();
+    var account = getAccountFromResult(result);
+    callback(account);
+  } catch(error) {
+    util.warn('getAccountFor error', error);
+  }
 }
 
 function getAccountFromResult(result) {
@@ -120,28 +115,23 @@ function getRewardFromResult(result) {
   };
 }
 
-const getCommunityFor = function (id, callback) {
+const getCommunityFor = async function (id, callback) {
   var method = contract.methods.communityForId(id);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getCommunityFor error', error);
-    } else {
-      //console.log('getCommunityFor result', result);
-      var community = {
-        id:           parseInt(result[0], 10),
-        adminAddress: result[1],
-        flags:        result[2],
-        domain:       result[3],
-        metadata:     JSON.parse(result[4] || '{}'),
-        tags:         result[5],
-        accounts:     parseInt(result[6], 10)
-      };
-      callback(community);
-    }
-  })
-  .catch(function(error) {
-    console.log('getCommunityFor call error ' + id, error);
-  });
+  try {
+    let result = await method.call();
+    var community = {
+      id:           parseInt(result[0], 10),
+      adminAddress: result[1],
+      flags:        result[2],
+      domain:       result[3],
+      metadata:     JSON.parse(result[4] || '{}'),
+      tags:         result[5],
+      accounts:     parseInt(result[6], 10)
+    };
+    callback(community);
+  } catch(error) {
+   util.warn('getCommunityFor error', error);
+  }
 };
 
 

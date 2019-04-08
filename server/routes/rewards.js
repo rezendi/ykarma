@@ -66,29 +66,27 @@ router.get('/vendedBy/:accountId', function(req, res, next) {
   return getListOfRewards(2, vendorId, res);
 });
 
-function getListOfRewards(idType, id, res) {
+async function getListOfRewards(idType, id, res) {
   var rewards = [];
   const method = eth.contract.methods.getRewardsCount(id, idType);
-  method.call(function(error, totalRewards) {
-    if (error) {
-      util.log('getListOfRewards error', error);
-      return res.json({"success":false, "error": error});
-    } else {
-      // util.log('getListOfRewards result', totalRewards);
-      if (parseInt(totalRewards)===0) {
-        return res.json({"success":true, "rewards":[]});
-      }
-      for (var i = 0; i < parseInt(totalRewards); i++) {
-        getRewardByIndex(idType, id, i, (reward) => {
-          rewards.push(reward);
-          if (rewards.length >= parseInt(totalRewards)) {
-            // console.log('rewards', rewards);
-            return res.json({"success":true, "rewards":rewards});
-          }
-        });
-      }
+  try {
+    let totalRewards = await method.call();
+    if (parseInt(totalRewards)===0) {
+      return res.json({"success":true, "rewards":[]});
     }
-  });
+    for (var i = 0; i < parseInt(totalRewards); i++) {
+      getRewardByIndex(idType, id, i, (reward) => {
+        rewards.push(reward);
+        if (rewards.length >= parseInt(totalRewards)) {
+          // console.log('rewards', rewards);
+          return res.json({"success":true, "rewards":rewards});
+        }
+      });
+    }
+  } catch(error) {
+    util.log('getListOfRewards error', error);
+    return res.json({"success":false, "error": error});
+  }
 }
 
 /* POST create a reward */
@@ -164,30 +162,26 @@ router.post('/purchase', function(req, res, next) {
 /**
  * Ethereum methods
  */
-function getRewardFor(id, callback) {
+async function getRewardFor(id, callback) {
   var method = eth.contract.methods.rewardForId(id);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getRewardFor error', error);
-      callback({});
-    } else {
-      //console.log('getRewardFor result', result);
-      var reward = eth.getRewardFromResult(result);
-      callback(reward);
-    }
-  });
+  try {
+    let result = await method.call();
+    var reward = eth.getRewardFromResult(result);
+    callback(reward);
+  } catch(erro) {
+    util.warn('getRewardFor error', error);
+  }
 }
 
-function getRewardByIndex(idType, accountId, idx, callback) {
+async function getRewardByIndex(idType, accountId, idx, callback) {
   const method = eth.contract.methods.rewardByIdx(accountId, idx, idType);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getRewardByIndex error', error);
-    } else {
-      var reward = eth.getRewardFromResult(result);
-      callback(reward);
-    }
-  });
+  try {
+    let result = await method.call();
+    var reward = eth.getRewardFromResult(result);
+    callback(reward);
+  } catch(erro) {
+    util.warn('getRewardByIndex error', error);
+  }
 }
 
 

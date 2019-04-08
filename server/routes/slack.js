@@ -348,7 +348,7 @@ async function getAccountFor(id) {
    try {
       let method = eth.contract.methods.accountForId(id);
       var result = await method.call();
-      util.debug('getAccountForUrl result', result);
+      //util.debug('getAccountFor result', result);
       let account = eth.getAccountFromResult(result);
       return account;
    } catch(err) {
@@ -360,7 +360,7 @@ async function getAccountForUrl(url) {
    try {
       let method = eth.contract.methods.accountForUrl(url);
       var result = await method.call();
-      util.debug('getAccountForUrl result', result);
+      //util.debug('getAccountForUrl result', result);
       let account = eth.getAccountFromResult(result);
       return account;
    } catch(err) {
@@ -431,10 +431,11 @@ router.post('/event', async function(req, res, next) {
          util.log('getAvailable error', error);
          postToChannel(slackChannelId, req.t("Error getting available-to-spend amount"), bot_token);
       }
-      return;
+      return res.json({text:text});
     
     // Send karma
     case req.t("send"):
+      text = req.t("Sending…");
       var vals = await prepareToSendKarma(req, slackTeamId, slackUserId, incoming);
       if (vals.error) {
         text = vals.error;
@@ -464,15 +465,17 @@ router.post('/event', async function(req, res, next) {
       postToChannel(req.body.event.channel, text, bot_token);
       let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
       try {
-         let totalRewards = await rewardsMethod.call();
+        let totalRewards = await rewardsMethod.call();
+        console.log("total rewards", totalRewards);
         if (parseInt(totalRewards)===0) {
           util.log("No rewards available");
           postToChannel(slackChannelId, req.t("No rewards available"), bot_token);
-          return;
+          return res.json({text:text});
         }
         var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
           rewards.getRewardByIndex(0, 0, i, async (reward) => {
+            console.log("reward", reward);
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
               available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
@@ -516,7 +519,7 @@ router.post('/event', async function(req, res, next) {
          util.log('getListOfRewards error', error);
          postToChannel(slackChannelId, req.t("Error getting rewards"), bot_token);
       }
-      return;
+      return res.json({text:text});
 
     // Make a purchase
     case req.t("purchase"):

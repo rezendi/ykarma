@@ -25,23 +25,25 @@ router.get('/setup', function(req, res, next) {
 router.get('/', function(req, res, next) {
   var communities = [];
   var method = eth.contract.methods.getCommunityCount();
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getCommunityCount error', error);
-      res.json({"success":false, "error": error});
-    } else {
-      util.log('getCommunityCount result', result);
-      for (var i = 0; i < result; i++) {
-        eth.getCommunityFor(i+1, (community) => {
-          communities.push(community);
-          //console.log('callback', communities);
-          if (communities.length >= result) {
-            res.json(communities);
-          }
-        });
-      }
+  try {
+    let communityCount = method.call();
+    util.log('getCommunityCount result', communityCount);
+    if (communityCount===0) {
+      return res.json([]);
     }
-  });
+    for (var i = 0; i < communityCount; i++) {
+      eth.getCommunityFor(i+1, (community) => {
+        communities.push(community);
+        //console.log('callback', communities);
+        if (communities.length >= communityCount) {
+          res.json(communities);
+        }
+      });
+    }
+  } catch(error) {
+    console.log('getCommunityCount error', error);
+    res.json({"success":false, "error": error});
+  }
 });
 
 /* GET community details */
@@ -63,24 +65,26 @@ router.get('/:communityId/accounts', function(req, res, next) {
   util.log("getting accounts for",communityId);
   var accounts = [];
   var method = eth.contract.methods.getAccountCount(communityId);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('getAccountCount error', error);
-      res.json([]);
-    } else {
-      util.log('getAccountCount result', result);
-      for (var i = 0; i < result; i++) {
-        getAccountWithinCommunity(communityId, i, (account) => {
-          accounts.push(account);
-          if (accounts.length >= result) {
-            // console.log('accounts', accounts);
-            var activeAccounts = accounts.filter(acct => !hasNeverLoggedIn(acct));
-            return res.json(activeAccounts);
-          }
-        });
-      }
+  try {
+    let accountCount = method.call();
+    util.log('getAccountCount result', accountCount);
+    if (accountCount===0) {
+      return res.json([]);
     }
-  });
+    for (var i = 0; i < accountCount; i++) {
+      getAccountWithinCommunity(communityId, i, (account) => {
+        accounts.push(account);
+        if (accounts.length >= accountCount) {
+          // console.log('accounts', accounts);
+          var activeAccounts = accounts.filter(acct => !hasNeverLoggedIn(acct));
+          return res.json(activeAccounts);
+        }
+      });
+    }
+  } catch(error) {
+    util.warn('getAccountCount error', error);
+    res.json([]);
+  }
 });
 
 /* GET community leaderboard */
@@ -177,39 +181,41 @@ function hasNeverLoggedIn(account) {
   return account.id === 0 || (noWebLogin && noSlackUrl);
 }
 
-function getLeaderboard(communityId, callback) {
+async function getLeaderboard(communityId, callback) {
   var leaders = [];
   var method = eth.contract.methods.getAccountCount(communityId);
-  method.call(function(error, accountCount) {
-    if (error) {
-      util.warn('getAccountCount error', error);
-      callback(error, null);
-    } else {
-      util.log('getAccountCount result', accountCount);
-      for (var i = 0; i < accountCount; i++) {
-        getAccountWithinCommunity(communityId, i, (account) => {
-          method = eth.contract.methods.availableToSpend(account.id, '');
-          method.call(function(error, spendable) {
-            leaders.push({
-              id: account.id,
-              metadata: account.metadata || {},
-              urls: account.urls || '',
-              spendable: parseInt(spendable) || 0,
-              filterOut: hasNeverLoggedIn(account),
-            });
-            if (leaders.length >= accountCount) {
-              // console.log('accounts', accounts);
-              leaders = leaders.filter(a => !a.filterOut);
-              leaders = leaders.sort((a,b) => { return b.spendable - a.spendable });
-              let maxLength = leaders.length < 10 ? 3 : leaders.length < 20 ? 5 : 10;
-              leaders.length = Math.min(leaders.length, maxLength);
-              callback(null, leaders);
-            }
+  try {
+    let accountCount = method.call();
+    util.log('getAccountCount result', accountCount);
+    for (var i = 0; i < accountCount; i++) {
+      getAccountWithinCommunity(communityId, i, async (account) => {
+        method = eth.contract.methods.availableToSpend(account.id, '');
+        try {
+          let spendable = await method.call();
+          leaders.push({
+            id: account.id,
+            metadata: account.metadata || {},
+            urls: account.urls || '',
+            spendable: parseInt(spendable) || 0,
+            filterOut: hasNeverLoggedIn(account),
           });
-        });
-      }
+          if (leaders.length >= accountCount) {
+            // console.log('accounts', accounts);
+            leaders = leaders.filter(a => !a.filterOut);
+            leaders = leaders.sort((a,b) => { return b.spendable - a.spendable });
+            let maxLength = leaders.length < 10 ? 3 : leaders.length < 20 ? 5 : 10;
+            leaders.length = Math.min(leaders.length, maxLength);
+            callback(null, leaders);
+          }
+        } catch(error) {
+          util.warn("spendable error", error);
+        }
+      });
     }
-  });
+  } catch(error) {
+    util.warn('getAccountCount error', error);
+    callback(error, null);
+  }
 }
 
 module.exports = {

@@ -232,6 +232,6 @@ contract YKarma is Oracular, YKStructs {
       uint256 accountRewardId = _idType == 1 ? accountData.accountForId(_id).rewardIds[_idx] : accountData.accountForId(_id).offerIds[_idx];
       return rewardForId(accountRewardId);
     }
-    return rewardForId(_id);
+    return rewardForId(_id+1);
   }
 }
