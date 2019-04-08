@@ -140,7 +140,7 @@ router.post('/purchase', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": req.t("Not logged in")});
   }
-  var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
+  var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId, req.session.ykcid);
   getRewardFor(req.body.rewardId, (reward) => {
     eth.doSend(method, res, 1, 2, () => {
       eth.getAccountFor(reward.vendorId, (vendor) => {

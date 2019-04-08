@@ -84,9 +84,17 @@ function getAccountFromResult(result) {
   try { given = JSON.parse(result[8] || '[]'); } catch(e) { util.warn("bad given", result); }
   var received = [];
   try { received = JSON.parse(result[9] || '[]'); } catch(e) { util.warn("bad received", result); }
+
+  // hack! hack! move to more elegant handling here once we're satisfied the smart contracts work
+  var communityIds = [];
+  try { communityIds = JSON.parse(result[1] || '[]'); } catch(e) { util.warn("bad communityIds", result); }
+  if (communityIds.length===0) {
+   communityIds = [0];
+  }
+
   return {
     id:           parseInt(result[0], 10),
-    communityId:  parseInt(result[1], 10),
+    communityIds: communityIds,
     userAddress:  result[2],
     flags:        result[3],
     metadata:     metadata,

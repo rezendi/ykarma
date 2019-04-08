@@ -55,7 +55,7 @@ contract YKarma is Oracular, YKStructs {
    */
 
   function give(uint256 _giverId, uint256 _communityId, string _url, uint256 _amount, string _message) public onlyOracle {
-    require (_giverId > 0);
+    require (_giverId > 0 && _communityId > 0 && _amount > 0);
     Account memory giver = accountData.accountForId(_giverId);
     require (communityData.validateGive(giver, _communityId, _url, _message));
     uint256 available = trancheData.availableToGive(_giverId);
@@ -68,7 +68,7 @@ contract YKarma is Oracular, YKStructs {
     trancheData.performGive(giver, recipient, _amount, community.tags, _message);
   }
 
-  function purchase(uint256 _buyerId, uint256 _communityId, uint256 _rewardId) public onlyOracle {
+  function purchase(uint256 _buyerId, uint256 _rewardId, uint256 _communityId) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_rewardId);
     require(_buyerId > 0 && reward.ownerId == 0); // for now
     Account memory buyer = accountData.accountForId(_buyerId);
@@ -201,7 +201,6 @@ contract YKarma is Oracular, YKStructs {
     accountData.addRewardToAccount(_vendorId, rewardId);
   }
   
-  
   function rewardForId(uint256 _id) public onlyOracle view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string)  {
     Reward memory reward = rewardData.rewardForId(_id);
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.quantity, reward.flags, reward.tag, reward.metadata);
@@ -218,6 +217,7 @@ contract YKarma is Oracular, YKStructs {
     rewardData.deleteRewardRecord(_id);
   }
   
+  // this has evolved to become very hack-y and should be refactored
   function getRewardsCount(uint256 _id, uint256 _idType) public view onlyOracle returns (uint256) {
     if (_idType > 0) {
       Account memory account = accountData.accountForId(_id);
@@ -226,6 +226,7 @@ contract YKarma is Oracular, YKStructs {
     return rewardData.getMaxRewardId();
   }
 
+  // this has evolved to become very hack-y and should be refactored
   function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
     if (_idType > 0) {
       uint256 accountRewardId = _idType == 1 ? accountData.accountForId(_id).rewardIds[_idx] : accountData.accountForId(_id).offerIds[_idx];

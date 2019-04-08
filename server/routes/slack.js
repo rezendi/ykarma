@@ -194,7 +194,7 @@ router.get('/team_auth', function(req, res, next) {
         }
         slackTeams.push(teamId);
         community.metadata.slackTeams = slackTeams;
-        var method = eth.contract.methods.editExistingCommunity(
+        var method = eth.contract.methods.addEditCommunity(
           parseInt(community.id),
           community.addressAdmin || 0,
           community.flags || '0x00',
@@ -308,7 +308,7 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
   // get the sender  
   let senderUrl = `slack:${team_id}-${user_id}`;
   let sender = await getAccountForUrl(senderUrl);
-  if (sender.id === 0 || sender.communityId === 0) {
+  if (sender.id === 0 || sender.communityIds.length === 0) {
     util.log("failed sender url", senderUrl);
     return { error: req.t("Sorry! Your YKarma account is not set up for sending here"), sender:sender, amount:amount };
   }
@@ -321,17 +321,21 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
   let recipientUrl = `slack:${team_id}-${recipientId}`;
   util.warn("recipientUrl is", recipientUrl);
   let recipient = await getAccountForUrl(recipientUrl);
-  if (recipient.id === 0 || recipient.communityId === 0) {
+  if (recipient.id === 0 || recipient.communityIds.length === 0) {
     return { error: req.t("Sorry! That YKarma account is not set up for receiving here"), sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
   }
   
-  return { sender:sender, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
+  // TODO get community ID from slack team
+  let communityId = sender.communityIds[0];
+  
+  return { sender:sender, communityId: communityId, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
 }
 
 function sendKarma(res, vals, callback) {
   util.log(`About to give ${vals.amount} from id ${vals.sender.id} to ${vals.recipientUrl} via Slack`, vals.message);
   var method = eth.contract.methods.give(
     vals.sender.id,
+    vals.communityId,
     vals.recipientUrl,
     vals.amount,
     vals.message || ''
@@ -464,7 +468,7 @@ router.post('/event', async function(req, res, next) {
     
     // View rewards
     case req.t("rewards"):
-      let rewardsMethod = eth.contract.methods.getRewardsCount(sender.communityId, 0);
+      let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
       text = req.t('Fetching available rewards from the blockchain…');
       rewardsMethod.call(function(error, totalRewards) {
         if (error) {
@@ -477,7 +481,7 @@ router.post('/event', async function(req, res, next) {
         }
         var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
-          rewards.getRewardByIndex(0, sender.communityId, i, async (reward) => {
+          rewards.getRewardByIndex(0, 0, i, async (reward) => {
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
               available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
@@ -537,7 +541,8 @@ router.post('/event', async function(req, res, next) {
         text = req.t("Please tell me the ID of the reward you want to purchase");
         break;
       }
-      var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId);
+      // TODO get community ID from slack team
+      var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId, sender.communityIds[0]);
       rewards.getRewardFor(purchaseId, (reward) => {
         eth.doSend(purchaseMethod, res, 1, 2, (error) => {
           if (error) {
@@ -567,7 +572,8 @@ router.post('/event', async function(req, res, next) {
     // Leaderboard
     // TODO translate
     case req.t("leaderboard"):
-      communities.getLeaderboard(sender.communityId, (error, leaders) => {
+      // TODO get community from Slack team
+      communities.getLeaderboard(sender.communityIds[0], (error, leaders) => {
          if (error) {
             postToChannel(slackChannelId, req.t("Could not get leaderboard, sorry!"), bot_token);
          } else {

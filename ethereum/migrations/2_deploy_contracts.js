@@ -58,11 +58,8 @@ module.exports = (deployer, network, accounts) => {
 
     // set up initial values
     await yk.addEditCommunity(0, 0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
-    console.log("edit community");
     await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
-    console.log("new account");
     await yk.replenish(1);
-    console.log("replenish");
     
     // add test data if appropriate
     if (process.env.TRUFFLE_ENV === 'test') {

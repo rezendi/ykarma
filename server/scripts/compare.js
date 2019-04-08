@@ -59,7 +59,7 @@ function doCompare(v1, v2) {
       var a2 = as2[j];
       // console.log("Comparing", a1.metadata);
       a1.id           === a2.id ? noop() : nope("Account id mismatch", a1, a2);
-      a1.communityId  === a2.communityId ? noop() : nope("Account community mismatch", a1, a2);
+      a1.communityIds === a2.communityIds ? noop() : nope("Account community IDs mismatch", a1, a2);
       a1.tags         === a2.tags ? noop() : nope("Account tags mismatch", a1, a2);
       a1.userAddress  === a2.userAddress ? noop() : nope("Account userAddress mismatch", a1, a2);
       a1.flags        === a2.flags ? noop() : nope("Account flags mismatch", a1, a2);

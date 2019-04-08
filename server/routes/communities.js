@@ -16,7 +16,7 @@ router.get('/setup', function(req, res, next) {
     if (community.id !== 0) {
       return res.json({"success":true, 'message':'Redundant'});
     }
-    var method = eth.contract.methods.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
+    var method = eth.contract.methods.addEditCommunity(0, 0, 0x0, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
     eth.doSend(method, res);
   });
 });
@@ -112,7 +112,8 @@ router.post('/create', function(req, res, next) {
     tags = tags.replace(RESERVED_TAGS[i],"");
     tags = tags.replace(",,",",");
   }
-  var method = eth.contract.methods.addNewCommunity(
+  var method = eth.contract.methods.addEditCommunity(
+    0,
     community.addressAdmin,
     community.flags || '0x00',
     community.domain || '',
@@ -133,7 +134,7 @@ router.put('/update', function(req, res, next) {
   if (community.id === 0) {
     res.json({'success':false, 'error':'community not saved'});
   }
-  var method = eth.contract.methods.editExistingCommunity(
+  var method = eth.contract.methods.addEditCommunity(
     parseInt(community.id),
     community.addressAdmin || 0,
     community.flags || '0x00',

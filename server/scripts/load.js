@@ -97,7 +97,7 @@ async function loadV1(communities) {
 
     for (var j=0; j<accounts.length; j++) {
       var account = accounts[j];
-      await addRewards(account.rewards);
+      await addRewards(account.rewards, community.id);
     }
     console.log("Rewards added");
   }
@@ -223,13 +223,13 @@ async function addGivable(account) {
 // first create reward
 // then, if reward has an owner, perform purchase of reward
 // and remember that account IDs may have changed during the load
-async function addRewards(rewards) {
+async function addRewards(rewards, communityId) {
   for (var i=0; i<rewards.length; i++) {
     var reward = rewards[i];
     var rewardId = await addReward(reward, i);
     await sleep(3000);
     if (reward.ownerId) {
-      await performPurchase(reward, rewardId);
+      await performPurchase(reward, rewardId, communityId);
       await sleep(3000);
     }
   }
@@ -262,10 +262,10 @@ function addReward(reward, idx) {
   });
 }
 
-function performPurchase(reward, rewardId) {
+function performPurchase(reward, rewardId, communityId) {
   var newOwnerId = ids[reward.ownerId];
   return new Promise((resolve, reject) => {
-    const method = eth.contract.methods.purchase(newOwnerId, rewardId);
+    const method = eth.contract.methods.purchase(newOwnerId, rewardId, communityId);
     doSend(method, () => {
       resolve(true);
     }, (error) => {

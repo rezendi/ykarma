@@ -21,10 +21,10 @@ contract('Paces', function(accounts) {
     await ykarma.loadModeOff();
 
     // add a little data
-    await ykarma.addNewCommunity(accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');
+    await ykarma.addEditCommunity(0, accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');
     var count = await ykarma.getCommunityCount();
     assert.equal(count, 1, "Community created");
-    await ykarma.addNewCommunity(0, '0x00', 'asdf.com', '{"name":"asdf"}', 'asdf');
+    await ykarma.addEditCommunity(0, 0, '0x00', 'asdf.com', '{"name":"asdf"}', 'asdf');
     count = await ykarma.getCommunityCount();
     assert.equal(count, 2, "Community created");
     var vals = await ykarma.communityForId(1);
@@ -53,13 +53,13 @@ contract('Paces', function(accounts) {
     assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
     
     // try giving to a new account, adding URLs to it
-    await ykarma.give(1, 'mailto:jay@rezendi.com', 40, "Just a message");
+    await ykarma.give(1, 1, 'mailto:jay@rezendi.com', 40, "Just a message");
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '60', "Giving happened");
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[0]["amount"], 40, "Giving received");
     assert.equal(vals[3], 0x1);
-    await ykarma.give(1, 'mailto:jay@rezendi.com', 20, 'Another "quote-unquote" message');
+    await ykarma.give(1, 1, 'mailto:jay@rezendi.com', 20, 'Another "quote-unquote" message');
     vals = await ykarma.accountForId(1);
     assert.equal(""+vals[7], '40', "Giving happened II");
     dict = JSON.parse(vals[8]);
@@ -76,7 +76,7 @@ contract('Paces', function(accounts) {
     vals = await ykarma.accountForId(2);
 
     assert.equal(JSON.parse(vals[9])[1]["message"], "Another quote-unquote message", "Giving received II");
-    await ykarma.give(1, 'mailto:jay@rezendi.com', 40, 'Message Three');
+    await ykarma.give(1, 1, 'mailto:jay@rezendi.com', 40, 'Message Three');
     vals = await ykarma.accountForId(1);
     assert.equal(JSON.parse(vals[9])[0].amount, 10, "Got reward");
     vals = await ykarma.accountForUrl("mailto:jay@rezendi.com");
@@ -127,13 +127,13 @@ contract('Paces', function(accounts) {
     vals = await ykarma.rewardForId(3);
     assert.equal(vals[6], 'test', "Beta tag");
     var exc = null;
-    try { await ykarma.purchase(2, 3); } catch(e){ exc = e; }
+    try { await ykarma.purchase(2, 3, 1); } catch(e){ exc = e; }
     assert.notEqual(exc, null, "Exception generated");
     
     // A successful purchase
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[0].available, 40, "Karma ready to spend");
-    await ykarma.purchase(2, 2);
+    await ykarma.purchase(2, 2, 1);
     vals = await ykarma.rewardForId(2);
     assert.equal(vals[2], 0, "No owner");
     assert.equal(vals[4], 1, "Reward quantity diminished");

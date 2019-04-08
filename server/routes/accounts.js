@@ -30,15 +30,7 @@ router.get('/setup', function(req, res, next) {
     util.log("set up test data", req.session);
     return res.json({"success":true});
   } else {
-    util.warn("setting up admin account if not already created");
-    getAccountForUrl('mailto:'+process.env.ADMIN_EMAIL, (account) => {
-      if (account.id !== 0) {
-        return res.json({"success":true, 'message':'Redundant'});
-      }
-      var method = eth.contract.methods.addNewAccount(1, 0, '{"name":"Admin"}', '0x00', 'mailto:'+process.env.ADMIN_EMAIL);
-      doSend(method, res, 1, 2);
-      return res.json({"success":true});
-    });
+    util.warn("setup called out of test mode");
   }
 });
 
@@ -47,7 +39,7 @@ router.get('/setup', function(req, res, next) {
 router.get('/account/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
   eth.getAccountFor(id, (account) => {
-    if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityId) {
+    if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityIds[0]) {
       util.warn('Unauthorized account request', req.session);
       return res.json({"success":false, "error": req.t("Not authorized")});
     }
@@ -308,6 +300,7 @@ router.post('/give', function(req, res, next) {
     }
     var method = eth.contract.methods.give(
       sender,
+      req.session.ykcid,
       recipientUrl,
       parseInt(req.body.amount),
       req.body.message || ''
@@ -450,7 +443,7 @@ function hydrateTranche(tranche, given, done) {
       tranche.details = {
         name:         account.metadata.name,
         urls:         account.urls,
-        communityId : account.communityId
+        communityId : account.communityIds[0]
       };
       redis.set(key, JSON.stringify(tranche.details));
       done();
@@ -469,7 +462,7 @@ function hydrateTranche(tranche, given, done) {
       tranche.details = {
         name:         account.metadata.name,
         urls:         account.urls,
-        communityId : account.communityId
+        communityId : account.communityIds[0]
       };
       accountCache[key] = JSON.stringify(tranche.details);
       done();
@@ -481,7 +474,7 @@ function hydrateTranche(tranche, given, done) {
 
 function getSessionFromAccount(req, account) {
   req.session.ykid = parseInt(account.id);
-  req.session.ykcid = parseInt(account.communityId);
+  req.session.ykcid = account.communityIds[0];
   req.session.name = account.metadata.name;
   req.session.account = account;
   var urls = account.urls.split(util.separator);
