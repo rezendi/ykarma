@@ -295,5 +295,8 @@ function doSend(method, callback = null, errorCallback = null) {
 };
 
 function sleep(ms) {
+  if (process.env.NODE_ENV=="test") {
+    return new Promise(resolve => setTimeout(resolve, 1));
+  }
   return new Promise(resolve => setTimeout(resolve, ms));
 }

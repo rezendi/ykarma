@@ -281,7 +281,6 @@ router.delete('/destroy/:id', function(req, res, next) {
 
 /* POST give coins */
 router.post('/give', function(req, res, next) {
-  var sender = req.session.email === process.env.ADMIN_EMAIL ? req.body.id || req.session.ykid : req.session.ykid;
   var recipientUrl = getLongUrlFromShort(req.body.recipient);
   if (recipientUrl.startsWith('error')) {
     return res.json({"success":false, "error": recipientUrl});
@@ -299,7 +298,7 @@ router.post('/give', function(req, res, next) {
       }
     }
     var method = eth.contract.methods.give(
-      sender,
+      req.session.ykid,
       req.session.ykcid,
       recipientUrl,
       parseInt(req.body.amount),
