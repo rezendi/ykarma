@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "./math/SafeMath.sol";
@@ -71,7 +71,7 @@ contract YKTranches is Oracular, YKStructs {
     }
   }
   
-  function performGive(Account sender, Account recipient, uint256 _amount, string _tags, string _message) public onlyOracle {
+  function performGive(Account memory sender, Account memory recipient, uint256 _amount, string memory _tags, string memory _message) public onlyOracle {
     require (recipient.id > 0);
     require (sender.id != recipient.id);
     require (_message.toSlice()._len < 256);
@@ -114,7 +114,7 @@ contract YKTranches is Oracular, YKStructs {
     }
   }
   
-  function giveReward(uint256 _id, string _tags) internal {
+  function giveReward(uint256 _id, string memory _tags) internal {
     Tranche memory tranche = Tranche({
       sender:     _id,
       recipient:  _id,
@@ -129,7 +129,7 @@ contract YKTranches is Oracular, YKStructs {
     maxTrancheId += 1;
   }
   
-  function availableToSpend(uint256 _id, string _tag) public view onlyOracle returns (uint256) {
+  function availableToSpend(uint256 _id, string memory _tag) public view onlyOracle returns (uint256) {
     uint256 total = 0;
     uint256[] storage trancheIds = received[_id];
     for (uint256 i=0; i < trancheIds.length; i++) {
@@ -141,7 +141,7 @@ contract YKTranches is Oracular, YKStructs {
     return total;
   }
   
-  function spend(uint256 _spenderId, uint256 _amount, string _tag) public onlyOracle {
+  function spend(uint256 _spenderId, uint256 _amount, string memory _tag) public onlyOracle {
     require (availableToSpend(_spenderId, _tag) >= _amount);
     uint256 accumulated;
     uint256[] storage trancheIds = received[_spenderId];
@@ -237,7 +237,7 @@ contract YKTranches is Oracular, YKStructs {
     delete received[_id1];
   }
   
-  function tagsIncludesTag(string _tags, string _tag) public pure returns (bool) {
+  function tagsIncludesTag(string memory _tags, string memory _tag) public pure returns (bool) {
     strings.slice memory s1 = _tag.toSlice();
     if (s1.empty()) {
       return true;
@@ -251,15 +251,15 @@ contract YKTranches is Oracular, YKStructs {
     return (given[_id].length, received[_id].length);
   }
 
-  function givenToJSON(uint256 _id) public view onlyOracle returns (string) {
+  function givenToJSON(uint256 _id) public view onlyOracle returns (string memory) {
     return tranchesToJSON(_id, 1, 10, true);
   }
 
-  function receivedToJSON(uint256 _id) public view onlyOracle returns (string) {
+  function receivedToJSON(uint256 _id) public view onlyOracle returns (string memory) {
     return tranchesToJSON(_id, 1, 10, false);
   }
 
-  function tranchesToJSON(uint256 _id, uint256 _page, uint256 _size, bool sender) public view onlyOracle returns (string) {
+  function tranchesToJSON(uint256 _id, uint256 _page, uint256 _size, bool sender) public view onlyOracle returns (string memory) {
     uint256[] memory trancheIds = sender ? given[_id] : received[_id];
     uint256 tStart = trancheIds.length < _page * _size ? 0 : trancheIds.length - _page * _size; // page 1 = most recent
     uint256 tEnd = trancheIds.length < tStart + _size ? trancheIds.length : tStart + _size;
@@ -275,7 +275,7 @@ contract YKTranches is Oracular, YKStructs {
     return json;
   }
 
-  function trancheToJSON(uint256 _trancheId) internal view returns (string) {
+  function trancheToJSON(uint256 _trancheId) internal view returns (string memory) {
     Tranche memory tranche = tranches[_trancheId];
     string memory out = '{"sender":';
     string memory s = uint2str(tranche.sender);
@@ -306,7 +306,7 @@ contract YKTranches is Oracular, YKStructs {
    *
    * TODO don't just strip them out, replace them with something
    */
-  function getMessageJSONFrom(string _s) internal pure returns (string) {
+  function getMessageJSONFrom(string memory _s) internal pure returns (string memory) {
     strings.slice memory s = _s.toSlice();
     strings.slice memory part;
     s.split('"'.toSlice(), part);

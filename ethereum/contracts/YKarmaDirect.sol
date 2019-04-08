@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "./arachnid/strings.sol";
@@ -41,7 +41,7 @@ contract YKarmaDirect is Oracular, YKStructs {
     rewardData = _rewards;
   }
   
-  function give(string _url, uint256 _communityId, uint256 _amount, string _message) public {
+  function give(string memory _url, uint256 _communityId, uint256 _amount, string memory _message) public {
     uint256 giverId = accountData.accountIdForAddress(msg.sender);
     Account memory giver = accountData.accountForId(giverId);
     uint256 available = trancheData.availableToGive(giverId);
@@ -61,7 +61,7 @@ contract YKarmaDirect is Oracular, YKStructs {
     accountData.redeem(buyerId, redeemedId, reward.vendorId, reward.quantity > 1);
   }
 
-  function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public {
+  function editExistingCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string memory _domain, string memory _metadata, string memory _tags) public {
     Community memory community = communityData.communityForId(_id);
     require (community.adminAddress == msg.sender);
     communityData.editCommunity(_id, _adminAddress, _flags, _domain, _metadata, _tags);
@@ -73,19 +73,19 @@ contract YKarmaDirect is Oracular, YKStructs {
     communityData.removeAccount(_communityId, _accountId);
   }
   
-  function editAccount(uint256 _id, address _newAddress, string _metadata, bytes32 _flags) public {
+  function editAccount(uint256 _id, address _newAddress, string memory _metadata, bytes32 _flags) public {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender);
     accountData.editAccount(_id, _newAddress, _metadata, _flags);
   }
   
-  function addUrlToExistingAccount(uint256 _id, string _newUrl) public returns (bool) {
+  function addUrlToExistingAccount(uint256 _id, string memory _newUrl) public returns (bool) {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender);
     return accountData.addUrlToAccount(_id, _newUrl);
   }
   
-  function removeUrlFromExistingAccount(uint256 _id, string _oldUrl) public {
+  function removeUrlFromExistingAccount(uint256 _id, string memory _oldUrl) public {
     Account memory account = accountData.accountForId(_id);
     require (account.userAddress == msg.sender);
     accountData.removeUrlFromAccount(_id, _oldUrl);
@@ -100,14 +100,14 @@ contract YKarmaDirect is Oracular, YKStructs {
     accountData.deleteAccount(_id);
   }
   
-  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
+  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string memory _tag, string memory _metadata, bytes32 _flags) public {
     Account memory vendor = accountData.accountForId(_vendorId);
     require (vendor.userAddress == msg.sender);
     uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
     accountData.addRewardToAccount(_vendorId, rewardId);
   }
   
-  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
+  function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string memory, string memory) {
     Reward memory reward = rewardData.rewardForId(_id);
     if (reward.ownerId != 0) {
       Account memory account = accountData.accountForId(reward.ownerId);
@@ -116,7 +116,7 @@ contract YKarmaDirect is Oracular, YKStructs {
     return (reward.id, reward.vendorId, reward.ownerId, reward.cost, reward.quantity, reward.flags, reward.tag, reward.metadata);
   }
   
-  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
+  function editExistingReward(uint256 _id, uint256 _cost, uint256 _quantity, string memory _tag, string memory _metadata, bytes32 _flags) public {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);
     Account memory account = accountData.accountForId(reward.vendorId);

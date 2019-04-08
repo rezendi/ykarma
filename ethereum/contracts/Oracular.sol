@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 
 contract Oracular {
   address[] oracles;
@@ -45,24 +45,26 @@ contract Oracular {
     return ret;
   }
   
-  function uint2str(uint i) pure public returns (string) {
-    if (i == 0) return "0";
-    uint j = i;
-    uint len;
-    while (j != 0){
-      len++;
-      j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint k = len - 1;
-    while (i != 0){
-      bstr[k--] = byte(48 + i % 10);
-      i /= 10;
-    }
-    return string(bstr);
+  function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+      if (_i == 0) {
+          return "0";
+      }
+      uint j = _i;
+      uint len;
+      while (j != 0) {
+          len++;
+          j /= 10;
+      }
+      bytes memory bstr = new bytes(len);
+      uint k = len - 1;
+      while (_i != 0) {
+          bstr[k--] = byte(uint8(48 + _i % 10));
+          _i /= 10;
+      }
+      return string(bstr);
   }
 
-  function uintArrayContains(uint[] array, uint val) pure public returns (bool) {
+  function uintArrayContains(uint[] memory array, uint val) pure public returns (bool) {
     for (uint i=0; i<array.length; i++) {
       if (array[i]==val) {
         return true;
