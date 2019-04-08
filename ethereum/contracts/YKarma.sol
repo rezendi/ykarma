@@ -193,13 +193,12 @@ contract YKarma is Oracular, YKStructs {
   /**
    * Reward methods
    */
-  function addNewReward(uint256 _vendorId, uint _communityId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
+  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle {
     if (RewardCreationCost > 0) {
       trancheData.consume(_vendorId, RewardCreationCost); // throws an error if not enough
     }
     uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
     accountData.addRewardToAccount(_vendorId, rewardId);
-    communityData.addRewardToCommunity(_communityId, rewardId);
   }
   
   
@@ -212,12 +211,11 @@ contract YKarma is Oracular, YKStructs {
     rewardData.editReward(_id, _cost, _quantity, _tag, _metadata, _flags);
   }
 
-  function deleteReward(uint256 _id, uint256 _communityId) public onlyOracle {
+  function deleteReward(uint256 _id) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_id);
     require (reward.ownerId == 0);
     accountData.deleteRewardFromAccount(reward.vendorId, reward.id);
     rewardData.deleteRewardRecord(_id);
-    communityData.deleteRewardFromCommunity(_communityId, _id);
   }
   
   function getRewardsCount(uint256 _id, uint256 _idType) public view onlyOracle returns (uint256) {
@@ -225,7 +223,7 @@ contract YKarma is Oracular, YKStructs {
       Account memory account = accountData.accountForId(_id);
       return _idType == 1 ? account.rewardIds.length : account.offerIds.length;
     }
-    return communityData.communityForId(_id).rewardIds.length;
+    return rewardData.getMaxRewardId();
   }
 
   function rewardByIdx(uint256 _id, uint256 _idx, uint256 _idType) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
@@ -233,7 +231,6 @@ contract YKarma is Oracular, YKStructs {
       uint256 accountRewardId = _idType == 1 ? accountData.accountForId(_id).rewardIds[_idx] : accountData.accountForId(_id).offerIds[_idx];
       return rewardForId(accountRewardId);
     }
-    Community memory community = communityData.communityForId(_id);
-    return rewardForId(community.rewardIds[_idx]);
+    return rewardForId(_id);
   }
 }

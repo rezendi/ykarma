@@ -82,7 +82,7 @@ async function loadV1(communities) {
     // Next, recapitulate all the sends, in order
     var tranches = tranches.sort(function(a, b){return a.block - b.block});
     for (var k=0; k<tranches.length; k++) {
-      await addTranche(tranches[k]);
+      await addTranche(tranches[k], community.id);
       console.log("tranche", tranches[k].block);
       await sleep(3000);
     }
@@ -121,7 +121,8 @@ function addCommunity(community) {
         console.log('getCommunityCount error', error);
         reject(error);
       } else {
-        const method2 = eth.contract.methods.addNewCommunity(
+        const method2 = eth.contract.methods.addEditCommunity(
+          0,
           community.addressAdmin,
           community.flags || '0x00',
           community.domain || '',
@@ -167,7 +168,7 @@ function addUrl(accountId, url) {
 // - add giving, 100 at a time, until we have enough to send
 // - then get the url for the recipient
 // - then recapitulate the send
-async function addTranche(tranche) {
+async function addTranche(tranche, communityId) {
   // don't regenerate reward tranches
   if (tranche.sender === tranche.receiver) {
     return;
@@ -183,7 +184,7 @@ async function addTranche(tranche) {
   var newReceiverId = ids[tranche.receiver];
   var recipientUrl = await getUrlFor(newReceiverId);
   // console.log("sending to url", recipientUrl);
-  const give = eth.contract.methods.give(tranche.sender, recipientUrl, tranche.amount, tranche.message);
+  const give = eth.contract.methods.give(tranche.sender, communityId, recipientUrl, tranche.amount, tranche.message);
   await doSend(give);
   balances[tranche.sender] = balance - tranche.amount;
 }

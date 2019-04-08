@@ -100,12 +100,11 @@ contract YKarmaDirect is Oracular, YKStructs {
     accountData.deleteAccount(_id);
   }
   
-  function addNewReward(uint256 _vendorId, uint256 _communityId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
+  function addNewReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public {
     Account memory vendor = accountData.accountForId(_vendorId);
     require (vendor.userAddress == msg.sender);
     uint256 rewardId = rewardData.addReward(_vendorId, _cost, _quantity, _tag, _metadata, _flags);
     accountData.addRewardToAccount(_vendorId, rewardId);
-    communityData.addRewardToCommunity(_communityId, rewardId);
   }
   
   function rewardForId(uint256 _id) public view returns (uint256, uint256, uint256, uint256, uint256, bytes32, string, string) {
@@ -125,13 +124,12 @@ contract YKarmaDirect is Oracular, YKStructs {
     rewardData.editReward(_id, _cost, _quantity, _tag, _metadata, _flags);
   }
 
-  function deleteReward(uint256 _id, uint256 _communityId) public {
+  function deleteReward(uint256 _id) public {
     Reward memory reward = rewardData.rewardForId(_id);
     Account memory vendor = accountData.accountForId(reward.vendorId);
     require (reward.ownerId == 0 && (vendor.userAddress == msg.sender));
     accountData.deleteRewardFromAccount(reward.vendorId, reward.id);
     rewardData.deleteRewardRecord(_id);
-    communityData.deleteRewardFromCommunity(_communityId, _id);
   }
   
 }

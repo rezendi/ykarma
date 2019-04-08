@@ -32,8 +32,7 @@ contract YKCommunities is Oracular, YKStructs {
       domain:       _domain,
       metadata:     _metadata,
       tags:         _tags,
-      accountIds:   new uint256[](0),
-      rewardIds:    new uint256[](0)
+      accountIds:   new uint256[](0)
     });
     communities[community.id] = community;
     maxCommunityId += 1;
@@ -67,25 +66,6 @@ contract YKCommunities is Oracular, YKStructs {
 
   function isClosed(uint256 _id) public view returns (bool) {
     return communities[_id].flags & 0x01 == 0x01;
-  }
-  
-  function addRewardToCommunity(uint256 _communityId, uint256 _rewardId) public onlyOracle {
-    communities[_communityId].rewardIds.push(_rewardId);
-  }
-  
-  function deleteRewardFromCommunity(uint256 _communityId, uint256 _rewardId) public onlyOracle {
-    uint256[] storage rewardIds = communities[_communityId].rewardIds;
-    bool found = false;
-    for (uint i = 0; i < rewardIds.length; i++) {
-      if (rewardIds[i] == _rewardId) {
-        rewardIds[i] = rewardIds[rewardIds.length - 1];
-        delete rewardIds[rewardIds.length - 1];
-        found = true;
-      }
-      if (found) {
-        rewardIds.length--;
-      }
-    }
   }
   
   function setValidator(uint256 _id, address _address) public onlyOracle {

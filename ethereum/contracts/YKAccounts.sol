@@ -119,7 +119,7 @@ contract YKAccounts is Oracular, YKStructs {
     delete accounts[_id];
   }
   
-  function communityIds(uint256 _accountId) public onlyOracle returns (string) {
+  function communityIds(uint256 _accountId) public view onlyOracle returns (string) {
     string memory out = '[';
     Account memory account = accountForId(_accountId);
     for(uint i = 0; i < account.communityIds.length; i++) {

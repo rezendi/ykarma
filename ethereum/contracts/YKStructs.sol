@@ -36,7 +36,6 @@ contract YKStructs {
     string metadata;
     string tags;
     uint256[] accountIds;
-    uint256[] rewardIds;
   }
   
   struct Reward {
