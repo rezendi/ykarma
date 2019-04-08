@@ -305,7 +305,7 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
     return { error: req.t("Sorry! Valid recipient not found"), amount:amount };
   }
 
-  // get the sender  
+  // get the sender
   let senderUrl = `slack:${team_id}-${user_id}`;
   let sender = await getAccountForUrl(senderUrl);
   if (sender.id === 0 || sender.communityIds.length === 0) {
@@ -344,34 +344,28 @@ function sendKarma(res, vals, callback) {
   eth.doSend(method, res, 1, 4, callback);
 }
 
-function getAccountFor(id) {
-  return new Promise(function(resolve, reject) {
-    let method = eth.contract.methods.accountForId(id);
-    method.call(function(error, result) {
-      if (error) {
-        util.warn('getAccountFor error', error);
-      } else {
-        util.debug('getAccountFor result', result);
-        let account = eth.getAccountFromResult(result);
-        resolve(account);
-      }
-    });
-  });
+async function getAccountFor(id) {
+   try {
+      let method = eth.contract.methods.accountForId(id);
+      var result = await method.call();
+      util.debug('getAccountForUrl result', result);
+      let account = eth.getAccountFromResult(result);
+      return account;
+   } catch(err) {
+      util.warn('getAccountForUrl error', err);
+   }
 }
 
-function getAccountForUrl(url) {
-  return new Promise(function(resolve, reject) {
-    let method = eth.contract.methods.accountForUrl(url);
-    method.call(function(error, result) {
-      if (error) {
-        util.warn('getAccountForUrl error', error);
-      } else {
-        util.debug('getAccountForUrl result', result);
-        let account = eth.getAccountFromResult(result);
-        resolve(account);
-      }
-    });
-  });
+async function getAccountForUrl(url) {
+   try {
+      let method = eth.contract.methods.accountForUrl(url);
+      var result = await method.call();
+      util.debug('getAccountForUrl result', result);
+      let account = eth.getAccountFromResult(result);
+      return account;
+   } catch(err) {
+      util.warn('getAccountForUrl error', err);
+   }
 }
 
 // TODO: break this into multiple methods
@@ -414,7 +408,6 @@ router.post('/event', async function(req, res, next) {
 
   // parse text
   var text;
-  var body;
   var incoming = req.body.event.text || '';
   var words = incoming.split(' ');
   var purpose = words[0];
@@ -427,18 +420,18 @@ router.post('/event', async function(req, res, next) {
     
     // Get balance
     case req.t("balance"):
-      let availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
-      availableMethod.call(function(error, available) {
-        if (error) {
-          util.log('getAvailable error', error);
-          postToChannel(slackChannelId, req.t("Error getting available-to-spend amount"), bot_token);
-        } else {
-          // TODO: flavor breakdown?
-          postToChannel(slackChannelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
-        }
-      });
       text = req.t("You currently have") + ` ${sender.givable} ` + req.t("to give away");
-      break;
+      postToChannel(req.body.event.channel, text, bot_token);
+      let availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
+      try {
+         let available = await availableMethod.call();
+         // TODO: flavor breakdown?
+         postToChannel(slackChannelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
+      } catch(error) {
+         util.log('getAvailable error', error);
+         postToChannel(slackChannelId, req.t("Error getting available-to-spend amount"), bot_token);
+      }
+      return;
     
     // Send karma
     case req.t("send"):
@@ -463,21 +456,19 @@ router.post('/event', async function(req, res, next) {
         message = vals.message ? message + " " + req.t("with the message") + ` ${vals.message}` : '!';
         openChannelAndPost(vals.recipientUrl, message);
       });
-      text = req.t("Sending…");
       break;
     
     // View rewards
     case req.t("rewards"):
-      let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
       text = req.t('Fetching available rewards from the blockchain…');
-      rewardsMethod.call(function(error, totalRewards) {
-        if (error) {
-          util.log('getListOfRewards error', error);
-          postToChannel(slackChannelId, req.t("Error getting rewards"), bot_token);
-        }
+      postToChannel(req.body.event.channel, text, bot_token);
+      let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
+      try {
+         let totalRewards = await rewardsMethod.call();
         if (parseInt(totalRewards)===0) {
           util.log("No rewards available");
           postToChannel(slackChannelId, req.t("No rewards available"), bot_token);
+          return;
         }
         var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
@@ -521,11 +512,11 @@ router.post('/event', async function(req, res, next) {
             }
           });
         }
-      })
-      .catch(function(error) {
-        text = req.t("Error getting list of rewards") + ` ${error}`;
-      });
-      break;
+      } catch(error) {
+         util.log('getListOfRewards error', error);
+         postToChannel(slackChannelId, req.t("Error getting rewards"), bot_token);
+      }
+      return;
 
     // Make a purchase
     case req.t("purchase"):
@@ -606,7 +597,7 @@ router.post('/event', async function(req, res, next) {
       text = req.t("Sorry, I didn't understand you. You can ask for help with 'help'");
   }
 
-  postToChannel(req.body.event.channel, text, bot_token);
+  postToChannel(slackChannelId, text, bot_token);
   res.json({text:text});
 });
 

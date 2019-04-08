@@ -18,14 +18,13 @@ describe('Slack', function () {
     try {
       var res = await api.get('/api/slack/lastOpenConversation');
       var last = JSON.parse(res.text).last;
-      expect(last.users).to.equal("USER1");
-      expect(last.token).to.equal("test");
+        expect(last.users).to.equal("USER1");
+        expect(last.token).to.equal("test");
       res = await api.get('/api/slack/lastPostMessage');
-      last = JSON.parse(res.text).last;
-      expect(last.text.split(" ")[0]).to.equal("Mocha");
-      expect(last.channel).to.equal("TestChannel");
-      expect(last.token).to.equal("test");
-      res = await api.get('/api/slack/lastPostMessage');
+        last = JSON.parse(res.text).last;
+        expect(last.text.split(" ")[0]).to.equal("Mocha");
+        expect(last.channel).to.equal("TestChannel");
+        expect(last.token).to.equal("test");
       return true;
     } catch(err) {
       console.log("error", err);
