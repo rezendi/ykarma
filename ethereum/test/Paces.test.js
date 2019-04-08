@@ -4,6 +4,9 @@ const YKAccounts = artifacts.require("YKAccounts");
 const YKCommunities = artifacts.require("YKCommunities");
 const YKRewards = artifacts.require("YKRewards");
 
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';
+const BYTES_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
+
 contract('Paces', function(accounts) {
   const deployer = accounts[0];
 
@@ -21,15 +24,15 @@ contract('Paces', function(accounts) {
     await ykarma.loadModeOff();
 
     // add a little data
-    await ykarma.addEditCommunity(0, accounts[1], '0x00', 'rezendi.com', '{"name":"rezendi"}', 'cool');
+    await ykarma.addEditCommunity(0, accounts[1], BYTES_ZERO, 'rezendi.com', '{"name":"rezendi"}', 'cool');
     var count = await ykarma.getCommunityCount();
     assert.equal(count, 1, "Community created");
-    await ykarma.addEditCommunity(0, 0, '0x00', 'asdf.com', '{"name":"asdf"}', 'asdf');
+    await ykarma.addEditCommunity(0, ADDRESS_ZERO, BYTES_ZERO, 'asdf.com', '{"name":"asdf"}', 'asdf');
     count = await ykarma.getCommunityCount();
     assert.equal(count, 2, "Community created");
     var vals = await ykarma.communityForId(1);
     assert.equal(accounts[1], vals[1]);
-    await ykarma.addNewAccount(1, '', '{"name":"Jon"}', '0x00', 'mailto:jon@rezendi.com', );
+    await ykarma.addNewAccount(1, ADDRESS_ZERO, '{"name":"Jon"}', BYTES_ZERO, 'mailto:jon@rezendi.com', );
     vals = await ykarma.accountForId(1);
     assert.equal(vals[4], '{"name":"Jon"}', "Account metadata");
     assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
@@ -96,7 +99,7 @@ contract('Paces', function(accounts) {
     // create a reward, update it, delete it
     vals = await ykarma.getRewardsCount(2, 2);
     assert.equal(""+vals, 0, "Vendor rewards count 0");
-    await ykarma.addNewReward(2, 10, 1, "alpha", '{"name":"My Doomed Reward"}', '0x00');
+    await ykarma.addNewReward(2, 10, 1, "alpha", '{"name":"My Doomed Reward"}', BYTES_ZERO);
     vals = await ykarma.rewardForId(1);
     assert.equal(vals[1], 2, "Created reward");
     assert.equal(vals[3], 10);
@@ -117,8 +120,8 @@ contract('Paces', function(accounts) {
     assert.equal(""+vals, 0, "Vendor rewards count 0 again");
 
     // create two new ones, fail purchase of wrong tag
-    await ykarma.addNewReward(1, 10, 2, "cool", '{"name":"My Cool Reward"}', '0x00');
-    await ykarma.addNewReward(1, 10, 1, "test", '{"name":"My Test Reward"}', '0x00');
+    await ykarma.addNewReward(1, 10, 2, "cool", '{"name":"My Cool Reward"}', BYTES_ZERO);
+    await ykarma.addNewReward(1, 10, 1, "test", '{"name":"My Test Reward"}', BYTES_ZERO);
     vals = await ykarma.getRewardsCount(1, 2);
     assert.equal(vals.toNumber(), 2, "Vendor rewards count 2");
     vals = await ykarma.rewardForId(2);
@@ -164,7 +167,7 @@ contract('Paces', function(accounts) {
     await ykarma.setRewardCreationCost(10);
     vals = await ykarma.getRewardsCount(1, 2);
     assert.equal(""+vals, 3, "Vendor rewards count 3");
-    await ykarma.addNewReward(1, 10, 1, "alpha", '{"name":"My Costly Reward"}', '0x00');
+    await ykarma.addNewReward(1, 10, 1, "alpha", '{"name":"My Costly Reward"}', BYTES_ZERO);
     vals = await ykarma.getRewardsCount(1, 2);
     assert.equal(""+vals, 4, "Vendor rewards count 4");
     vals = await ykarma.accountForId(1);
@@ -172,7 +175,7 @@ contract('Paces', function(accounts) {
 
     // merge accounts
     await ykarma.replenish(2);
-    await ykarma.addNewReward(2, 10, 1, "alpha", '{"name":"My Merged Reward"}', '0x00');
+    await ykarma.addNewReward(2, 10, 1, "alpha", '{"name":"My Merged Reward"}', BYTES_ZERO);
     vals = await ykarma.accountForId(1);
     vals = await ykarma.accountForId(2);
     await ykarma.mergeAccounts(2, 1);
@@ -204,7 +207,7 @@ function increaseBlock() {
   const id = Date.now()
 
   return new Promise((resolve, reject) => {
-    web3.currentProvider.sendAsync({
+    web3.currentProvider.send({
       jsonrpc: '2.0',
       method: 'evm_mine',
       id: id+1,
