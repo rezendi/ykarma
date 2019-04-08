@@ -28,7 +28,7 @@ RUN npm run build
 WORKDIR /usr/src/app
 RUN mkdir ethereum
 COPY ./ethereum ./ethereum/
-RUN npm install -g truffle@4.1.13 # might need --unsafe-perm for truffle 5.0?
+RUN npm install -g truffle@5.0.11 --unsafe-perm
 
 # Copy the API code over
 WORKDIR /usr/src/app
