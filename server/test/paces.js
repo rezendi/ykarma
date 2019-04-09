@@ -37,7 +37,6 @@ describe('Account', function () {
   });
 
   it('should list accounts for a community', async function () {
-    this.timeout(4000);
     try {
       var res = await api.get('/api/accounts/setup?ykid=2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -50,6 +49,7 @@ describe('Account', function () {
   });
 
   it('should update account metadata', async function () {
+    this.timeout(4000);
     try {
       var res = await api.get('/api/accounts/setup?ykid=2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -102,7 +102,7 @@ describe('Reward', function () {
       res = await api.get('/api/rewards/vendedBy/2').set('Cookie', TestCookies).expect(200);
         initialRewards = JSON.parse(res.text).rewards.length;
       res = await api.post('/api/rewards/create').set('Cookie', TestCookies)
-        .send({"reward":{"cost":10, "quantity": 1, "tag": "test", "metadata":'{"name":"Test Reward One"}', "flags": '0x00'}});
+        .send({"reward":{"cost":10, "quantity": 1, "tag": "test", "metadata":'{"name":"Test Reward One"}', "flags": '0x0000000000000000000000000000000000000000000000000000000000000000'}});
         expect(JSON.parse(res.text).success).to.equal(true);
       res = await api.get('/api/rewards/vendedBy/2').set('Cookie', TestCookies).expect(200);
         var rwds = JSON.parse(res.text).rewards;

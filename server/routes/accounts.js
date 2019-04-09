@@ -381,7 +381,7 @@ async function getAccountForUrl(url, callback) {
     var account = eth.getAccountFromResult(result);
     callback(account);
   } catch(error) {
-    util.debug('getAccountForUrl result', result);
+    util.debug('getAccountForUrl error', error);
   }
 }
 

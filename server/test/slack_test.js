@@ -33,7 +33,7 @@ describe('Slack', function () {
 
   // assumes a reward added as part of deploy
   it('send karma in-channel and via DM', async function() {
-    this.timeout(10000);
+    this.timeout(5000);
     try {
       var res = await api.get('/api/accounts/setup?ykid=4');
       TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');

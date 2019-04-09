@@ -56,7 +56,7 @@ router.get('/:id', function(req, res, next) {
 });
 
 /* GET account list */
-router.get('/:communityId/accounts', function(req, res, next) {
+router.get('/:communityId/accounts', async function(req, res, next) {
   const communityId = parseInt(req.params.communityId);
   if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykcid !== communityId) {
     util.log("not allowed to get accounts for", communityId);
@@ -66,7 +66,8 @@ router.get('/:communityId/accounts', function(req, res, next) {
   var accounts = [];
   var method = eth.contract.methods.getAccountCount(communityId);
   try {
-    let accountCount = method.call();
+    let result = await method.call();
+    let accountCount = parseInt(result);
     util.log('getAccountCount result', accountCount);
     if (accountCount===0) {
       return res.json([]);
@@ -161,18 +162,16 @@ router.delete('/:id', function(req, res, next) {
   eth.doSend(method,res);
 });
 
-function getAccountWithinCommunity(communityId, idx, callback) {
+async function getAccountWithinCommunity(communityId, idx, callback) {
   var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
-  // console.log("accountWithinCommunity idx "+idx, communityId);
-  method.call(function(error, result) {
-    if (error) {
-      util.warn('accountWithinCommunity error', error);
-    } else {
-      // console.log('accountWithinCommunity result', result);
-      var account = eth.getAccountFromResult(result);
-      callback(account);
-    }
-  });
+  try {
+    let result = method.call();
+    // console.log('accountWithinCommunity result', result);
+    var account = eth.getAccountFromResult(result);
+    callback(account);
+  } catch(error) {
+    util.warn('accountWithinCommunity error', error);
+  }
 }
 
 function hasNeverLoggedIn(account) {
@@ -185,7 +184,8 @@ async function getLeaderboard(communityId, callback) {
   var leaders = [];
   var method = eth.contract.methods.getAccountCount(communityId);
   try {
-    let accountCount = method.call();
+    let result = await method.call();
+    let accountCount = parseInt(result);
     util.log('getAccountCount result', accountCount);
     for (var i = 0; i < accountCount; i++) {
       getAccountWithinCommunity(communityId, i, async (account) => {
