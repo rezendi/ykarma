@@ -77,6 +77,8 @@ module.exports = (deployer, network, accounts) => {
       await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Test Four"}', BYTES_ZERO, 'slack:TEST-USER2');
       await yk.replenish(4);
       await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', BYTES_ZERO);
+      await yk.addEditCommunity(0, ADDRESS_ZERO, BYTES_ZERO, 'test.com', '{"name":"One To Many", "description":"Just a test comm"}', 'test');
+      await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Test.Com Test User"}', BYTES_ZERO, 'mailto:test@test.com');
     }
   });
 };

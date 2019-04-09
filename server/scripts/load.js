@@ -51,7 +51,7 @@ function doLoad() {
     console.log("timestamp", vals.timestamp);
     console.log("communities", vals.communities.length);
     if (vals.version === '1') {
-      loadV1(vals.communities);
+      loadV1(vals.communities.sort(function(a, b){return a.id - b.id}));
     }
   });
 }
@@ -70,7 +70,7 @@ async function loadV1(communities) {
     for (var j=0; j<accounts.length; j++) {
       var account = accounts[j];
       var urls = account.urls.split(util.separator);
-      if (urls.length==1) {
+      if (urls.length===1) {
         urls = account.urls.split(util.oldSeparator);
       }
       console.log("urls", urls);
@@ -82,7 +82,7 @@ async function loadV1(communities) {
       }
       ids[account.id] = accountId;
       account.id = accountId;
-      account.given.forEach(function(e) { e.sender - account.id; });
+      account.given.forEach(function(e) { e.sender = account.id; });
       tranches.push.apply(tranches, account.given);
       await sleep(3000);
     }
@@ -90,22 +90,22 @@ async function loadV1(communities) {
 
     // Next, recapitulate all the sends, in order
     var tranches = tranches.sort(function(a, b){return a.block - b.block});
-    for (var k=0; k<tranches.length; k++) {
-      await addTranche(tranches[k], community.id);
-      console.log("tranche", tranches[k].block);
+    for (var l=0; l<tranches.length; l++) {
+      await addTranche(tranches[l], community.id);
+      console.log("tranche", tranches[l].block);
       await sleep(3000);
     }
     console.log("Tranches added", tranches.length);
 
     // Finally, reinflate givable karma, and add offers and purchases    
-    for (var j=0; j<accounts.length; j++) {
-      var account = accounts[j];
+    for (var m=0; m<accounts.length; m++) {
+      var account = accounts[m];
       await addGivable(account);
     }
     console.log("Givable updated");
 
-    for (var j=0; j<accounts.length; j++) {
-      var account = accounts[j];
+    for (var n=0; n<accounts.length; n++) {
+      var account = accounts[n];
       await addRewards(account.rewards, community.id);
     }
     console.log("Rewards added");
