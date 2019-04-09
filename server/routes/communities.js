@@ -26,7 +26,7 @@ router.get('/', function(req, res, next) {
   var communities = [];
   var method = eth.contract.methods.getCommunityCount();
   try {
-    let communityCount = method.call();
+    let communityCount = await method.call();
     util.log('getCommunityCount result', communityCount);
     if (communityCount===0) {
       return res.json([]);
@@ -165,7 +165,7 @@ router.delete('/:id', function(req, res, next) {
 async function getAccountWithinCommunity(communityId, idx, callback) {
   var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
   try {
-    let result = method.call();
+    let result = await method.call();
     // console.log('accountWithinCommunity result', result);
     var account = eth.getAccountFromResult(result);
     callback(account);

@@ -63,7 +63,7 @@ async function getAccountFor(id, callback) {
   var method = contract.methods.accountForId(id);
   util.log("accountForId", id);
   try {
-    let result = method.call();
+    let result = await method.call();
     var account = getAccountFromResult(result);
     callback(account);
   } catch(error) {

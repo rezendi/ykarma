@@ -24,26 +24,22 @@ eth.web3.eth.getAccounts().then((ethAccounts) => {
 // for each community:
 // get a list of their added slack teams
 
-function populateSlack() {
+async function populateSlack() {
   var method = eth.contract.methods.getCommunityCount();
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getCommunityCount error', error);
-    } else {
-      for (var i = 1; i <= result; i++) {
-        eth.getCommunityFor(i, (community) => {
-          let metadata = community.metadata || {};
-          let slackTeams = metadata.slackTeams || [];
-          for (var j=0; j<slackTeams.length; j++) {
-            populateTeam(community.id, slackTeams[j]);
-          }
-        });
-      }
+  try {
+    let result = await method.call();
+    for (var i = 1; i <= result; i++) {
+      eth.getCommunityFor(i, (community) => {
+        let metadata = community.metadata || {};
+        let slackTeams = metadata.slackTeams || [];
+        for (var j=0; j<slackTeams.length; j++) {
+          populateTeam(community.id, slackTeams[j]);
+        }
+      });
     }
-  })
-  .catch(function(error) {
-    console.log('getCommunityCount call error', error);
-  });
+  } catch(error) {
+    console.log('getCommunityCount error', error);
+  }
 }
 
 // for each team:
@@ -86,43 +82,37 @@ async function populateTeam(communityId, teamId) {
 // does a YK account exist for their email? OK, add slack URL to that account
 // create a YK account for their slack URL, add their email
 
-function addUserIfAppropriate(communityId, teamId, userId, userEmail, userName) {
+async function addUserIfAppropriate(communityId, teamId, userId, userEmail, userName) {
   let slackUrl = `slack:${teamId}-${userId}`;
   var method = eth.contract.methods.accountForUrl(slackUrl);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getAccountForUrl error from '+slackUrl, error);
-    } else {
-      var accountId = parseInt(result[0], 10);
-      if (accountId > 0) {
-        console.log("slack account exists for", userName);
-        return;
-      }
-      if (!userEmail || userEmail.length === 0 || userEmail.indexOf('@') === 0) {
-        console.log("no email for", userName);
-        addNewUser(communityId, teamId, userId, userEmail, userName);
-      }
-      let emailUrl = `mailto:${userEmail}`;
-      var method2 = eth.contract.methods.accountForUrl(emailUrl);
-      method2.call(function(error, result) {
-        if (error) {
-          console.log('getAccountForUrl error from '+emailUrl, error);
-        } else {
-          var accountId = parseInt(result[0], 10);
-          if (accountId > 0) {
-            console.log("adding slack URL to existing email URL", userEmail);
-            var method3 = eth.contract.methods.addUrlToExistingAccount(accountId, slackUrl);
-            doSend(method3);
-          } else {
-            addNewUser(communityId, teamId, userId, userEmail, userName);
-          }
-        }
-      });
+  try {
+    let result = await method.call();
+    var accountId = parseInt(result[0], 10);
+    if (accountId > 0) {
+      console.log("slack account exists for", userName);
+      return;
     }
-  });
+    if (!userEmail || userEmail.length === 0 || userEmail.indexOf('@') === 0) {
+      console.log("no email for", userName);
+      addNewUser(communityId, teamId, userId, userEmail, userName);
+    }
+    let emailUrl = `mailto:${userEmail}`;
+    method = eth.contract.methods.accountForUrl(emailUrl);
+    let result2 = await method.call();
+    accountId = parseInt(result2[0], 10);
+    if (accountId > 0) {
+      console.log("adding slack URL to existing email URL", userEmail);
+      var method3 = eth.contract.methods.addUrlToExistingAccount(accountId, slackUrl);
+      doSend(method3);
+    } else {
+      addNewUser(communityId, teamId, userId, userEmail, userName);
+    }
+  } catch(error) {
+    console.log('addUserIfAppropriate error for '+slackUrl, error);
+  }
 }
 
-function addNewUser(communityId, teamId, userId, userEmail, userName) {
+async function addNewUser(communityId, teamId, userId, userEmail, userName) {
   console.log("adding new slack user with email", userEmail);
   let slackUrl = `slack:${teamId}-${userId}`;
   let method = eth.contract.methods.addNewAccount(
@@ -134,23 +124,21 @@ function addNewUser(communityId, teamId, userId, userEmail, userName) {
   );
   doSend(method,1, 2, () => {
     let method2 = eth.contract.methods.accountForUrl(slackUrl);
-    method2.call(function(error, result) {
-      if (error) {
-        console.log('getAccountForUrl error from '+slackUrl, error);
-      } else {
-        let accountId = parseInt(result[0], 10);
-        console.log("newly generated account id", accountId);
-        if (userEmail && userEmail.length === 0 || userEmail.indexOf('@') > 0) {
-          console.log("adding email to newly generated account", userEmail);
-          let emailUrl = `mailto:${userEmail}`;
-          let method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
-          doSend(method3);
-        }
-        let replenish = eth.contract.methods.replenish(accountId);
-        doSend(replenish);
+    try {
+      let result = await method2.call();
+      let accountId = parseInt(result[0], 10);
+      console.log("newly generated account id", accountId);
+      if (userEmail && userEmail.length === 0 || userEmail.indexOf('@') > 0) {
+        console.log("adding email to newly generated account", userEmail);
+        let emailUrl = `mailto:${userEmail}`;
+        let method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
+        doSend(method3);
       }
-    });
-  });
+      let replenish = eth.contract.methods.replenish(accountId);
+      doSend(replenish);
+    } catch(error)
+      console.log('getAccountForUrl error from '+slackUrl, error);
+    }
 }
 
 function doSend(method, minConfirmations = 1, gasMultiplier = 2, callback = null) {

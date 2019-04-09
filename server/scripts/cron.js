@@ -23,67 +23,55 @@ eth.web3.eth.getAccounts().then((ethAccounts) => {
     blockNumber = bn;
     doReplenish();
   });
-})
+});
 
-function doReplenish() {
+async function doReplenish() {
   var method = eth.contract.methods.getCommunityCount();
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getCommunityCount error', error);
-    } else {
-      console.log('getCommunityCount result', result);
-      for (var i = 0; i < result; i++) {
-        eth.getCommunityFor(i+1, (community) => {
-          replenishCommunity(community);
-        });
-      }
+  try {
+    let result = await method.call();
+    console.log('getCommunityCount result', result);
+    for (var i = 0; i < result; i++) {
+      eth.getCommunityFor(i+1, (community) => {
+        replenishCommunity(community);
+      });
     }
-  })
-  .catch(function(error) {
-    console.log('getCommunityCount call error', error);
-  });
+  } catch(error) {
+    console.log('getCommunityCount error', error);
+  }
 }
 
-function replenishCommunity(community) {
+async function replenishCommunity(community) {
   console.log('replenishing community', community.id);
   var method = eth.contract.methods.getAccountCount(community.id);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('replenishCommunity getAccountCount error', error);
-    } else {
-      for (var i = 0; i < result; i++) {
-        getAccountWithinCommunity(community.id, i, (account) => {
-          if (account.flags !== '0x0000000000000000000000000000000000000000000000000000000000000001') { // if not newly created by receipt
-            replenishAccount(account);
-          }
-        });
-      }
+  try {
+    let result = await method.call();
+    for (var i = 0; i < result; i++) {
+      getAccountWithinCommunity(community.id, i, (account) => {
+        if (account.flags !== '0x0000000000000000000000000000000000000000000000000000000000000001') { // if not newly created by receipt
+          replenishAccount(account);
+        }
+      });
     }
-  })
-  .catch(function(error) {
-    console.log('replenishCommunity getAccountCount call error', error);
-  });
+  } catch(error) {
+    console.log('replenishCommunity getAccountCount error', error);
+  }
 }
 
-function getAccountWithinCommunity(communityId, idx, callback) {
+async function getAccountWithinCommunity(communityId, idx, callback) {
   var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('accountWithinCommunity error', error);
-    } else {
-      var account = eth.getAccountFromResult(result);
-      callback(account);
-    }
-  })
-  .catch(function(error) {
-    console.log('accountWithinCommunity call error ' + id, error);
-    callback({});
-  });
+  try {
+    let result = await method.call();
+    var account = eth.getAccountFromResult(result);
+    callback(account);
+  } catch(error) {
+    console.log('accountWithinCommunity error', error);
+  }
 }
 
-function replenishAccount(account) {
+async function replenishAccount(account) {
   var lastReplenished = eth.contract.methods.lastReplenished(account.id);
-  lastReplenished.call(function(error, latest) {
+  try {
+    let latest = await lastReplenished.call();
     if (latest > 0 && blockNumber - latest < REFRESH_WINDOW) {
       console.log("not replenishing account", account.id);
       return;
@@ -109,15 +97,11 @@ function replenishAccount(account) {
             sendReplenishEmail(account);
           }
         }
-      })
-      .catch(function(error) {
-        console.log('replenish send call error ' + error);
       });
-    })
-    .catch(function(error) {
-      console.log('replenish gas estimation call error', error);
     });
-  });
+  } catch(error) {
+    console.log('replenishAccount error', error);
+  }
 }
 
 function sendReplenishEmail(account) {

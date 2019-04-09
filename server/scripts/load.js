@@ -12,18 +12,22 @@ var balances = {};
 var ids = {};
 
 console.log(new Date().toUTCString());
-var checkLoadMode = eth.contract.methods.loadMode();
-checkLoadMode.call(function(error, result) {
-  if (error) {
+checkLoadAndRun();
+
+async function checkLoadAndRun() {
+  var checkLoadMode = eth.contract.methods.loadMode();
+  try {
+    let result = await checkLoadMode.call();
+    if (!) {
+      console.log("loadMode false");
+      return;
+    }
+    doLoad();
+  } catch(error) {
     console.log("loadMode error");
     return;
   }
-  if (result === false) {
-    console.log("loadMode false");
-    return;
-  }
-  doLoad();
-});
+}
 
 function doLoad() {
   // open the file from the command-line arg, parse the JSON, get the version
@@ -114,25 +118,24 @@ async function loadV1(communities) {
 
 function addCommunity(community) {
   //console.log("community", community.id);
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     var method = eth.contract.methods.getCommunityCount();
-    method.call(function(error, result) {
-      if (error) {
-        console.log('getCommunityCount error', error);
-        reject(error);
-      } else {
-        const method2 = eth.contract.methods.addEditCommunity(
-          0,
-          community.addressAdmin,
-          community.flags || '0x00',
-          community.domain || '',
-          JSON.stringify(community.metadata),
-          community.tags || '',
-        );
-        doSend(method2);
-        resolve(parseInt(result)+1);
-      }
-    });
+    try {
+      let result = await method.call();
+      const method2 = eth.contract.methods.addEditCommunity(
+        0,
+        community.addressAdmin,
+        community.flags || '0x00',
+        community.domain || '',
+        JSON.stringify(community.metadata),
+        community.tags || '',
+      );
+      doSend(method2);
+      resolve(parseInt(result)+1);
+    } catch(error) {
+      console.log('getCommunityCount error', error);
+      reject(error);
+    }
   });
 }
 
@@ -145,16 +148,14 @@ function addAccount(account, communityId, url) {
       account.flags || '0x00',
       url
     );
-    doSend(method, () => {
+    doSend(method, async () => {
       const method2 = eth.contract.methods.accountForUrl(url);
-      method2.call(function(error2, result2) {
-        if (error2) {
-          reject(error2);
-        } else {
-          //console.log("account added", result2);
-          resolve(result2[0]);
-        }
-      });
+      try {
+        let result2 = await method2.call();
+        resolve(result2[0]);
+      } catch(error2) {
+        reject(error2);
+      }
     });
   });
 }
@@ -191,17 +192,16 @@ async function addTranche(tranche, communityId) {
 
 // TODO: possibly cache these for performance's sake
 function getUrlFor(recipientId) {
-  return new Promise((resolve, reject) => {
-    const method = eth.contract.methods.accountForId(recipientId);
-    method.call(function(error, result) {
-      if (error) {
-        reject(error);
-      } else {
-        const account = eth.getAccountFromResult(result);
-        const url = account.urls.split(util.separator)[0];
-        resolve(url);
-      }
-    });
+  return new Promise(async (resolve, reject) => {
+    let method = eth.contract.methods.accountForId(recipientId);
+    try {
+      let result = await method.call();
+      const account = eth.getAccountFromResult(result);
+      const url = account.urls.split(util.separator)[0];
+      resolve(url);
+    } catch(error) {
+      reject(error);
+    }
   });
 }
 
@@ -238,7 +238,7 @@ async function addRewards(rewards, communityId) {
 function addReward(reward, idx) {
   var newVendorId = ids[reward.vendorId];
   return new Promise((resolve, reject) => {
-    const method = eth.contract.methods.addNewReward(
+    let method = eth.contract.methods.addNewReward(
       newVendorId,
       reward.cost,
       reward.quantity,
@@ -246,18 +246,14 @@ function addReward(reward, idx) {
       JSON.stringify(reward.metadata),
       reward.flags || '0x00'
     );
-    doSend(method, () => {
-      const method2 = eth.contract.methods.rewardByIdx(newVendorId, idx, 2);
-      method2.call(function(error2, result2) {
-        if (error2) {
-          reject(error2);
-        } else {
-          // console.log("reward added", result2);
-          resolve(result2[0]);
-        }
-      });
-    }, (error) => {
-      reject(error);
+    doSend(method, async () => {
+      let method2 = eth.contract.methods.rewardByIdx(newVendorId, idx, 2);
+      try {
+        let result2 = await method2.call();
+        resolve(result2[0]);
+      } catch(error2) {
+        reject(error2);
+      }
     });
   });
 }
