@@ -14,135 +14,111 @@ const VERSION = 1;
 console.log(new Date().toUTCString());
 doDump();
 
-function doDump() {
+async function doDump() {
   console.log("dumping to", dumpFile);
   var communities = [];
   var method = eth.contract.methods.getCommunityCount();
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getCommunityCount error', error);
-    } else {
-      console.log('getCommunityCount result', result);
-      for (var i = 1; i <= result; i++) {
-        eth.getCommunityFor(i, (community) => {
-          console.log("community", community.metadata ? community.metadata.name : 'n/a');
-          getCommunityData(community, function(hydratedCommunity) {
-            communities.push(hydratedCommunity);
-            console.log("result", parseInt(result));
-            if (communities.length === parseInt(result)) {
-              let json = '{"version": "' + VERSION + '", "timestamp": " '+ timestamp + '", "communities": ' + JSON.stringify(communities) + '}';
-              fs.writeFile(dumpFile, json, 'utf8', (err2) => {
-                if (err2) throw err2;
-                console.log("Dump written", dumpFile);
-              });
-            }
-          });
-        });
-      }
-    }
-  });
-}
-
-function getCommunityData(community, callback) {
-  community.accounts = [];
-  // dump accounts
-  let method = eth.contract.methods.getAccountCount(community.id);
-  method.call(function(error, accountCount) {
-    console.log("account count", accountCount);
-    if (error) {
-      console.log('getAccountCount error', error);
-    } else if (parseInt(accountCount) === 0) {
-      callback(community);
-    } else {
-      for (var i = 0; i < accountCount; i++) {
-        let method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
-        method2.call(function(error2, result2) {
-          if (error2) {
-            console.log('accountWithinCommunity error', error2);
-          } else {
-            let account = eth.getAccountFromResult(result2);
-            getAccountData(account, function(hydratedAccount) {
-              // console.log("hydrated", hydratedAccount);
-              console.log(`id ${account.id} urls`, account.urls);
-              community.accounts.push(hydratedAccount);
-              if (community.accounts.length >= parseInt(accountCount)) {
-                callback(community);
-              }
+  try {
+    let result = await method.call();
+    console.log('getCommunityCount result', result);
+    for (var i = 1; i <= result; i++) {
+      eth.getCommunityFor(i, (community) => {
+        console.log("community", community.metadata ? community.metadata.name : 'n/a');
+        getCommunityData(community, function(hydratedCommunity) {
+          communities.push(hydratedCommunity);
+          console.log("result", parseInt(result));
+          if (communities.length === parseInt(result)) {
+            let json = '{"version": "' + VERSION + '", "timestamp": " '+ timestamp + '", "communities": ' + JSON.stringify(communities) + '}';
+            fs.writeFile(dumpFile, json, 'utf8', (err2) => {
+              if (err2) throw err2;
+              console.log("Dump written", dumpFile);
             });
           }
         });
-      }
+      });
     }
-  });
+  } catch(error) {
+    console.log('getCommunityCount error', error);
+  }
 }
 
-function getAccountData(account, callback) {
+async function getCommunityData(community, callback) {
+  community.accounts = [];
+  // dump accounts
+  let method = eth.contract.methods.getAccountCount(community.id);
+  try {
+    let result = await method.call();
+    let accountCount = parseInt(result);
+    console.log("account count", accountCount);
+    if (parseInt(accountCount) === 0) {
+      return callback(community);
+    }
+    for (var i = 0; i < accountCount; i++) {
+      let method2 = eth.contract.methods.accountWithinCommunity(community.id, i);
+      let result2 = await method2.call();
+      let account = eth.getAccountFromResult(result2);
+      getAccountData(account, function(hydratedAccount) {
+        // console.log("hydrated", hydratedAccount);
+        console.log(`id ${account.id} urls`, account.urls);
+        community.accounts.push(hydratedAccount);
+        if (community.accounts.length >= parseInt(accountCount)) {
+          callback(community);
+        }
+      });
+    }
+  } catch(error) {
+    console.log('getCommunityData error', error);
+  }
+}
+
+async function getAccountData(account, callback) {
   // console.log("account id", account.id);
 
   // TODO: add accessors in YKAccounts to get full giving data
   let method = eth.contract.methods.lastReplenished(account.id);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('lastReplenished error', error);
-    } else {
-      account.lastReplenished = result;
-      getTranchesData(account, callback);
-    }
-  });
+  try {
+    let result = await method.call();
+    account.lastReplenished = result;
+    getTranchesData(account, callback);
+  } catch(error) {
+    console.log('lastReplenished error', error);
+  }
 }
 
-function getTranchesData(account, callback) {
+async function getTranchesData(account, callback) {
   // TODO: add accessors in YKAccounts to get full giving data
   let method = eth.contract.methods.trancheTotalsForId(account.id);
-  method.call(function(error, totals) {
-    if (error) {
-      console.log('trancheTotalsForId error', error);
-    } else {
-      let method2 = eth.contract.methods.tranchesForId(account.id, 1, totals[0], true);
-      method2.call(function(error2, result2) {
-        if (error2) {
-          console.log('tranchesForId sent error', error2);
-        } else {
-          account.given = JSON.parse(result2);
-          let method3 = eth.contract.methods.tranchesForId(account.id, 1, totals[1], false);
-          method3.call(function(error3, result3) {
-            if (error3) {
-              console.log('tranchesForId received error', error2);
-            } else {
-              account.received = JSON.parse(result3);
-              getRewardsData(account, callback);
-            }
-          });
-        }
-      });
-    }
-  });
+  try {
+    let totals = await method.call();
+    let method2 = eth.contract.methods.tranchesForId(account.id, 1, totals[0], true);
+    let result2 = await method2.call();
+    account.given = JSON.parse(result2);
+    let method3 = eth.contract.methods.tranchesForId(account.id, 1, totals[1], false);
+    let result3 = await method3.call();
+    account.received = JSON.parse(result3);
+    getRewardsData(account, callback);
+  } catch(error) {
+    console.log('getTranchesData error', error);
+  }
 }
 
 // TODO get reward parentId, created, and sold -- especially the first is important, but currently breaks the EVM stack limit
-function getRewardsData(account, callback) {
+async function getRewardsData(account, callback) {
   account.rewards = [];
   let method = eth.contract.methods.getRewardsCount(account.id, 2);
-  method.call(function(error, result) {
-    if (error) {
-      console.log('getRewardsCount error', error);
+  try {
+    let result = await method.call();
+    if (parseInt(result) === 0) {
+      return callback(account);
     }
-    else if (parseInt(result) === 0) {
-      callback(account);
-    } else {
-      for (var i = 0; i < result; i++) {
-        let method2 = eth.contract.methods.rewardByIdx(account.id, i, 2);
-        method2.call(function(error2, result2) {
-          if (error2) {
-            console.log('rewardByIdx error', error2);
-          } else {
-            account.rewards.push(eth.getRewardFromResult(result2));
-            if (account.rewards.length == parseInt(result)) {
-              callback(account);
-            }
-          }
-        });
+    for (var i = 0; i < result; i++) {
+      let method2 = eth.contract.methods.rewardByIdx(account.id, i, 2);
+      let result2 = await method2.call();
+      account.rewards.push(eth.getRewardFromResult(result2));
+      if (account.rewards.length == parseInt(result)) {
+        callback(account);
       }
-    }
-  });
+  } catch(error) {
+    console.log('getRewardsData error', error);
+  }
 }
