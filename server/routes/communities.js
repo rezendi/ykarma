@@ -22,7 +22,7 @@ router.get('/setup', function(req, res, next) {
 });
 
 /* GET community list */
-router.get('/', function(req, res, next) {
+router.get('/', async function(req, res, next) {
   var communities = [];
   var method = eth.contract.methods.getCommunityCount();
   try {

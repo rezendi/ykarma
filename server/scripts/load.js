@@ -10,32 +10,38 @@ const util = require('../routes/util');
 
 var balances = {};
 var ids = {};
+var loadComplete = false;
 
 console.log(new Date().toUTCString());
-checkLoadAndRun();
+if (process.env.NODE_ENV != 'test') {
+  loadIfNotAlreadyLoaded();
+}
 
-async function checkLoadAndRun() {
+async function loadIfNotAlreadyLoaded() {
   var checkLoadMode = eth.contract.methods.loadMode();
   try {
     let result = await checkLoadMode.call();
-    if (!) {
+    if (!result) {
       console.log("loadMode false");
-      return;
+      loadComplete = true;
+      return false;
     }
     doLoad();
   } catch(error) {
     console.log("loadMode error");
-    return;
+    loadComplete = true;
+    return false;
   }
 }
 
 function doLoad() {
   // open the file from the command-line arg, parse the JSON, get the version
-  const file = process.argv[2];
-  const fileToLoad = __dirname + "/" + file;
+  let file = process.env.NODE_ENV=='test' ? 'test.json' : process.argv[2];
+  let fileToLoad = __dirname + "/" + file;
   if (!fs.existsSync(fileToLoad)) {
     console.log("file does not exist:", fileToLoad);
-    return;
+    loadComplete = true;
+    return false;
   }
   fs.readFile(fileToLoad, "utf8", (err, data) => {
     if (err) throw err;
@@ -44,7 +50,6 @@ function doLoad() {
     console.log("version", vals.version);
     console.log("timestamp", vals.timestamp);
     console.log("communities", vals.communities.length);
-
     if (vals.version === '1') {
       loadV1(vals.communities);
     }
@@ -108,11 +113,12 @@ async function loadV1(communities) {
   
   // load complete, switch load mode off
   console.log("Cleaning up...");
-  const loadModeOff = eth.contract.methods.loadModeOff();
-  doSend(loadModeOff);
-  const rewardCreationCost = eth.contract.methods.setRewardCreationCost(10);
-  doSend(rewardCreationCost);
-  sleep(3000);
+  let loadModeOff = eth.contract.methods.loadModeOff();
+  await doSend(loadModeOff);
+  let rewardCreationCost = eth.contract.methods.setRewardCreationCost(10);
+  await doSend(rewardCreationCost);
+  await sleep(3000);
+  loadComplete = true;
   console.log("Done.");
 }
 
@@ -122,15 +128,15 @@ function addCommunity(community) {
     var method = eth.contract.methods.getCommunityCount();
     try {
       let result = await method.call();
-      const method2 = eth.contract.methods.addEditCommunity(
+      let method2 = eth.contract.methods.addEditCommunity(
         0,
-        community.addressAdmin,
-        community.flags || '0x00',
+        community.addressAdmin || util.ADDRESS_ZERO,
+        community.flags || util.BYTES_ZERO,
         community.domain || '',
         JSON.stringify(community.metadata),
         community.tags || '',
       );
-      doSend(method2);
+      await doSend(method2);
       resolve(parseInt(result)+1);
     } catch(error) {
       console.log('getCommunityCount error', error);
@@ -140,29 +146,28 @@ function addCommunity(community) {
 }
 
 function addAccount(account, communityId, url) {
-  return new Promise((resolve, reject) => {
-    const method = eth.contract.methods.addNewAccount(
+  return new Promise(async (resolve, reject) => {
+    let method = eth.contract.methods.addNewAccount(
       communityId,
-      account.userAddress,
+      account.userAddress || util.ADDRESS_ZERO,
       JSON.stringify(account.metadata),
-      account.flags || '0x00',
+      account.flags || util.BYTES_ZERO,
       url
     );
-    doSend(method, async () => {
-      const method2 = eth.contract.methods.accountForUrl(url);
-      try {
-        let result2 = await method2.call();
-        resolve(result2[0]);
-      } catch(error2) {
-        reject(error2);
-      }
-    });
+    let result = await doSend(method);
+    try {
+      let method2 = eth.contract.methods.accountForUrl(url);
+      let result2 = await method2.call();
+      resolve(result2[0]);
+    } catch(error2) {
+      reject(error2);
+    }
   });
 }
 
-function addUrl(accountId, url) {
-  const method = eth.contract.methods.addUrlToExistingAccount(accountId, url);
-  doSend(method);
+async function addUrl(accountId, url) {
+  let method = eth.contract.methods.addUrlToExistingAccount(accountId, url);
+  await doSend(method);
 }
 
 // for each sent tranche:
@@ -178,14 +183,14 @@ async function addTranche(tranche, communityId) {
   var balance = balances[tranche.sender] || 0;
   while (balance < tranche.amount) {
     // console.log("replenishing");
-    const replenish = eth.contract.methods.replenish(tranche.sender);
+    let replenish = eth.contract.methods.replenish(tranche.sender);
     await doSend(replenish);
     balance += 100;
   }
   var newReceiverId = ids[tranche.receiver];
   var recipientUrl = await getUrlFor(newReceiverId);
   // console.log("sending to url", recipientUrl);
-  const give = eth.contract.methods.give(tranche.sender, communityId, recipientUrl, tranche.amount, tranche.message);
+  let give = eth.contract.methods.give(tranche.sender, communityId, recipientUrl, tranche.amount, tranche.message);
   await doSend(give);
   balances[tranche.sender] = balance - tranche.amount;
 }
@@ -196,8 +201,8 @@ function getUrlFor(recipientId) {
     let method = eth.contract.methods.accountForId(recipientId);
     try {
       let result = await method.call();
-      const account = eth.getAccountFromResult(result);
-      const url = account.urls.split(util.separator)[0];
+      let account = eth.getAccountFromResult(result);
+      let url = account.urls.split(util.separator)[0];
       resolve(url);
     } catch(error) {
       reject(error);
@@ -213,7 +218,7 @@ async function addGivable(account) {
     return;
   }
   while (toGive > 0) {
-    const replenish = eth.contract.methods.replenish(account.id);
+    let replenish = eth.contract.methods.replenish(account.id);
     await doSend(replenish);
     // console.log("replenished");
     toGive -= 100;
@@ -237,7 +242,7 @@ async function addRewards(rewards, communityId) {
 
 function addReward(reward, idx) {
   var newVendorId = ids[reward.vendorId];
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let method = eth.contract.methods.addNewReward(
       newVendorId,
       reward.cost,
@@ -246,49 +251,34 @@ function addReward(reward, idx) {
       JSON.stringify(reward.metadata),
       reward.flags || '0x00'
     );
-    doSend(method, async () => {
-      let method2 = eth.contract.methods.rewardByIdx(newVendorId, idx, 2);
-      try {
-        let result2 = await method2.call();
-        resolve(result2[0]);
-      } catch(error2) {
-        reject(error2);
-      }
-    });
+    let result = await doSend(method);
+    let method2 = eth.contract.methods.rewardByIdx(newVendorId, idx, 2);
+    try {
+      let result2 = await method2.call();
+      resolve(result2[0]);
+    } catch(error2) {
+      reject(error2);
+    }
   });
 }
 
 function performPurchase(reward, rewardId, communityId) {
   var newOwnerId = ids[reward.ownerId];
+  let method = eth.contract.methods.purchase(newOwnerId, rewardId, communityId);
+  return doSend(method);
+}
+
+function doSend(method) {
   return new Promise((resolve, reject) => {
-    const method = eth.contract.methods.purchase(newOwnerId, rewardId, communityId);
-    doSend(method, () => {
-      resolve(true);
-    }, (error) => {
+    method.send({from:eth.getFromAccount(), gas: eth.GAS})
+    .on('error', (error) => {
       reject(error);
+    })
+    .on('confirmation', () => {
+      resolve(true);
     });
   });
 }
-
-function doSend(method, callback = null, errorCallback = null) {
-  method.send({from:eth.getFromAccount(), gas: eth.GAS}).on('error', (error) => {
-    console.log('error', error);
-    if (errorCallback) {
-      errorCallback(error);
-    }
-  })
-  .on('confirmation', (number) => {
-    if (callback && number == 1) {
-      callback();
-    }
-  })
-  .catch(function(error) {
-    console.log('send call error ' + error);
-    if (errorCallback) {
-      errorCallback(error);
-    }
-  });
-};
 
 function sleep(ms) {
   if (process.env.NODE_ENV=="test") {
@@ -296,3 +286,13 @@ function sleep(ms) {
   }
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// for crude testability
+function isDone() {
+  return loadComplete;
+}
+
+module.exports = {
+    loadIfNotAlreadyLoaded:loadIfNotAlreadyLoaded,
+    isDone:isDone
+};

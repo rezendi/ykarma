@@ -12,7 +12,8 @@ const fs = require('fs');
 const envFile = '../server/.env';
 
 const isTesting = process.argv.slice(-1)[0] === 'test';
-const isInitialGeneration = true; // set false for the chain to be empty of initial community/account
+// set false for the chain to be empty of initial community/account, i.e. if you're going to run npm load
+const isInitialGeneration = process.env.TRUFFLE_ENV === 'test';
 
 const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';
 const BYTES_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
