@@ -29,9 +29,10 @@ async function doReplenish() {
   var method = eth.contract.methods.getCommunityCount();
   try {
     let result = await method.call();
-    console.log('getCommunityCount result', result);
-    for (var i = 0; i < result; i++) {
-      eth.getCommunityFor(i+1, (community) => {
+    let communityCount = parseInt(result);
+    console.log('getCommunityCount result', communityCount);
+    for (var i = 1; i <= communityCount; i++) {
+      eth.getCommunityFor(i, (community) => {
         replenishCommunity(community);
       });
     }

@@ -26,7 +26,8 @@ router.get('/', async function(req, res, next) {
   var communities = [];
   var method = eth.contract.methods.getCommunityCount();
   try {
-    let communityCount = await method.call();
+    let result = await method.call();
+    let communityCount = parseInt(result);
     util.log('getCommunityCount result', communityCount);
     if (communityCount===0) {
       return res.json([]);

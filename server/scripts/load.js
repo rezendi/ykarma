@@ -128,6 +128,7 @@ function addCommunity(community) {
     var method = eth.contract.methods.getCommunityCount();
     try {
       let result = await method.call();
+      let communityCount = parseInt(result);
       let method2 = eth.contract.methods.addEditCommunity(
         0,
         community.addressAdmin || util.ADDRESS_ZERO,
@@ -137,7 +138,7 @@ function addCommunity(community) {
         community.tags || '',
       );
       await doSend(method2);
-      resolve(parseInt(result)+1);
+      resolve(communityCount+1);
     } catch(error) {
       console.log('getCommunityCount error', error);
       reject(error);
@@ -269,13 +270,17 @@ function performPurchase(reward, rewardId, communityId) {
 }
 
 function doSend(method) {
+  var unresolved = true;
   return new Promise((resolve, reject) => {
     method.send({from:eth.getFromAccount(), gas: eth.GAS})
     .on('error', (error) => {
       reject(error);
     })
-    .on('confirmation', () => {
-      resolve(true);
+    .on('confirmation', (number) => {
+      if (number === 1 && unresolved) {
+        unresolved = false;
+        resolve(true);
+      }
     });
   });
 }

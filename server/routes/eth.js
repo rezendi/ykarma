@@ -56,7 +56,7 @@ const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, ca
         return res.json({"success":true, "result": receipt});
       }
     });
-  })
+  });
 };
 
 async function getAccountFor(id, callback) {

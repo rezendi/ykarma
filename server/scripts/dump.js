@@ -37,11 +37,9 @@ async function doDump() {
       await sleep(1000);
     }
     let json = '{"version": "' + VERSION + '", "timestamp": " '+ timestamp + '", "communities": ' + JSON.stringify(communities) + '}';
-    fs.writeFile(dumpFile, json, 'utf8', (err2) => {
-      if (err2) throw err2;
-      console.log("Dump written", dumpFile);
-      return true;
-    });
+    fs.writeFileSync(dumpFile, json, 'utf8');
+    console.log("Dump written", dumpFile);
+    return true;
   } catch(error) {
     console.log('getCommunityCount error', error);
     return false;
@@ -83,7 +81,7 @@ async function getAccountData(account, callback) {
   let method = eth.contract.methods.lastReplenished(account.id);
   try {
     let result = await method.call();
-    account.lastReplenished = result;
+    account.lastReplenished = parseInt(result);
     getTranchesData(account, callback);
   } catch(error) {
     console.log('lastReplenished error', error);

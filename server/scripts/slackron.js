@@ -28,7 +28,8 @@ async function populateSlack() {
   var method = eth.contract.methods.getCommunityCount();
   try {
     let result = await method.call();
-    for (var i = 1; i <= result; i++) {
+    let communityCount = parseInt(result);
+    for (var i = 1; i <= communityCount; i++) {
       eth.getCommunityFor(i, (community) => {
         let metadata = community.metadata || {};
         let slackTeams = metadata.slackTeams || [];
