@@ -20,7 +20,6 @@ const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 
 router.use('*', (req, res, next) => {
    if (process.env.NODE_ENV==="test") {
-      util.debug("test slack call");
       return next();
    }
    var slackSignature = req.headers['x-slack-signature'];
@@ -57,26 +56,36 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-var testData = {};
+var testData = {messages:[], conversations:[]};
 
 router.post('/testOpenConversation', function(req, res, next) {
-  util.log("opening test conversation with", req.body)
-  testData.lastOpenConversation = req.body;
+  util.log(`opening idx ${testData.messages.length} test conversation`, req.body);
+  testData.conversations.push(req.body);
   res.json({success:true, ok:true, channel:{id: "TestChannel"}, body:req.body});
 });
 
-router.get('/lastOpenConversation', function(req, res, next) {
-  res.json({last:testData.lastOpenConversation});
+router.get('/testConversation/:index', function(req, res, next) {
+   var idx = parseInt(req.params.index);
+   if (testData.conversations.length > idx) {
+      return res.json({val:testData.conversations[idx]});
+   }
+   util.warn("conversations length is", testData.conversations.length);
+   res.json({val:''});
 });
 
 router.post('/testPostMessage', function(req, res, next) {
-  util.log("posting test message", req.body)
-  testData.lastPostMessage = req.body;
+  util.log(`posting idx ${testData.messages.length} test message`, req.body);
+  testData.messages.push(req.body);
   res.json({success:true, ok:true, body:req.body});
 });
 
-router.get('/lastPostMessage', function(req, res, next) {
-  res.json({last:testData.lastPostMessage});
+router.get('/testMessage/:index', function(req, res, next) {
+   var idx = parseInt(req.params.index);
+   if (testData.messages.length > idx) {
+      return res.json({val:testData.messages[idx]});
+   }
+   util.warn("messages length is", testData.messages.length);
+   res.json({val:''});
 });
 
 router.post('/state', function(req, res, next) {
@@ -392,7 +401,7 @@ router.post('/event', async function(req, res, next) {
   console.log("message.im", req.body);
   var data = await getFirebaseTeamData(req.body.team_id);
   if (data.error) {
-    return res.send({success:false, error:data.error})
+    return res.send({success:false, error:data.error});
   }
   let bot_token = data.vals.bot_token;
   if (!bot_token) {
@@ -465,9 +474,10 @@ router.post('/event', async function(req, res, next) {
       postToChannel(req.body.event.channel, text, bot_token);
       let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
       try {
-        let totalRewards = await rewardsMethod.call();
+        let result = await rewardsMethod.call();
+        let totalRewards = parseInt(result);
         console.log("total rewards", totalRewards);
-        if (parseInt(totalRewards)===0) {
+        if (totalRewards===0) {
           util.log("No rewards available");
           postToChannel(slackChannelId, req.t("No rewards available"), bot_token);
           return res.json({text:text});
@@ -494,11 +504,12 @@ router.post('/event', async function(req, res, next) {
                 let vendor = await getAccountFor(available[j].vendorId);
                 var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
                 vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
+                var description = available[j].metadata.description ? `\n ${ available[j].metadata.description}` : '';
                 blocks = blocks.concat([{
                   "type": "section",
                   "text": {
                      "type": "mrkdwn",
-                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from ${vendorInfo} \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
+                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from ${vendorInfo} ${description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
                   }
                   },
                   { "type": "divider" }
@@ -541,7 +552,7 @@ router.post('/event', async function(req, res, next) {
         eth.doSend(purchaseMethod, res, 1, 2, (error) => {
           if (error) {
             postToChannel(slackChannelId, req.t("Could not complete purchase, sorry!"), bot_token);
-            return util.warn("purchase error", error);
+            return util.warn("purchase error");
           }
           util.log("purchased", reward);
           // send notifications

@@ -51,7 +51,7 @@ function doLoad() {
     console.log("timestamp", vals.timestamp);
     console.log("communities", vals.communities.length);
     if (vals.version === '1') {
-      loadV1(vals.communities.sort(function(a, b){return a.id - b.id}));
+      loadV1(vals.communities.sort(function(a, b){return a.id - b.id;}));
     }
   });
 }
@@ -66,7 +66,7 @@ async function loadV1(communities) {
     var tranches = [];
     
     // First, add all the accounts
-    var accounts = community.accounts.sort(function(a, b){return a.id - b.id});
+    var accounts = community.accounts.sort(function(a, b){return a.id - b.id;});
     for (var j=0; j<accounts.length; j++) {
       var account = accounts[j];
       var urls = account.urls.split(util.separator);
@@ -89,7 +89,7 @@ async function loadV1(communities) {
     console.log("Accounts added", accounts.length);
 
     // Next, recapitulate all the sends, in order
-    var tranches = tranches.sort(function(a, b){return a.block - b.block});
+    tranches = tranches.sort(function(a, b){return a.block - b.block;});
     for (var l=0; l<tranches.length; l++) {
       await addTranche(tranches[l], community.id);
       console.log("tranche", tranches[l].block);
@@ -155,7 +155,7 @@ function addAccount(account, communityId, url) {
       account.flags || util.BYTES_ZERO,
       url
     );
-    let result = await doSend(method);
+    await doSend(method);
     try {
       let method2 = eth.contract.methods.accountForUrl(url);
       let result2 = await method2.call();
@@ -252,7 +252,7 @@ function addReward(reward, idx) {
       JSON.stringify(reward.metadata),
       reward.flags || '0x00'
     );
-    let result = await doSend(method);
+    await doSend(method);
     let method2 = eth.contract.methods.rewardByIdx(newVendorId, idx, 2);
     try {
       let result2 = await method2.call();
