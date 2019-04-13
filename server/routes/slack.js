@@ -58,8 +58,8 @@ eth.getFromAccount().then(address => {
 
 var testData = {};
 
-router.post('/testReset', function(req, res, next) {
-   testData = {};
+router.get('/testReset/:teamId', function(req, res, next) {
+   testData.teamId = {messages:[], conversations: []};
    res.json({'ok':true});
 });
 
@@ -74,6 +74,7 @@ router.post('/testOpenConversation', function(req, res, next) {
 
 router.get('/testConversation/:teamId/:index', function(req, res, next) {
    let teamId = req.params.teamId || testData.lastTeamId;
+   testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
    let idx = parseInt(req.params.index);
    if (testData.teamId.conversations.length > idx) {
       return res.json({val:testData.teamId.conversations[idx]});
@@ -94,6 +95,7 @@ router.post('/testPostMessage', function(req, res, next) {
 
 router.get('/testMessage/:teamId/:index', function(req, res, next) {
    let teamId = req.params.teamId || testData.lastTeamId;
+   testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
    let idx = parseInt(req.params.index);
    if (testData.teamId.messages.length > idx) {
       return res.json({val:testData.teamId.messages[idx]});
@@ -497,19 +499,19 @@ router.post('/event', async function(req, res, next) {
       try {
         let result = await rewardsMethod.call();
         let totalRewards = parseInt(result);
-        console.log("total rewards", totalRewards);
+        util.log("total rewards", totalRewards);
         if (totalRewards===0) {
           util.log("No rewards available");
           postToChannel(slackChannelId, req.t("No rewards available"), bot_token);
           return res.json({text:text});
         }
         var available = [];
-        for (var i = 0; i < parseInt(totalRewards); i++) {
+        for (var i = 0; i < totalRewards; i++) {
           rewards.getRewardByIndex(0, i, 0, async (reward) => {
-            console.log("reward", reward);
+            // console.log("reward", reward);
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
-              available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
+              available = available.filter(reward => reward.id > 0 && reward.ownerId===0 && reward.vendorId !== sender.id);
               blocks = [
                {
                   "type": "section",
@@ -577,7 +579,6 @@ router.post('/event', async function(req, res, next) {
           util.log("purchased", reward);
           // send notifications
           eth.getAccountFor(reward.vendorId, (vendor) => {
-            util.log("from", vendor);
             email.sendRewardPurchasedEmail(req, reward, sender, vendor);
             email.sendRewardSoldEmail(req, reward, sender, vendor);
             var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
