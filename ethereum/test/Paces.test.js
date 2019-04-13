@@ -130,13 +130,13 @@ contract('Paces', function(accounts) {
     vals = await ykarma.rewardForId(3);
     assert.equal(vals[6], 'test', "Beta tag");
     var exc = null;
-    try { await ykarma.purchase(2, 3, 1); } catch(e){ exc = e; }
+    try { await ykarma.purchase(2, 3); } catch(e){ exc = e; }
     assert.notEqual(exc, null, "Exception generated");
     
     // A successful purchase
     vals = await ykarma.accountForId(2);
     assert.equal(JSON.parse(vals[9])[0].available, 40, "Karma ready to spend");
-    await ykarma.purchase(2, 2, 1);
+    await ykarma.purchase(2, 2);
     vals = await ykarma.rewardForId(2);
     assert.equal(vals[2], 0, "No owner");
     assert.equal(vals[4], 1, "Reward quantity diminished");

@@ -75,7 +75,7 @@ async function getListOfRewards(idType, id, res) {
       return res.json({"success":true, "rewards":[]});
     }
     for (var i = 0; i < parseInt(totalRewards); i++) {
-      getRewardByIndex(idType, id, i, (reward) => {
+      getRewardByIndex(id, i, idType, (reward) => {
         rewards.push(reward);
         if (rewards.length >= parseInt(totalRewards)) {
           // console.log('rewards', rewards);
@@ -138,7 +138,7 @@ router.post('/purchase', function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": req.t("Not logged in")});
   }
-  var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId, req.session.ykcid);
+  var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
   getRewardFor(req.body.rewardId, (reward) => {
     eth.doSend(method, res, 1, 2, () => {
       eth.getAccountFor(reward.vendorId, (vendor) => {
@@ -173,8 +173,8 @@ async function getRewardFor(id, callback) {
   }
 }
 
-async function getRewardByIndex(idType, accountId, idx, callback) {
-  const method = eth.contract.methods.rewardByIdx(accountId, idx, idType);
+async function getRewardByIndex(id, idx, idType, callback) {
+  const method = eth.contract.methods.rewardByIdx(id, idx, idType);
   try {
     let result = await method.call();
     var reward = eth.getRewardFromResult(result);

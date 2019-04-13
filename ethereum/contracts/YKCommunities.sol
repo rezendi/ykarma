@@ -72,7 +72,7 @@ contract YKCommunities is Oracular, YKStructs {
     validators[_id] = _address;
   }
 
-  function validateGive(Account memory giver, uint256 _communityId, string memory _url, string memory _message) public view onlyOracle returns (bool) {
+  function validateGive(uint256 _communityId, Account memory giver, string memory _url, string memory _message) public view onlyOracle returns (bool) {
     require(uintArrayContains(giver.communityIds, _communityId));
     address validatorAddress = validators[_communityId];
     if (validatorAddress == 0x0000000000000000000000000000000000000000) {
@@ -80,16 +80,6 @@ contract YKCommunities is Oracular, YKStructs {
     }
     YKValidator validator = YKValidator(validatorAddress);
     return validator.validateGive(giver, _url, _message);
-  }
-  
-  function validatePurchase(Account memory buyer, uint256 _communityId, Reward memory reward) public view onlyOracle returns (bool) {
-    require(uintArrayContains(buyer.communityIds, _communityId));
-    address validatorAddress = validators[_communityId];
-    if (validatorAddress == 0x0000000000000000000000000000000000000000) {
-      return true;
-    }
-    YKValidator validator = YKValidator(validatorAddress);
-    return validator.validatePurchase(buyer, reward);
   }
   
 }

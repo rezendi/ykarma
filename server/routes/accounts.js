@@ -20,14 +20,14 @@ eth.getFromAccount().then(address => {
 });
 
 // GET set up
-router.get('/setup', function(req, res, next) {
+router.get('/setup/:ykid', function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
-    util.warn("setting up test data");
-    req.session.ykid = req.params.ykid || 2;
-    req.session.email = process.env.ADMIN_EMAIL; // so we can look at 
+    util.warn("setting up test data", req.params.ykid);
+    req.session.ykid = parseInt(req.params.ykid);
+    req.session.email = process.env.ADMIN_EMAIL; // so we can look at everything
     req.session.ykcid = 1;
     req.session.communityAdminId = 1;
-    util.log("set up test data", req.session);
+    //util.debug("set up test data", req.session);
     return res.json({"success":true});
   } else {
     util.warn("setup called out of test mode");
@@ -103,7 +103,14 @@ router.get('/me', async function(req, res, next) {
       getSessionFromAccount(req, account);
       eth.getCommunityFor(req.session.ykcid, (community) => {
         account.community = community;
-        hydrateAccount(account, () => {
+        hydrateAccount(account, async () => {
+          var method = eth.contract.methods.availableToSpend(account.id, '');
+          try {
+            let mySpendable = await method.call();
+            account.spendable = parseInt(mySpendable);
+          } catch(error) {
+            util.warn("account load error", error);
+          }
           res.json(account);
         });
       });
@@ -296,7 +303,7 @@ router.post('/give', function(req, res, next) {
       req.body.message || ''
     );
     eth.doSend(method, res, 1, 4, function() {
-      util.log("karma sent to", req.body.recipient);
+      util.log(`${req.body.amount} karma sent to`, recipientUrl);
       if (recipientUrl.startsWith("mailto:")) {
         var account = req.session.account || {};
         account.metadata = account.metadata || {};
@@ -466,7 +473,6 @@ function getSessionFromAccount(req, account) {
   req.session.name = account.metadata.name;
   req.session.account = account;
   var urls = account.urls.split(util.separator);
-  util.debug("urls", urls);
   for (var i in urls) {
     if (urls[i].startsWith("mailto:")) {
       req.session.email = urls[i].replace("mailto:", "");

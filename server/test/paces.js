@@ -13,7 +13,7 @@ describe('Account', function () {
   it('should add a URL to an account, then remove one', async function () {
     this.timeout(5000);
     try {
-      var res = await api.get('/api/accounts/setup?ykid=2');
+      var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.get('/api/accounts/url/test@example.com').set('Cookie', TestCookies);
         var acct = JSON.parse(res.text);
@@ -38,7 +38,7 @@ describe('Account', function () {
 
   it('should list accounts for a community', async function () {
     try {
-      var res = await api.get('/api/accounts/setup?ykid=2');
+      var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.get('/api/communities/1/accounts').set('Cookie', TestCookies);
         var accounts = JSON.parse(res.text);
@@ -51,7 +51,7 @@ describe('Account', function () {
   it('should update account metadata', async function () {
     this.timeout(4000);
     try {
-      var res = await api.get('/api/accounts/setup?ykid=2');
+      var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.put('/api/accounts/update').set('Cookie', TestCookies)
         .send({"account":{"id":2, "userAddress":"0x123f681646d4a755815f9cb19e1acc8565a0c2ac", "metadata":'{"name":"Updated"}'}});
@@ -66,13 +66,14 @@ describe('Account', function () {
   });
 
   it('should send karma to another account', async function () {
-    var initial;
+    var initial, initialGiven;
     this.timeout(4000);
     try {
-      var res = await api.get('/api/accounts/setup?ykid=2');
+      var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.get('/api/accounts/url/test@example.com').set('Cookie', TestCookies);
         initial = parseInt(JSON.parse(res.text).givable);
+        initialGiven = JSON.parse(res.text).given.length;
       res = await api.post('/api/accounts/give').set('Cookie', TestCookies)
         .send({"amount":1, "recipient":"@testrecipient", "message":"Just a message"});
         expect(JSON.parse(res.text).success).to.equal(true);
@@ -82,6 +83,40 @@ describe('Account', function () {
       res = await api.get('/api/accounts/url/@testrecipient').set('Cookie', TestCookies);
         acct = JSON.parse(res.text);
         expect(acct.flags).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001');
+      res = await api.get('/api/accounts/me').set('Cookie', TestCookies);
+        expect(JSON.parse(res.text).given.length).to.equal(initialGiven + 1);
+    } catch(err) {
+      return console.log("error", err);
+    }
+  });
+
+  it('should send karma to another community', async function () {
+    var initialSpendable, initialGiven, initialReceived, initialGivable, acct, res;
+    this.timeout(4000);
+    try {
+      res = await api.get('/api/accounts/setup/6');
+        TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+      res = await api.get('/api/accounts/me').set('Cookie', TestCookies);
+        initialReceived = parseInt(JSON.parse(res.text).received.length);
+        initialSpendable = parseInt(JSON.parse(res.text).spendable);
+      res = await api.get('/api/accounts/setup/2');
+        TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+      res = await api.get('/api/accounts/url/test@example.com').set('Cookie', TestCookies);
+        initialGivable = parseInt(JSON.parse(res.text).givable);
+        initialGiven = JSON.parse(res.text).given.length;
+      res = await api.post('/api/accounts/give').set('Cookie', TestCookies)
+        .send({"amount":3, "recipient":"admin@test.com", "message":"Just a cross-community message"});
+        expect(JSON.parse(res.text).success).to.equal(true);
+      res = await api.get('/api/accounts/url/test@example.com').set('Cookie', TestCookies);
+        acct = JSON.parse(res.text);
+        expect(parseInt(acct.givable)).to.equal(initialGivable - 3);
+        expect(acct.given.length).to.equal(initialGiven + 1);
+      res = await api.get('/api/accounts/setup/6');
+        TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+      res = await api.get('/api/accounts/me').set('Cookie', TestCookies);
+        acct = JSON.parse(res.text);
+        expect(acct.received.length).to.equal(initialReceived + 1);
+        expect(acct.spendable).to.equal(initialSpendable + 3);
     } catch(err) {
       return console.log("error", err);
     }
@@ -97,7 +132,7 @@ describe('Reward', function () {
     try {
       var rewardId = 1;
       var initialRewards;
-      var res = await api.get('/api/accounts/setup?ykid=2');
+      var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.get('/api/rewards/vendedBy/2').set('Cookie', TestCookies).expect(200);
         initialRewards = JSON.parse(res.text).rewards.length;
@@ -130,3 +165,7 @@ describe('Reward', function () {
   });
 
 });
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

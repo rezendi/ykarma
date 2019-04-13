@@ -56,35 +56,50 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-var testData = {messages:[], conversations:[]};
+var testData = {};
+
+router.post('/testReset', function(req, res, next) {
+   testData = {};
+   res.json({'ok':true});
+});
 
 router.post('/testOpenConversation', function(req, res, next) {
-  util.log(`opening idx ${testData.messages.length} test conversation`, req.body);
-  testData.conversations.push(req.body);
+  let teamId = req.body.team_id  || testData.lastTeamId;
+  testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
+  util.log(`opening team ${teamId} idx ${testData.teamId.conversations.length} test conversation`, req.body);
+  testData.teamId.conversations.push(req.body);
+  testData.lastTeamId = teamId;
   res.json({success:true, ok:true, channel:{id: "TestChannel"}, body:req.body});
 });
 
-router.get('/testConversation/:index', function(req, res, next) {
-   var idx = parseInt(req.params.index);
-   if (testData.conversations.length > idx) {
-      return res.json({val:testData.conversations[idx]});
+router.get('/testConversation/:teamId/:index', function(req, res, next) {
+   let teamId = req.params.teamId || testData.lastTeamId;
+   let idx = parseInt(req.params.index);
+   if (testData.teamId.conversations.length > idx) {
+      return res.json({val:testData.teamId.conversations[idx]});
    }
-   util.warn("conversations length is", testData.conversations.length);
+   util.warn("conversations length is", testData.teamId.conversations.length);
+   testData.lastTeamId = teamId;
    res.json({val:''});
 });
 
 router.post('/testPostMessage', function(req, res, next) {
-  util.log(`posting idx ${testData.messages.length} test message`, req.body);
-  testData.messages.push(req.body);
+  let teamId = req.body.team_id || testData.lastTeamId;
+  testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
+  util.log(`posting team ${teamId} idx ${testData.teamId.messages.length} test message`, req.body);
+  testData.teamId.messages.push(req.body);
+  testData.lastTeamId = teamId;
   res.json({success:true, ok:true, body:req.body});
 });
 
-router.get('/testMessage/:index', function(req, res, next) {
-   var idx = parseInt(req.params.index);
-   if (testData.messages.length > idx) {
-      return res.json({val:testData.messages[idx]});
+router.get('/testMessage/:teamId/:index', function(req, res, next) {
+   let teamId = req.params.teamId || testData.lastTeamId;
+   let idx = parseInt(req.params.index);
+   if (testData.teamId.messages.length > idx) {
+      return res.json({val:testData.teamId.messages[idx]});
    }
-   util.warn("messages length is", testData.messages.length);
+   util.warn("messages length is", testData.teamId.messages.length);
+   testData.lastTeamId = teamId;
    res.json({val:''});
 });
 
@@ -158,40 +173,43 @@ router.get('/team_auth', function(req, res, next) {
     return res.json({success:false, error: "State mismatch " + req.session.slackState});
   }
   
-  // for now only the admin can add to slack
-  if (req.session.email !== process.env.ADMIN_EMAIL) {
-    return res.json({"success":false, "error": req.t("Not authorized")});
-  }
-  if (req.session.ykcid === 0) {
-    return res.json({"success":false, "error": "No community"});
-  }
-
-  const code = req.query.code;
-  const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
-  fetch(url).then(function(response) {
-    response.json().then((json) => {
-      //console.log("response", json);
-      if (!json.ok) {
-        util.warn("Error completing slack team auth");
-        return res.redirect('/profile?error=slack_team');
-      }
-
-      // get vals, store to Firestore
-      const teamId = json.team_id;
-      var teamVals = {
-        'id'        : teamId,
-        'token'     : json.access_token,
-        'scope'     : json.scope,
-        'name'      : json.team_name,
-        'userId'    : json.user_id,
-        'bot_id'    : json.bot ? json.bot.bot_user_id : null,
-        'bot_token' : json.bot ? json.bot.bot_access_token : null,
-      };
-      docRef = firebase.db.collection('slackTeams').doc(teamId);
-      docRef.set(teamVals, { merge: true });
-      
-      // update community metadata
-      eth.getCommunityFor(req.session.ykcid, (community) => {
+   if (req.session.ykcid === 0) {
+     return res.json({"success":false, "error": "No community"});
+   }
+  eth.getCommunityFor(req.session.ykcid, (community) => {
+    // for now only the admin can add to slack
+    let authorizedEmail = community.metadata.adminEmail;
+    let userAuthorized = req.session.email === process.env.ADMIN_EMAIL || (authorizedEmail && req.session.email===authorizedEmail);
+    if (!userAuthorized) {
+      return res.json({"success":false, "error": req.t("Not authorized")});
+    }
+ 
+    const code = req.query.code;
+    const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
+    fetch(url).then(function(response) {
+      response.json().then((json) => {
+        //console.log("response", json);
+        if (!json.ok) {
+         util.warn("Error completing slack team auth");
+         return res.redirect('/profile?error=slack_team');
+        }
+ 
+        // get vals, store to Firestore
+        const teamId = json.team_id;
+        var teamVals = {
+         'id'          : teamId,
+         'token'       : json.access_token,
+         'scope'       : json.scope,
+         'name'        : json.team_name,
+         'userId'      : json.user_id,
+         'bot_id'      : json.bot ? json.bot.bot_user_id : null,
+         'bot_token'   : json.bot ? json.bot.bot_access_token : null,
+         'communityId' : req.session.ykcid,
+        };
+        docRef = firebase.db.collection('slackTeams').doc(teamId);
+        docRef.set(teamVals, { merge: true });
+       
+       // update community metadata
         if (!community.metadata) {
           util.warn("Couldn't get community for id", req.session.ykcid);
           return res.redirect('/profile?error=slack_team_chain');
@@ -216,7 +234,6 @@ router.get('/team_auth', function(req, res, next) {
           res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
         });
       });
-
     });
   });
 });
@@ -224,6 +241,7 @@ router.get('/team_auth', function(req, res, next) {
 // For now, just send mock Slack response with GIF
 router.post('/yk', async function(req, res, next) {
   util.warn("got post", req.body);
+  testData.lastTeamId = req.body.team_id;
 
   var showGif = true;
   if (req.body.ssl_check === 1) {
@@ -334,8 +352,11 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
     return { error: req.t("Sorry! That YKarma account is not set up for receiving here"), sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
   }
   
-  // TODO get community ID from slack team
   let communityId = sender.communityIds[0];
+  if (sender.communityIds.length > 0) {
+     // TODO get community ID from slack team
+     console.log("implement this TODO");
+  }
   
   return { sender:sender, communityId: communityId, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
 }
@@ -484,7 +505,7 @@ router.post('/event', async function(req, res, next) {
         }
         var available = [];
         for (var i = 0; i < parseInt(totalRewards); i++) {
-          rewards.getRewardByIndex(0, 0, i, async (reward) => {
+          rewards.getRewardByIndex(0, i, 0, async (reward) => {
             console.log("reward", reward);
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
@@ -535,8 +556,8 @@ router.post('/event', async function(req, res, next) {
     // Make a purchase
     case req.t("purchase"):
       var purchaseId = 0;
-      for (var i=1; i < words.length; i++) {
-        var wordNum = parseInt(words[i], 10);
+      for (var j=1; j < words.length; j++) {
+        var wordNum = parseInt(words[j], 10);
         if (wordNum > 0) {
           purchaseId = wordNum;
           break;
@@ -546,8 +567,7 @@ router.post('/event', async function(req, res, next) {
         text = req.t("Please tell me the ID of the reward you want to purchase");
         break;
       }
-      // TODO get community ID from slack team
-      var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId, sender.communityIds[0]);
+      var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId);
       rewards.getRewardFor(purchaseId, (reward) => {
         eth.doSend(purchaseMethod, res, 1, 2, (error) => {
           if (error) {
@@ -575,10 +595,13 @@ router.post('/event', async function(req, res, next) {
       break;
 
     // Leaderboard
-    // TODO translate
     case req.t("leaderboard"):
-      // TODO get community from Slack team
-      communities.getLeaderboard(sender.communityIds[0], (error, leaders) => {
+      let communityId = sender.communityIds[0];
+      if (sender.communityIds.length > 0) {
+         // TODO get community from Slack team
+         console.log("implement this here TODO");
+      }
+      communities.getLeaderboard(communityId, (error, leaders) => {
          if (error) {
             postToChannel(slackChannelId, req.t("Could not get leaderboard, sorry!"), bot_token);
          } else {

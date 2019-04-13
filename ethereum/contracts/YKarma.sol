@@ -57,22 +57,20 @@ contract YKarma is Oracular, YKStructs {
   function give(uint256 _giverId, uint256 _communityId, string memory _url, uint256 _amount, string memory _message) public onlyOracle {
     require (_giverId > 0 && _communityId > 0 && _amount > 0);
     Account memory giver = accountData.accountForId(_giverId);
-    require (communityData.validateGive(giver, _communityId, _url, _message));
+    require (communityData.validateGive(_communityId, giver, _url, _message));
     uint256 available = trancheData.availableToGive(_giverId);
     require (available >= _amount);
     Community memory community = communityData.communityForId(_communityId);
     Account memory recipient = accountData.accountForId(accountData.accountIdForUrl(_url));
     if (recipient.id == 0) {
-      recipient = accountData.accountForId(addNewAccount(community.id, 0x0000000000000000000000000000000000000000, '', 0x0000000000000000000000000000000000000000000000000000000000000001, _url)); // 0x1 to mark account created by giving
+      recipient = accountData.accountForId(addNewAccount(_communityId, 0x0000000000000000000000000000000000000000, '', 0x0000000000000000000000000000000000000000000000000000000000000001, _url)); // 0x1 to mark account created by giving
     }
     trancheData.performGive(giver, recipient, _amount, community.tags, _message);
   }
 
-  function purchase(uint256 _buyerId, uint256 _rewardId, uint256 _communityId) public onlyOracle {
+  function purchase(uint256 _buyerId, uint256 _rewardId) public onlyOracle {
     Reward memory reward = rewardData.rewardForId(_rewardId);
     require(_buyerId > 0 && reward.ownerId == 0); // for now
-    Account memory buyer = accountData.accountForId(_buyerId);
-    require (communityData.validatePurchase(buyer, _communityId, reward));
     trancheData.spend(_buyerId, reward.cost, reward.tag);
     uint256 redeemedId = rewardData.redeem(_buyerId, reward.id);
     accountData.redeem(_buyerId, redeemedId, reward.vendorId, reward.quantity > 1);
@@ -232,6 +230,6 @@ contract YKarma is Oracular, YKStructs {
       uint256 accountRewardId = _idType == 1 ? accountData.accountForId(_id).rewardIds[_idx] : accountData.accountForId(_id).offerIds[_idx];
       return rewardForId(accountRewardId);
     }
-    return rewardForId(_id+1);
+    return rewardForId(_idx+1);
   }
 }
