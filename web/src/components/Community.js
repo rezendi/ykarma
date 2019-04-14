@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Grid, Row, Col, Panel, Button } from 'react-bootstrap';
 import { reduxForm } from 'redux-form';
 import { withTranslation } from 'react-i18next';
-import { loadCommunity, loadAccountsFor, setLoading } from '../store/data/actions'
+import { loadCommunities, loadCommunity, loadAccountsFor, setLoading } from '../store/data/actions'
 import CommunityForm from './CommunityForm';
 import CommunityMember from './CommunityMember';
 import Api from '../store/Api';
@@ -71,6 +71,9 @@ class Community extends React.Component {
         <CommunityForm community = {this.props.community} />
       );
     }
+    if (this.props.user.communityIds && this.props.user.communityIds.length > 1) {
+      this.props.loadCommunities();
+    }
 
     return (
       <Grid>
@@ -105,6 +108,23 @@ class Community extends React.Component {
                 </form>
               </Panel.Body>
             </Panel>
+
+            { this.props.communities.length > 0 &&
+            // TODO link to switch to other community
+            <Panel>
+              <Panel.Heading>
+                {t('You are also a member of')}
+              </Panel.Heading>
+              <Panel.Body>
+                {this.props.communities.map((otherCommunity, idx) =>
+                  <Row key={idx}><Col md={12}>
+                    {otherCommunity.metadata.name}
+                  </Col></Row>
+                )}
+              </Panel.Body>
+            </Panel>
+            }
+           
           </Col>
         </Row>
       </Grid>
@@ -118,6 +138,7 @@ function mapStateToProps(state, ownProps) {
     user: state.user,
     community: state.community,
     accounts: state.accounts,
+    communities: state.communities,
   }
 }
 
@@ -126,6 +147,7 @@ function mapDispatchToProps(dispatch) {
     loadCommunity: (communityId) => dispatch(loadCommunity(communityId)),
     loadAccountsFor: (communityId) => dispatch(loadAccountsFor(communityId)),
     setLoading: (active) => dispatch(setLoading(active)),
+    loadCommunities: () => dispatch(loadCommunities()),
   }
 }
 

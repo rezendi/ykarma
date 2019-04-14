@@ -48,7 +48,7 @@ export function accountReducer(state = initialState.account, action) {
 }
 
 function getTwitterHandleFromUrls(urlsString) {
-  const urls = urlsString.split(" ");
+  let urls = urlsString.split(" ");
   for (var i in urls) {
     if (urls[i].indexOf("https://twitter.com/") === 0) {
       return urls[i].replace("https://twitter.com/","");
@@ -60,8 +60,8 @@ function getTwitterHandleFromUrls(urlsString) {
 export function userReducer(state = initialState.user, action) {
   switch (action.type) {
     case types.USER:
-      const fbase = action.user.fbase;
-      const yk = action.user.yk;
+      let fbase = action.user.fbase;
+      let yk = action.user.yk;
       return {
         displayName:    fbase.displayName || '',
         email:          fbase.email || '',
@@ -79,6 +79,7 @@ export function userReducer(state = initialState.user, action) {
         given:          yk.given || [],
         received:       yk.received || [],
         community:      yk.community || {},
+        communityIds:   yk.communityIds || [],
       }
     case types.TWITTER_ADDED:
       return { ...state, handle: action.handle }

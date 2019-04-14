@@ -10,13 +10,4 @@ contract YKValidator is YKStructs {
     return giver.id > 0 && bytes(_url).length > 0 && bytes(_message).length >= 0;
   }
   
-  function validatePurchase(Account memory buyer, Reward memory reward) public pure returns (bool) {
-    return buyer.id > 0 && reward.id > 0;
-  }
-
-  function validateUrl(Account memory account, string memory _url) public pure returns (bool) {
-    return account.id > 0 && bytes(_url).length > 0;
-  }
-
-
 }
