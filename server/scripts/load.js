@@ -73,6 +73,9 @@ async function loadV1(communities) {
       if (urls.length===1) {
         urls = account.urls.split(util.oldSeparator);
       }
+      if (urls.length===1 && urls[0]==='') {
+        continue;
+      }
       console.log("urls", urls);
       var accountId = await addAccount(account, community.id, urls[0]);
       for (var k = 1; k < urls.length; k++) {
@@ -265,7 +268,7 @@ function addReward(reward, idx) {
 
 function performPurchase(reward, rewardId, communityId) {
   var newOwnerId = ids[reward.ownerId];
-  let method = eth.contract.methods.purchase(newOwnerId, rewardId, communityId);
+  let method = eth.contract.methods.purchase(newOwnerId, rewardId);
   return doSend(method);
 }
 
@@ -286,7 +289,7 @@ function doSend(method) {
 }
 
 function sleep(ms) {
-  if (process.env.NODE_ENV=="test") {
+  if (process.env.NODE_ENV=="test" || process.env.NODE_ENV=="testload") {
     return new Promise(resolve => setTimeout(resolve, 1));
   }
   return new Promise(resolve => setTimeout(resolve, ms));
