@@ -20,7 +20,6 @@ const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 
 router.use('*', (req, res, next) => {
    if (process.env.NODE_ENV==="test") {
-      util.debug("test slack call");
       return next();
    }
    var slackSignature = req.headers['x-slack-signature'];
@@ -44,9 +43,9 @@ router.use('*', (req, res, next) => {
               Buffer.from(mySignature, 'utf8'),
               Buffer.from(slackSignature, 'utf8'))
       ) {
-          next();
+         next();
    } else {
-      util.warn("verification failed");
+      util.warn("verification failed", slackSignature);
       next(); // for now
       //return res.status(400).send('Verification failed');
    }
@@ -59,24 +58,51 @@ eth.getFromAccount().then(address => {
 
 var testData = {};
 
+router.get('/testReset/:teamId', function(req, res, next) {
+   testData.teamId = {messages:[], conversations: []};
+   res.json({'ok':true});
+});
+
 router.post('/testOpenConversation', function(req, res, next) {
-  util.log("opening test conversation with", req.body)
-  testData.lastOpenConversation = req.body;
+  let teamId = req.body.team_id  || testData.lastTeamId;
+  testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
+  util.log(`opening team ${teamId} idx ${testData.teamId.conversations.length} test conversation`, req.body);
+  testData.teamId.conversations.push(req.body);
+  testData.lastTeamId = teamId;
   res.json({success:true, ok:true, channel:{id: "TestChannel"}, body:req.body});
 });
 
-router.get('/lastOpenConversation', function(req, res, next) {
-  res.json({last:testData.lastOpenConversation});
+router.get('/testConversation/:teamId/:index', function(req, res, next) {
+   let teamId = req.params.teamId || testData.lastTeamId;
+   testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
+   let idx = parseInt(req.params.index);
+   if (testData.teamId.conversations.length > idx) {
+      return res.json({val:testData.teamId.conversations[idx]});
+   }
+   util.warn("conversations length is", testData.teamId.conversations.length);
+   testData.lastTeamId = teamId;
+   res.json({val:''});
 });
 
 router.post('/testPostMessage', function(req, res, next) {
-  util.log("posting test message", req.body)
-  testData.lastPostMessage = req.body;
+  let teamId = req.body.team_id || testData.lastTeamId;
+  testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
+  util.log(`posting team ${teamId} idx ${testData.teamId.messages.length} test message`, req.body);
+  testData.teamId.messages.push(req.body);
+  testData.lastTeamId = teamId;
   res.json({success:true, ok:true, body:req.body});
 });
 
-router.get('/lastPostMessage', function(req, res, next) {
-  res.json({last:testData.lastPostMessage});
+router.get('/testMessage/:teamId/:index', function(req, res, next) {
+   let teamId = req.params.teamId || testData.lastTeamId;
+   testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
+   let idx = parseInt(req.params.index);
+   if (testData.teamId.messages.length > idx) {
+      return res.json({val:testData.teamId.messages[idx]});
+   }
+   util.warn("messages length is", testData.teamId.messages.length);
+   testData.lastTeamId = teamId;
+   res.json({val:''});
 });
 
 router.post('/state', function(req, res, next) {
@@ -149,40 +175,43 @@ router.get('/team_auth', function(req, res, next) {
     return res.json({success:false, error: "State mismatch " + req.session.slackState});
   }
   
-  // for now only the admin can add to slack
-  if (req.session.email !== process.env.ADMIN_EMAIL) {
-    return res.json({"success":false, "error": req.t("Not authorized")});
-  }
-  if (req.session.ykcid === 0) {
-    return res.json({"success":false, "error": "No community"});
-  }
-
-  const code = req.query.code;
-  const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
-  fetch(url).then(function(response) {
-    response.json().then((json) => {
-      //console.log("response", json);
-      if (!json.ok) {
-        util.warn("Error completing slack team auth");
-        return res.redirect('/profile?error=slack_team');
-      }
-
-      // get vals, store to Firestore
-      const teamId = json.team_id;
-      var teamVals = {
-        'id'        : teamId,
-        'token'     : json.access_token,
-        'scope'     : json.scope,
-        'name'      : json.team_name,
-        'userId'    : json.user_id,
-        'bot_id'    : json.bot ? json.bot.bot_user_id : null,
-        'bot_token' : json.bot ? json.bot.bot_access_token : null,
-      };
-      docRef = firebase.db.collection('slackTeams').doc(teamId);
-      docRef.set(teamVals, { merge: true });
-      
-      // update community metadata
-      eth.getCommunityFor(req.session.ykcid, (community) => {
+   if (req.session.ykcid === 0) {
+     return res.json({"success":false, "error": "No community"});
+   }
+  eth.getCommunityFor(req.session.ykcid, (community) => {
+    // for now only the admin can add to slack
+    let authorizedEmail = community.metadata.adminEmail;
+    let userAuthorized = req.session.email === process.env.ADMIN_EMAIL || (authorizedEmail && req.session.email===authorizedEmail);
+    if (!userAuthorized) {
+      return res.json({"success":false, "error": req.t("Not authorized")});
+    }
+ 
+    const code = req.query.code;
+    const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
+    fetch(url).then(function(response) {
+      response.json().then((json) => {
+        //console.log("response", json);
+        if (!json.ok) {
+         util.warn("Error completing slack team auth");
+         return res.redirect('/profile?error=slack_team');
+        }
+ 
+        // get vals, store to Firestore
+        const teamId = json.team_id;
+        var teamVals = {
+         'id'          : teamId,
+         'token'       : json.access_token,
+         'scope'       : json.scope,
+         'name'        : json.team_name,
+         'userId'      : json.user_id,
+         'bot_id'      : json.bot ? json.bot.bot_user_id : null,
+         'bot_token'   : json.bot ? json.bot.bot_access_token : null,
+         'communityId' : req.session.ykcid,
+        };
+        docRef = firebase.db.collection('slackTeams').doc(teamId);
+        docRef.set(teamVals, { merge: true });
+       
+       // update community metadata
         if (!community.metadata) {
           util.warn("Couldn't get community for id", req.session.ykcid);
           return res.redirect('/profile?error=slack_team_chain');
@@ -190,24 +219,23 @@ router.get('/team_auth', function(req, res, next) {
         var slackTeams = community.metadata.slackTeams || [];
         if (slackTeams.includes(teamId)) {
           util.log("Team already added");
-          return res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+          return res.redirect('/admin?slackAddSuccess=true');
         }
         slackTeams.push(teamId);
         community.metadata.slackTeams = slackTeams;
-        var method = eth.contract.methods.editExistingCommunity(
+        var method = eth.contract.methods.addEditCommunity(
           parseInt(community.id),
-          community.addressAdmin || 0,
-          community.flags || '0x00',
+          community.addressAdmin || util.ADDRESS_ZERO,
+          community.flags || util.BYTES_ZERO,
           community.domain || '',
           JSON.stringify(community.metadata),
           community.tags || '',
         );
         eth.doSend(method, res, 1, 2, () => {
           // from here the cron job will take care of adding the users' accounts
-          res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+          res.redirect('/admin?slackAddSuccess=true');
         });
       });
-
     });
   });
 });
@@ -215,6 +243,7 @@ router.get('/team_auth', function(req, res, next) {
 // For now, just send mock Slack response with GIF
 router.post('/yk', async function(req, res, next) {
   util.warn("got post", req.body);
+  testData.lastTeamId = req.body.team_id;
 
   var showGif = true;
   if (req.body.ssl_check === 1) {
@@ -225,9 +254,11 @@ router.post('/yk', async function(req, res, next) {
   if (text.startsWith(req.t('help'))) {
     let senderUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
     let sender = await getAccountForUrl(senderUrl);
+    text = req.t("ykarma_is") + ` ${sender.givable} ` + req.t("karma to give away to others, and") + ` ${sender.spendable} ` + req.t("to_spend_on");
+    text = brandResponse(text, req.body.command);
     return res.json({
       "response_type" : "ephemeral",
-      "text" : req.t("ykarma_is") + ` ${sender.givable} ` + req.t("karma to give away to others, and") + ` ${sender.spendable} ` + req.t("to_spend_on")
+      "text" : text
     });
   }
     
@@ -259,10 +290,12 @@ router.post('/yk', async function(req, res, next) {
       });
     });
   }
-  
+
+  var responseText = vals.error ? vals.error : "Sending…";
+  responseText = brandResponse(responseText, req.body.command);
   res.json({
     "response_type" : vals.error ? "ephemeral" : "in_channel",
-    "text" : vals.error ? vals.error : "Sending…"
+    "text" : responseText
   });
 });
 
@@ -305,10 +338,10 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
     return { error: req.t("Sorry! Valid recipient not found"), amount:amount };
   }
 
-  // get the sender  
+  // get the sender
   let senderUrl = `slack:${team_id}-${user_id}`;
   let sender = await getAccountForUrl(senderUrl);
-  if (sender.id === 0 || sender.communityId === 0) {
+  if (sender.id === 0 || sender.communityIds.length === 0) {
     util.log("failed sender url", senderUrl);
     return { error: req.t("Sorry! Your YKarma account is not set up for sending here"), sender:sender, amount:amount };
   }
@@ -321,17 +354,20 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
   let recipientUrl = `slack:${team_id}-${recipientId}`;
   util.warn("recipientUrl is", recipientUrl);
   let recipient = await getAccountForUrl(recipientUrl);
-  if (recipient.id === 0 || recipient.communityId === 0) {
+  if (recipient.id === 0 || recipient.communityIds.length === 0) {
     return { error: req.t("Sorry! That YKarma account is not set up for receiving here"), sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
   }
   
-  return { sender:sender, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
+  let communityId = await getCommunityIdForTeam(sender.communityIds, team_id);
+  
+  return { sender:sender, communityId: communityId, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
 }
 
 function sendKarma(res, vals, callback) {
   util.log(`About to give ${vals.amount} from id ${vals.sender.id} to ${vals.recipientUrl} via Slack`, vals.message);
   var method = eth.contract.methods.give(
     vals.sender.id,
+    vals.communityId,
     vals.recipientUrl,
     vals.amount,
     vals.message || ''
@@ -340,37 +376,31 @@ function sendKarma(res, vals, callback) {
   eth.doSend(method, res, 1, 4, callback);
 }
 
-function getAccountFor(id) {
-  return new Promise(function(resolve, reject) {
-    let method = eth.contract.methods.accountForId(id);
-    method.call(function(error, result) {
-      if (error) {
-        util.warn('getAccountFor error', error);
-      } else {
-        util.debug('getAccountFor result', result);
-        let account = eth.getAccountFromResult(result);
-        resolve(account);
-      }
-    });
-  });
+async function getAccountFor(id) {
+   try {
+      let method = eth.contract.methods.accountForId(id);
+      var result = await method.call();
+      //util.debug('getAccountFor result', result);
+      let account = eth.getAccountFromResult(result);
+      return account;
+   } catch(err) {
+      util.warn('getAccountForUrl error', err);
+   }
 }
 
-function getAccountForUrl(url) {
-  return new Promise(function(resolve, reject) {
-    let method = eth.contract.methods.accountForUrl(url);
-    method.call(function(error, result) {
-      if (error) {
-        util.warn('getAccountForUrl error', error);
-      } else {
-        util.debug('getAccountForUrl result', result);
-        let account = eth.getAccountFromResult(result);
-        resolve(account);
-      }
-    });
-  });
+async function getAccountForUrl(url) {
+   try {
+      let method = eth.contract.methods.accountForUrl(url);
+      var result = await method.call();
+      //util.debug('getAccountForUrl result', result);
+      let account = eth.getAccountFromResult(result);
+      return account;
+   } catch(err) {
+      util.warn('getAccountForUrl error', err);
+   }
 }
 
-// TODO: break this into multiple methods
+// TODO: this is such a mess, break it into multiple methods
 router.post('/event', async function(req, res, next) {
 
   if (req.body.type==="url_verification") {
@@ -394,7 +424,7 @@ router.post('/event', async function(req, res, next) {
   console.log("message.im", req.body);
   var data = await getFirebaseTeamData(req.body.team_id);
   if (data.error) {
-    return res.send({success:false, error:data.error})
+    return res.send({success:false, error:data.error});
   }
   let bot_token = data.vals.bot_token;
   if (!bot_token) {
@@ -402,15 +432,14 @@ router.post('/event', async function(req, res, next) {
     return res.send({success:false, error:"no token found"});
   }
 
-  let slackTeamId = req.body.team_id;
+  let teamId = req.body.team_id;
   let slackUserId = req.body.event.user;
-  let slackChannelId = req.body.event.channel;
-  let senderUrl = `slack:${slackTeamId}-${slackUserId}`;
+  let channelId = req.body.event.channel;
+  let senderUrl = `slack:${teamId}-${slackUserId}`;
   let sender = await getAccountForUrl(senderUrl);
 
   // parse text
   var text;
-  var body;
   var incoming = req.body.event.text || '';
   var words = incoming.split(' ');
   var purpose = words[0];
@@ -423,22 +452,23 @@ router.post('/event', async function(req, res, next) {
     
     // Get balance
     case req.t("balance"):
-      let availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
-      availableMethod.call(function(error, available) {
-        if (error) {
-          util.log('getAvailable error', error);
-          postToChannel(slackChannelId, req.t("Error getting available-to-spend amount"), bot_token);
-        } else {
-          // TODO: flavor breakdown?
-          postToChannel(slackChannelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
-        }
-      });
       text = req.t("You currently have") + ` ${sender.givable} ` + req.t("to give away");
-      break;
+      postToChannel(teamId, channelId, text, bot_token);
+      let availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
+      try {
+         let available = await availableMethod.call();
+         // TODO: flavor breakdown?
+         postToChannel(teamId, channelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
+      } catch(error) {
+         util.log('getAvailable error', error);
+         postToChannel(teamId, channelId, req.t("Error getting available-to-spend amount"), bot_token);
+      }
+      return res.json({text:text});
     
     // Send karma
     case req.t("send"):
-      var vals = await prepareToSendKarma(req, slackTeamId, slackUserId, incoming);
+      text = req.t("Sending…");
+      var vals = await prepareToSendKarma(req, teamId, slackUserId, incoming);
       if (vals.error) {
         text = vals.error;
         break;
@@ -447,7 +477,7 @@ router.post('/event', async function(req, res, next) {
         if (error) {
           return util.warn("sendKarma error", error);
         }
-        postToChannel(slackChannelId, req.t("Sent!"), bot_token);
+        postToChannel(teamId, channelId, req.t("Sent!"), bot_token);
         var name = sender.id;
         var email = util.getEmailFrom(sender.urls);
         if (sender.metadata && sender.metadata.name) {
@@ -459,28 +489,29 @@ router.post('/event', async function(req, res, next) {
         message = vals.message ? message + " " + req.t("with the message") + ` ${vals.message}` : '!';
         openChannelAndPost(vals.recipientUrl, message);
       });
-      text = req.t("Sending…");
       break;
     
     // View rewards
     case req.t("rewards"):
-      let rewardsMethod = eth.contract.methods.getRewardsCount(sender.communityId, 0);
       text = req.t('Fetching available rewards from the blockchain…');
-      rewardsMethod.call(function(error, totalRewards) {
-        if (error) {
-          util.log('getListOfRewards error', error);
-          postToChannel(slackChannelId, req.t("Error getting rewards"), bot_token);
-        }
-        if (parseInt(totalRewards)===0) {
+      postToChannel(teamId, channelId, text, bot_token);
+      let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
+      try {
+        let result = await rewardsMethod.call();
+        let totalRewards = parseInt(result);
+        util.log("total rewards", totalRewards);
+        if (totalRewards===0) {
           util.log("No rewards available");
-          postToChannel(slackChannelId, req.t("No rewards available"), bot_token);
+          postToChannel(teamId, channelId, req.t("No rewards available"), bot_token);
+          return res.json({text:text});
         }
         var available = [];
-        for (var i = 0; i < parseInt(totalRewards); i++) {
-          rewards.getRewardByIndex(0, sender.communityId, i, async (reward) => {
+        for (var i = 0; i < totalRewards; i++) {
+          rewards.getRewardByIndex(0, i, 0, async (reward) => {
+            // console.log("reward", reward);
             available.push(reward);
             if (available.length >= parseInt(totalRewards)) {
-              available = available.filter(reward => reward.ownerId===0 && reward.vendorId !== sender.id);
+              available = available.filter(reward => reward.id > 0 && reward.ownerId===0 && reward.vendorId !== sender.id);
               blocks = [
                {
                   "type": "section",
@@ -494,13 +525,14 @@ router.post('/event', async function(req, res, next) {
 
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
-                var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
+                var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
                 vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
+                var description = available[j].metadata.description ? `\n ${ available[j].metadata.description}` : '';
                 blocks = blocks.concat([{
                   "type": "section",
                   "text": {
                      "type": "mrkdwn",
-                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from ${vendorInfo} \n ${available[j].metadata.description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
+                     "text": `_id: ${available[j].id}_ *${available[j].metadata.name}* from ${vendorInfo} ${description}\n _cost_: ${available[j].cost} _quantity available_: ${available[j].quantity} _required tag_: ${available[j].tag}`
                   }
                   },
                   { "type": "divider" }
@@ -513,21 +545,21 @@ router.post('/event', async function(req, res, next) {
                   "text": req.t("To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'")
                }}]
               );
-              postToChannel(slackChannelId, blocks, bot_token, req.t('Available Rewards'));
+              postToChannel(teamId, channelId, blocks, bot_token, req.t('Available Rewards'));
             }
           });
         }
-      })
-      .catch(function(error) {
-        text = req.t("Error getting list of rewards") + ` ${error}`;
-      });
-      break;
+      } catch(error) {
+         util.log('getListOfRewards error', error);
+         postToChannel(teamId, channelId, req.t("Error getting rewards"), bot_token);
+      }
+      return res.json({text:text});
 
     // Make a purchase
     case req.t("purchase"):
       var purchaseId = 0;
-      for (var i=1; i < words.length; i++) {
-        var wordNum = parseInt(words[i], 10);
+      for (var j=1; j < words.length; j++) {
+        var wordNum = parseInt(words[j], 10);
         if (wordNum > 0) {
           purchaseId = wordNum;
           break;
@@ -541,19 +573,18 @@ router.post('/event', async function(req, res, next) {
       rewards.getRewardFor(purchaseId, (reward) => {
         eth.doSend(purchaseMethod, res, 1, 2, (error) => {
           if (error) {
-            postToChannel(slackChannelId, req.t("Could not complete purchase, sorry!"), bot_token);
-            return util.warn("purchase error", error);
+            postToChannel(teamId, channelId, req.t("Could not complete purchase, sorry!"), bot_token);
+            return util.warn("purchase error");
           }
           util.log("purchased", reward);
           // send notifications
           eth.getAccountFor(reward.vendorId, (vendor) => {
-            util.log("from", vendor);
             email.sendRewardPurchasedEmail(req, reward, sender, vendor);
             email.sendRewardSoldEmail(req, reward, sender, vendor);
-            var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
+            var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
             vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
-            postToChannel(slackChannelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
-            let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, slackTeamId);
+            postToChannel(teamId, channelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
+            let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, teamId);
             if (vendorSlackUrl) {
               let buyerInfo = `<@${slackUserId}>`;
               openChannelAndPost(vendorSlackUrl, `You just sold the reward ${util.getRewardInfoFrom(reward)} to ${buyerInfo}!`);
@@ -565,16 +596,16 @@ router.post('/event', async function(req, res, next) {
       break;
 
     // Leaderboard
-    // TODO translate
     case req.t("leaderboard"):
-      communities.getLeaderboard(sender.communityId, (error, leaders) => {
+  let communityId = await getCommunityIdForTeam(sender.communityIds, teamId);
+      communities.getLeaderboard(communityId, (error, leaders) => {
          if (error) {
-            postToChannel(slackChannelId, req.t("Could not get leaderboard, sorry!"), bot_token);
+            postToChannel(teamId, channelId, req.t("Could not get leaderboard, sorry!"), bot_token);
          } else {
             var blocks = [];
             for (var i=0; i<leaders.length; i++) {
                let leader = leaders[i];
-               var leaderInfo = util.getSlackUserIdForTeam(leader.urls, slackTeamId);
+               var leaderInfo = util.getSlackUserIdForTeam(leader.urls, teamId);
                leaderInfo = leaderInfo ? `<@${leaderInfo}>` : leader.urls;
                blocks.push({
                   "type": "section",
@@ -584,7 +615,7 @@ router.post('/event', async function(req, res, next) {
                   }
                });
             }
-            postToChannel(slackChannelId, blocks, bot_token, req.t('Leaderboard'));
+            postToChannel(teamId, channelId, blocks, bot_token, req.t('Leaderboard'));
          }
       });
       text = req.t("Getting leaderboard…");
@@ -600,12 +631,12 @@ router.post('/event', async function(req, res, next) {
       text = req.t("Sorry, I didn't understand you. You can ask for help with 'help'");
   }
 
-  postToChannel(req.body.event.channel, text, bot_token);
+  postToChannel(teamId, channelId, text, bot_token);
   res.json({text:text});
 });
 
 // this didn't start off this ugly
-function postToChannel(channel, input, bot_token, notificationText='') {
+function postToChannel(team, channel, input, bot_token, notificationText='') {
   var body = {
     text: input,
     channel: channel,
@@ -660,7 +691,7 @@ async function openChannelAndPost(slackUrl, text) {
     return console.log("conversation open error", json);
   }
   
-  postToChannel(json.channel.id, text, bot_token);
+  postToChannel(teamId, json.channel.id, text, bot_token);
 }
 
 async function getFirebaseTeamData(team_id) {
@@ -674,6 +705,39 @@ async function getFirebaseTeamData(team_id) {
     return Promise.resolve({ error:"no team data", vals: null });
   }
   return Promise.resolve({error:null, vals:doc.data()});
+}
+
+async function getCommunityIdForTeam(communityIds, teamId) {
+   // this probably shouldn't ever happen?
+   if (communityIds.length == 0) {
+      return 0;
+   }
+   if (communityIds.length == 1) {
+      return communityIds[0];
+   }
+   for (var i=0; i<communityIds.length; i++) {
+      try {
+         let community = await eth.getCommunityFor(communityIds[i]);
+         let communityTeams = community.metadata.slackTeams || [];
+         if (communityTeams.includes(teamId)) {
+            return community.id;
+         }
+      } catch(error) {
+         util.warn("error geting community for", communityIds[i]);
+      }
+   }
+   //fallback, pathological
+   util.warn("No community found for team ID", teamId);
+   return communityIds[0];
+}
+
+function brandResponse(text, indicator) {
+   // indicator can be a slack command or a slack team ID
+   // obviously we'll want to store these values elsewhere not hardcoded if we pursue the white labeling thing
+   if (indicator==="hfc" || indicator==="T02DAHP2X") {
+      return text.replace("YKarma", "HappyFunCoin").replace("karma", "HFC").replace("/yk", "/hfc");
+   }
+   return text;
 }
 
 module.exports = {

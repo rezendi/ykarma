@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 
 contract Oracular {
   address[] oracles;
@@ -30,6 +30,7 @@ contract Oracular {
   }
   
   // ganked from https://github.com/pipermerriam/ethereum-string-utils and should probably be moved elsewhere
+  // along with its subsequent methods
   function uintToBytes(uint v) pure public returns (bytes32 ret) {
     if (v == 0) {
         ret = '0';
@@ -42,6 +43,34 @@ contract Oracular {
         }
     }
     return ret;
+  }
+  
+  function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+      if (_i == 0) {
+          return "0";
+      }
+      uint j = _i;
+      uint len;
+      while (j != 0) {
+          len++;
+          j /= 10;
+      }
+      bytes memory bstr = new bytes(len);
+      uint k = len - 1;
+      while (_i != 0) {
+          bstr[k--] = byte(uint8(48 + _i % 10));
+          _i /= 10;
+      }
+      return string(bstr);
+  }
+
+  function uintArrayContains(uint[] memory array, uint val) pure public returns (bool) {
+    for (uint i=0; i<array.length; i++) {
+      if (array[i]==val) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

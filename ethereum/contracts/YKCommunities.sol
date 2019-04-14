@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "./arachnid/strings.sol";
@@ -17,11 +17,11 @@ contract YKCommunities is Oracular, YKStructs {
     return maxCommunityId;
   }
 
-  function communityForId(uint256 _id) public onlyOracle view returns (Community) {
+  function communityForId(uint256 _id) public onlyOracle view returns (Community memory) {
     return communities[_id];
   }
   
-  function addCommunity(address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle returns (uint256) {
+  function addCommunity(address _adminAddress, bytes32 _flags, string memory _domain, string memory _metadata, string memory _tags) public onlyOracle returns (uint256) {
     require (_metadata.toSlice()._len < 2048);
     require (_domain.toSlice()._len < 256);
     require (_tags.toSlice()._len < 256);
@@ -32,8 +32,7 @@ contract YKCommunities is Oracular, YKStructs {
       domain:       _domain,
       metadata:     _metadata,
       tags:         _tags,
-      accountIds:   new uint256[](0),
-      rewardIds:    new uint256[](0)
+      accountIds:   new uint256[](0)
     });
     communities[community.id] = community;
     maxCommunityId += 1;
@@ -44,7 +43,7 @@ contract YKCommunities is Oracular, YKStructs {
     communities[_communityId].accountIds.push(_accountId);
   }
   
-  function editCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string _domain, string _metadata, string _tags) public onlyOracle {
+  function editCommunity(uint256 _id, address _adminAddress, bytes32 _flags, string memory _domain, string memory _metadata, string memory _tags) public onlyOracle {
     require(_id > 0);
     communities[_id].adminAddress  = _adminAddress;
     communities[_id].flags         = _flags;
@@ -66,58 +65,22 @@ contract YKCommunities is Oracular, YKStructs {
   }
 
   function isClosed(uint256 _id) public view returns (bool) {
-    return communities[_id].flags & 0x01 == 0x01;
-  }
-  
-  function addRewardToCommunity(uint256 _communityId, uint256 _rewardId) public onlyOracle {
-    communities[_communityId].rewardIds.push(_rewardId);
-  }
-  
-  function deleteRewardFromCommunity(uint256 _communityId, uint256 _rewardId) public onlyOracle {
-    uint256[] storage rewardIds = communities[_communityId].rewardIds;
-    bool found = false;
-    for (uint i = 0; i < rewardIds.length; i++) {
-      if (rewardIds[i] == _rewardId) {
-        rewardIds[i] = rewardIds[rewardIds.length - 1];
-        delete rewardIds[rewardIds.length - 1];
-        found = true;
-      }
-      if (found) {
-        rewardIds.length--;
-      }
-    }
+    return communities[_id].flags & 0x0000000000000000000000000000000000000000000000000000000000000001 == 0x0000000000000000000000000000000000000000000000000000000000000001;
   }
   
   function setValidator(uint256 _id, address _address) public onlyOracle {
     validators[_id] = _address;
   }
 
-  function validateGive(Account giver, string _url, string _message) public view onlyOracle returns (bool) {
-    address validatorAddress = validators[giver.communityId];
-    if (validatorAddress == 0x0) {
+  function validateGive(uint256 _communityId, Account memory giver, string memory _url, string memory _message) public view onlyOracle returns (bool) {
+    require(uintArrayContains(giver.communityIds, _communityId));
+    address validatorAddress = validators[_communityId];
+    if (validatorAddress == 0x0000000000000000000000000000000000000000) {
       return true;
     }
     YKValidator validator = YKValidator(validatorAddress);
     return validator.validateGive(giver, _url, _message);
   }
   
-  function validatePurchase(Account buyer, Reward reward) public view onlyOracle returns (bool) {
-    address validatorAddress = validators[buyer.communityId];
-    if (validatorAddress == 0x0) {
-      return true;
-    }
-    YKValidator validator = YKValidator(validatorAddress);
-    return validator.validatePurchase(buyer, reward);
-  }
-
-  function validateUrl(Account account, string _url) public view onlyOracle returns (bool) {
-    address validatorAddress = validators[account.communityId];
-    if (validatorAddress == 0x0) {
-      return true;
-    }
-    YKValidator validator = YKValidator(validatorAddress);
-    return validator.validateUrl(account, _url);
-  }
-
 }
 

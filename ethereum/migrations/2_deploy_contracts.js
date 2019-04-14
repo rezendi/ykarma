@@ -11,8 +11,11 @@ const YKarmaDirect = artifacts.require('YKarma.sol');
 const fs = require('fs');
 const envFile = '../server/.env';
 
-const isTesting = process.argv.slice(-1)[0] === 'test';
-const isInitialGeneration = true; // set false for the chain to be empty of initial community/account
+const isTestArg = process.argv.slice(-1)[0] === 'test';
+const isTestEnv = process.env.TRUFFLE_ENV === 'test';
+
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';
+const BYTES_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 module.exports = (deployer, network, accounts) => {
   const owner = accounts[0];
@@ -49,31 +52,35 @@ module.exports = (deployer, network, accounts) => {
     await ykv.addOracle(YKarma.address, {from : owner});
     const yk = await YKarma.deployed();
     const yk2 = await YKarmaDirect.deployed();
-    if (!isTesting) {
+    if (!isTestArg) {
       setEnvAddress(YKarma.address);
-      if (!isInitialGeneration) {
-        return;
-      }
+    }
+    if (!isTestEnv) {
+      return;
     }
 
     // set up initial values
-    await yk.addNewCommunity(0, 0x0, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
-    await yk.addNewAccount(1, 0, '{"name":"Jon"}', '0x00', 'mailto:' + adminEmail);
+    console.log("adding test data...")
+    await yk.addEditCommunity(0, ADDRESS_ZERO, BYTES_ZERO, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral"}', 'alpha,test');
+    await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Jon"}', BYTES_ZERO, 'mailto:' + adminEmail);
     await yk.replenish(1);
-    
-    // add test data if appropriate
-    if (process.env.TRUFFLE_ENV === 'test') {
-      console.log("adding test data...")
-      await yk.addNewAccount(1, 0, '{"name":"Test"}', '0x00', 'mailto:test@example.com');
-      await yk.addNewAccount(1, 0, '{"name":"Test Two"}', '0x00', 'mailto:test2@example.com');
-      await yk.replenish(2);
-      await yk.give(2, 'mailto:'+adminEmail, 60, "Just a message");
-      await yk.give(1, 'mailto:test@example.com', 20, "Another message");
-      await yk.addNewAccount(1, 0, '{"name":"Test Three"}', '0x00', 'slack:TEST-USER1');
-      await yk.addNewAccount(1, 0, '{"name":"Test Four"}', '0x00', 'slack:TEST-USER2');
-      await yk.replenish(4);
-      await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', '0x00');
-    }
+    await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Test"}', BYTES_ZERO, 'mailto:test@example.com');
+    await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Test Two"}', BYTES_ZERO, 'mailto:test2@example.com');
+    await yk.replenish(2);
+    await yk.give(2, 1, 'mailto:'+adminEmail, 60, "Just a message");
+    await yk.give(1, 1, 'mailto:test@example.com', 20, "Another message");
+    await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Test Three"}', BYTES_ZERO, 'slack:TEAM1-USER1');
+    await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Test Four"}', BYTES_ZERO, 'slack:TEAM1-USER2');
+    await yk.replenish(4);
+    await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', BYTES_ZERO);
+    await yk.addEditCommunity(1, ADDRESS_ZERO, BYTES_ZERO, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral", "teamIds":["TEAM1"]}', 'alpha,test');
+    await yk.addEditCommunity(0, ADDRESS_ZERO, BYTES_ZERO, 'test.com', '{"name":"One To Many", "description":"Just a test comm"}', 'test');
+    await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Admin User", "teamIds":["TEAM2"]}', BYTES_ZERO, 'mailto:admin@test.com');
+    await yk.addUrlToExistingAccount(6, "slack:TEAM2-USER3");
+    await yk.replenish(6);
+    await yk.addNewReward(6, 2, 10, "test", '{"name":"Another Test Reward"}', BYTES_ZERO);
+    await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Test User", "teamIds":["TEAM2"]}', BYTES_ZERO, 'mailto:test@test.com');
+    await yk.addUrlToExistingAccount(7, "slack:TEAM2-USER4");
   });
 };
 

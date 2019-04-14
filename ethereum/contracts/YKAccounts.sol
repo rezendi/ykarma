@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "./arachnid/strings.sol";
@@ -19,7 +19,7 @@ contract YKAccounts is Oracular, YKStructs {
     return maxAccountId;
   }
 
-  function accountForId(uint256 _id) public onlyOracle view returns (Account) {
+  function accountForId(uint256 _id) public onlyOracle view returns (Account memory) {
     return accounts[_id];
   }
 
@@ -27,16 +27,16 @@ contract YKAccounts is Oracular, YKStructs {
     return accountsByAddress[_address];
   }
 
-  function accountIdForUrl(string _url) public onlyOracle view returns (uint256) {
+  function accountIdForUrl(string memory _url) public onlyOracle view returns (uint256) {
     return accountsByUrl[_url];
   }
   
-  function addAccount(uint256 _communityId, address _address, string _metadata, bytes32 _flags, string _url) public onlyOracle returns (uint256) {
+  function addAccount(uint256 _communityId, address _address, string memory _metadata, bytes32 _flags, string memory _url) public onlyOracle returns (uint256) {
     require(urlIsValid(_url));
-    require (_metadata.toSlice()._len < 2048);
+    require (_metadata.toSlice()._len < 8192);
     Account memory account = Account({
       id:           maxAccountId + 1,
-      communityId:  _communityId,
+      communityIds: new uint256[](0),
       userAddress:  _address,
       flags:        _flags,
       metadata:     _metadata,
@@ -46,13 +46,15 @@ contract YKAccounts is Oracular, YKStructs {
     });
     addUrlToAccount(account.id, _url); // will fail if url invalid, without affecting storage
     accounts[account.id] = account;
+    accounts[account.id].communityIds.push(_communityId);
     maxAccountId += 1;
     return maxAccountId;
   }
   
-  function addUrlToAccount(uint256 _accountId, string _url) public onlyOracle returns (bool) {
+  function addUrlToAccount(uint256 _accountId, string memory _url) public onlyOracle returns (bool) {
+    require(_accountId > 0);
     require(urlIsValid(_url));
-    require(accountIdForUrl(_url)==0); // TODO: merge two existing URLs into one account
+    require(accountIdForUrl(_url)==0);
     string memory urls = accounts[_accountId].urls;
     if (bytes(urls).length > 0) {
       string memory delimUrl = DELIM.toSlice().concat(_url.toSlice());
@@ -64,13 +66,19 @@ contract YKAccounts is Oracular, YKStructs {
     return true;
   }
   
-  function editAccount(uint256 _id, address _newAddress, string _newMetadata, bytes32 _newFlags) public onlyOracle {
+  function addUrlToExistingAccount(uint256 _accountId, string memory _url) public onlyOracle returns (bool) {
+    Account memory account = accountForId(_accountId);
+    require(account.id != 0);
+    return addUrlToAccount(_accountId, _url);
+  }
+
+  function editAccount(uint256 _id, address _newAddress, string memory _newMetadata, bytes32 _newFlags) public onlyOracle {
     require (_id > 0);
     if (_newAddress != accounts[_id].userAddress) {
-      if (accounts[_id].userAddress != 0) {
+      if (accounts[_id].userAddress != 0x0000000000000000000000000000000000000000) {
         delete accountsByAddress[accounts[_id].userAddress];
       }
-      if (_newAddress != 0) {
+      if (_newAddress != 0x0000000000000000000000000000000000000000) {
         accountsByAddress[_newAddress] = _id;
       }
     }
@@ -79,7 +87,7 @@ contract YKAccounts is Oracular, YKStructs {
     accounts[_id].flags       = _newFlags;
   }
 
-  function removeUrlFromAccount(uint256 _id, string _oldUrl) public onlyOracle returns (bool) {
+  function removeUrlFromAccount(uint256 _id, string memory _oldUrl) public onlyOracle returns (bool) {
     strings.slice memory urls = accounts[_id].urls.toSlice();
     string[] memory separated = new string[](urls.count(DELIM.toSlice()) + 1);
     for(uint i = 0; i < separated.length; i++) {
@@ -111,12 +119,28 @@ contract YKAccounts is Oracular, YKStructs {
     delete accounts[_id];
   }
   
-  function urlIsValid(string _url) public pure returns (bool) {
+  function communityIds(uint256 _accountId) public view onlyOracle returns (string memory) {
+    string memory out = '[';
+    Account memory account = accountForId(_accountId);
+    for(uint i = 0; i < account.communityIds.length; i++) {
+      string memory s = uint2str(account.communityIds[i]);
+      out = out.toSlice().concat(s.toSlice());
+      if (i < account.communityIds.length -1) {
+        out = out.toSlice().concat(','.toSlice());
+      }
+    }
+    out = out.toSlice().concat(']'.toSlice());
+    return out;
+  }
+
+  function urlIsValid(string memory _url) public pure returns (bool) {
     // TODO more than this
     return bytes(_url).length > 0 && _url.toSlice()._len < 256 && _url.toSlice().copy().find(":".toSlice())._len != 0;
   }
 
   function addRewardToAccount(uint256 _vendorId, uint256 _rewardId) public onlyOracle {
+    Account memory vendor = accountForId(_vendorId);
+    require(vendor.id > 0);
     accounts[_vendorId].offerIds.push(_rewardId);
   }
 
@@ -168,7 +192,15 @@ contract YKAccounts is Oracular, YKStructs {
       account2.offerIds.push(account1.offerIds[k]);
     }
     delete account1.offerIds;
-    account1.flags = 0x1; // mark as never logged in
+    account1.flags = 0x0000000000000000000000000000000000000000000000000000000000000001; // mark as never logged in
+    
+    // finally, merge community IDs
+    for (uint256 l = 0; l < account1.communityIds.length; l++) {
+      uint256 communityId = account1.communityIds[l];
+      if (!uintArrayContains(account2.communityIds, communityId)) {
+        account2.communityIds.push(communityId);
+      }
+    }
   }
 
 }

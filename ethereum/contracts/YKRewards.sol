@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "./arachnid/strings.sol";
@@ -15,11 +15,11 @@ contract YKRewards is Oracular, YKStructs {
     return maxRewardId;
   }
 
-  function rewardForId(uint256 _id) public onlyOracle view returns (Reward) {
+  function rewardForId(uint256 _id) public onlyOracle view returns (Reward memory) {
     return rewards[_id];
   }
   
-  function addReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags)  public onlyOracle returns (uint256) {
+  function addReward(uint256 _vendorId, uint256 _cost, uint256 _quantity, string memory _tag, string memory _metadata, bytes32 _flags)  public onlyOracle returns (uint256) {
     require (_metadata.toSlice()._len < 2048);
     require (_tag.toSlice()._len < 128);
     Reward memory reward = Reward({
@@ -40,7 +40,8 @@ contract YKRewards is Oracular, YKStructs {
     return reward.id;
   }
   
-  function editReward(uint256 _id, uint256 _cost, uint256 _quantity, string _tag, string _metadata, bytes32 _flags) public onlyOracle returns (uint256) {
+  function editReward(uint256 _id, uint256 _cost, uint256 _quantity, string memory _tag, string memory _metadata, bytes32 _flags) public onlyOracle returns (uint256) {
+    require (rewards[_id].id > 0 && rewards[_id].ownerId == 0);
     rewards[_id].cost     = _cost;
     rewards[_id].quantity = _quantity;
     rewards[_id].tag      = _tag;

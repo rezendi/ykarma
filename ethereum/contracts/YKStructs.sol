@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.0;
 
 contract YKStructs {
 
@@ -19,7 +19,7 @@ contract YKStructs {
 
   struct Account {
     uint256 id;
-    uint256 communityId;
+    uint256[] communityIds;
     address userAddress;
     bytes32 flags;
     string metadata;
@@ -36,7 +36,6 @@ contract YKStructs {
     string metadata;
     string tags;
     uint256[] accountIds;
-    uint256[] rewardIds;
   }
   
   struct Reward {

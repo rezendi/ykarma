@@ -13,7 +13,7 @@ const resources = {
       "ykarma_is" : "YKarma is a reputation cryptocurrency which you give to others, who can then use it to buy rewards. You currently have",
       "karma to give away to others, and" : "karma to give away to others, and",
       "to_spend_on" : 'to spend on rewards. To send karma, use this slash command; for example, to send 10 karma to Alice with the message _for being awesome_, just type "/yk 10 to @alice for being awesome"',
-      "Sent!" : "Sent",
+      "Sent!" : "Sent!",
       "Sending…" : "Sending…",
       "Sorry! Valid amount not found" : "Sorry! Valid amount not found",
       "Sorry! Valid recipient not found" : "Sorry! Valid recipient not found",
