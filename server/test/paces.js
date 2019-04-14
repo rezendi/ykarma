@@ -49,7 +49,6 @@ describe('Account', function () {
   });
 
   it('should update account metadata', async function () {
-    this.timeout(4000);
     try {
       var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
@@ -128,7 +127,7 @@ describe('Reward', function () {
 
   // assumes a reward added as part of deploy
   it('should add, get, update, and delete a reward', async function () {
-    this.timeout(6000);
+    this.timeout(5000);
     try {
       var rewardId = 1;
       var initialRewards;

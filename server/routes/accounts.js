@@ -55,38 +55,39 @@ router.get('/me', async function(req, res, next) {
   var account;
   try {
     if (req.session.ykid) {
-      account = await eth.getAccountFor(req.session.ykid);
+      account = await getAccountFor(req.session.ykid);
     } else {
       var url = req.session.email || req.session.handle;
       url = getLongUrlFromShort(url);
       if (url.startsWith('error')) {
         return res.json({"success":false, "error": url});
       }
-      account = await eth.getAccountForUrl(url);
+      account = await getAccountForUrl(url);
     }
     
     // we've got the account, now hydrate it and mark as active if not already
     getSessionFromAccount(req, account);
-    let community = eth.getCommunityFor(req.session.ykcid);
-    account.community = community;
-    hydrateAccount(account, async () => {
-      var method = eth.contract.methods.availableToSpend(account.id, '');
-      try {
-        let mySpendable = await method.call();
-        account.spendable = parseInt(mySpendable);
-      } catch(error) {
-        util.warn("account load error", error);
-      }
-      if (!hasNeverLoggedIn(account)) {
-        return res.json(account);
-      }
-      util.warn("Marking account active and replenishing");
-      method = eth.contract.methods.editAccount(account.id, account.userAddress, JSON.stringify(account.metadata), util.BYTES_ZERO);
-      eth.doSend(method, res, 1, 2, () => {
-        redis.del(`account-${account.id}`); // clear our one redis cache
-        method = eth.contract.methods.replenish(account.id);
+    eth.getCommunityFor(req.session.ykcid, (community) => {
+      account.community = community;
+      hydrateAccount(account, async () => {
+        var method = eth.contract.methods.availableToSpend(account.id, '');
+        try {
+          let mySpendable = await method.call();
+          account.spendable = parseInt(mySpendable);
+        } catch(error) {
+          util.warn("account load error", error);
+        }
+        if (!hasNeverLoggedIn(account)) {
+          return res.json(account);
+        }
+        util.warn("Marking account active and replenishing");
+        method = eth.contract.methods.editAccount(account.id, account.userAddress, JSON.stringify(account.metadata), util.BYTES_ZERO);
         eth.doSend(method, res, 1, 2, () => {
-          res.json(account);
+          redis.del(`account-${account.id}`); // clear our one redis cache
+          method = eth.contract.methods.replenish(account.id);
+          eth.doSend(method, res, 1, 2, () => {
+            res.json(account);
+          });
         });
       });
     });
@@ -132,7 +133,7 @@ router.put('/community', async function(req, res, next) {
 });
 
 /* GET account details */
-router.get('/url/:url', function(req, res, next) {
+router.get('/url/:url', async function(req, res, next) {
   var url = req.params.url;
   if (req.session.email !== url && req.session.handle !== url && req.session.email !== process.env.ADMIN_EMAIL) {
     util.warn("Not authorized", req.params.url);
@@ -142,9 +143,12 @@ router.get('/url/:url', function(req, res, next) {
   if (url.startsWith('error')) {
     return res.json({"success":false, "error": url});
   }
-  getAccountForUrl(url, (account) => {
+  try {
+    let account = await getAccountForUrl(url);
     res.json(account);
-  });
+  } catch(error) {
+    return res.json({"success":false, "error": error});
+  }
 });
 
 
@@ -162,7 +166,7 @@ router.put('/replenish', function(req, res, next) {
 // TODO: connect to Twitter to verify the twitter_id and handle match
 // Low priority since the on-chain contract ensures you can't spoof a handle that has ever been sent any YK,
 // and if one of those _is_ spoofed, that just means they they get the ability to hijack the spoofer's YK account
-router.put('/addUrl', function(req, res, next) {
+router.put('/addUrl', async function(req, res, next) {
   var url = getLongUrlFromShort(req.body.url);
   util.debug("adding url", url);
   if (url.startsWith('error')) {
@@ -189,10 +193,11 @@ router.put('/addUrl', function(req, res, next) {
   if (longExisting.startsWith('error')) {
     return res.json({"success":false, "error": req.t("existing") + " " + longExisting});
   }
-  getAccountForUrl(url, (account) => {
+  try {
+    let account = await getAccountForUrl(url);
     getSessionFromAccount(req, account);
-    var method = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
-    eth.doSend(method, res, 1, 2, () => {
+    var method2 = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
+    eth.doSend(method2, res, 1, 2, () => {
       if (req.body.url.indexOf("@") > 0) {
         req.session.email = req.body.url;
       } else {
@@ -200,7 +205,9 @@ router.put('/addUrl', function(req, res, next) {
       }
       res.json({"success":req.body.url});
     });
-  });
+  } catch(error) {
+      res.json({"success":false, "error": error});
+  }
 });
 
 /* PUT remove URL */
@@ -293,44 +300,45 @@ router.post('/give', function(req, res, next) {
       parseInt(req.body.amount),
       req.body.message || ''
     );
-    eth.doSend(method, res, 1, 4, function() {
+    eth.doSend(method, res, 1, 4, async function() {
       util.log(`${req.body.amount} karma sent to`, recipientUrl);
-      if (recipientUrl.startsWith("mailto:")) {
-        var account = req.session.account || {};
-        account.metadata = account.metadata || {};
-        account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-        util.log("emailPrefs", account.metadata.emailPrefs);
-        let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
-        getAccountForUrl(recipientUrl, (recipient) => {
-          // util.debug("recipient", recipient);
-          // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
-          let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
-          if (sendEmail) {
-            util.debug("sending mail to", req.body.recipient);
-            let senderName = req.session.name || req.session.email;
-            email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
-            if (!hasNeverLoggedIn(recipient)) {
-              return res.json( { "success":true } );
-            }
-    
-            // make sure we don't send karma-received email more than once unless explicitly desired
-            account.metadata.emailPrefs[req.body.recipient] = 0;
-            util.log("updated metadata", account.metadata);
-            var method2 = eth.contract.methods.editAccount(
-              account.id,
-              account.userAddress,
-              JSON.stringify(account.metadata),
-              account.flags
-            );
-            eth.doSend(method2, res, 1, 4);
-          } else {
-            util.log("not sending email", account.metadata.emailPrefs);
-            return res.json( { "success":true } );
-          }
-        });
-      } else {
+      if (!recipientUrl.startsWith("mailto:")) {
         // TODO: Twitter notifications
         return res.json( { "success":true } );
+      }
+      var account = req.session.account || {};
+      account.metadata = account.metadata || {};
+      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+      util.log("emailPrefs", account.metadata.emailPrefs);
+      let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
+      try {
+        let recipient = await getAccountForUrl(recipientUrl);
+        // util.debug("recipient", recipient);
+        // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
+        let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
+        if (!sendEmail) {
+          util.log("not sending email", account.metadata.emailPrefs);
+          return res.json( { "success":true } );
+        }
+        util.debug("sending mail to", req.body.recipient);
+        let senderName = req.session.name || req.session.email;
+        email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
+        if (!hasNeverLoggedIn(recipient)) {
+          return res.json( { "success":true } );
+        }
+
+        // make sure we don't send karma-received email more than once unless explicitly desired
+        account.metadata.emailPrefs[req.body.recipient] = 0;
+        util.log("updated metadata", account.metadata);
+        var method2 = eth.contract.methods.editAccount(
+          account.id,
+          account.userAddress,
+          JSON.stringify(account.metadata),
+          account.flags
+        );
+        eth.doSend(method2, res, 1, 4);
+      } catch(error) {
+        return res.json({"success":false, "error": error});
       }
     });
   });
@@ -372,16 +380,32 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-async function getAccountForUrl(url, callback) {
-  var method = eth.contract.methods.accountForUrl(url);
-  // util.log("method", method);
-  try {
-    let result = await method.call();
-    var account = eth.getAccountFromResult(result);
-    callback(account);
-  } catch(error) {
-    util.debug('getAccountForUrl error', error);
-  }
+async function getAccountFor(id) {
+  return new Promise(async function(resolve, reject) {
+    var method = eth.contract.methods.accountForId(id);
+    try {
+      let result = await method.call();
+      var account = eth.getAccountFromResult(result);
+      resolve(account);
+    } catch(error) {
+      util.debug('getAccountFor error', error);
+      reject(error);
+    }
+  });
+}
+
+async function getAccountForUrl(url) {
+  return new Promise(async function(resolve, reject) {
+    var method = eth.contract.methods.accountForUrl(url);
+    try {
+      let result = await method.call();
+      var account = eth.getAccountFromResult(result);
+      resolve(account);
+    } catch(error) {
+      util.debug('getAccountForUrl error', error);
+      reject(error);
+    }
+  });
 }
 
 function hydrateAccount(account, done) {
@@ -413,6 +437,9 @@ function hydrateAccount(account, done) {
 
 function hydrateTranche(tranche, given, done) {
   // check account cache on redis
+  if (process.env.NODE_ENV==="test") {
+    done();
+  }
   let id = given ? tranche.receiver : tranche.sender;
   util.log("hydrating tranche for", id);
   let key = `account-${id}`;
