@@ -36,16 +36,19 @@ router.get('/setup/:ykid', function(req, res, next) {
 
 
 /* GET account details */
-router.get('/account/:id', function(req, res, next) {
-  let id = parseInt(req.params.id);
-  eth.getAccountFor(id, (account) => {
+router.get('/account/:id', async function(req, res, next) {
+  try {
+    let id = parseInt(req.params.id);
+    let account = await eth.getAccountFor(id);
     if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityIds[0]) {
       util.warn('Unauthorized account request', req.session);
       return res.json({"success":false, "error": req.t("Not authorized")});
     }
     util.debug('account', account);
     res.json(account);
-  });
+  } catch(error) {
+    return res.json({"success":false, "error": error});
+  }
 });
 
 
@@ -55,7 +58,7 @@ router.get('/me', async function(req, res, next) {
   var account;
   try {
     if (req.session.ykid) {
-      account = await getAccountFor(req.session.ykid);
+      account = await eth.getAccountFor(req.session.ykid);
     } else {
       var url = req.session.email || req.session.handle;
       url = getLongUrlFromShort(url);
@@ -380,20 +383,6 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-async function getAccountFor(id) {
-  return new Promise(async function(resolve, reject) {
-    var method = eth.contract.methods.accountForId(id);
-    try {
-      let result = await method.call();
-      var account = eth.getAccountFromResult(result);
-      resolve(account);
-    } catch(error) {
-      util.debug('getAccountFor error', error);
-      reject(error);
-    }
-  });
-}
-
 async function getAccountForUrl(url) {
   return new Promise(async function(resolve, reject) {
     var method = eth.contract.methods.accountForUrl(url);
@@ -435,7 +424,7 @@ function hydrateAccount(account, done) {
   }
 }
 
-function hydrateTranche(tranche, given, done) {
+async function hydrateTranche(tranche, given, done) {
   // check account cache on redis
   if (process.env.NODE_ENV==="test") {
     done();
@@ -443,7 +432,7 @@ function hydrateTranche(tranche, given, done) {
   let id = given ? tranche.receiver : tranche.sender;
   util.log("hydrating tranche for", id);
   let key = `account-${id}`;
-  var success = redis.get(key, function (err, val) {
+  var success = redis.get(key, async function (err, val) {
     if (err) {
       util.warn("redis error", err);
     }
@@ -453,15 +442,13 @@ function hydrateTranche(tranche, given, done) {
       done();
       return;
     }
-    eth.getAccountFor(id, (account) => {
-      tranche.details = {
-        name:         account.metadata.name,
-        urls:         account.urls,
-        communityId : account.communityIds[0]
-      };
-      redis.set(key, JSON.stringify(tranche.details));
-      done();
-    });
+    let account = await eth.getAccountFor(id);
+    tranche.details = {
+      name:         account.metadata.name,
+      urls:         account.urls,
+    };
+    redis.set(key, JSON.stringify(tranche.details));
+    done();
   });
 
   // if redis not working
@@ -472,15 +459,13 @@ function hydrateTranche(tranche, given, done) {
       done();
       return;
     }
-    eth.getAccountFor(id, (account) => {
-      tranche.details = {
-        name:         account.metadata.name,
-        urls:         account.urls,
-        communityId : account.communityIds[0]
-      };
-      accountCache[key] = JSON.stringify(tranche.details);
-      done();
-    });
+    let account = await eth.getAccountFor(id);
+    tranche.details = {
+      name:         account.metadata.name,
+      urls:         account.urls,
+    };
+    accountCache[key] = JSON.stringify(tranche.details);
+    done();
   }
 }
 

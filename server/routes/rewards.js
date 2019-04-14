@@ -79,6 +79,7 @@ async function getListOfRewards(idType, id, res) {
         rewards.push(reward);
         if (rewards.length >= parseInt(totalRewards)) {
           // console.log('rewards', rewards);
+          rewards = rewards.filter(a => a.id > 0);
           return res.json({"success":true, "rewards":rewards});
         }
       });
@@ -140,20 +141,18 @@ router.post('/purchase', function(req, res, next) {
   }
   var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
   getRewardFor(req.body.rewardId, (reward) => {
-    eth.doSend(method, res, 1, 2, () => {
-      eth.getAccountFor(reward.vendorId, (vendor) => {
-        util.log("reward purchased", reward);
-        email.sendRewardPurchasedEmail(req, reward, req.session.account, vendor);
-        email.sendRewardSoldEmail(req, reward, req.session.account, vendor);
-        let vendorSlackUrl = util.getSlackUrlForSameTeam(vendor.urls, req.session.account.urls);
-        if (vendorSlackUrl) {
-          var buyerInfo = util.getEmailFrom(req.session.account.urls);
-          buyerInfo = buyerInfo ? buyerInfo : buyer.urls;
-          slack.openChannelAndPost(vendorSlackUrl, `You just sold the reward ${getRwardInfoFrom(reward)} to ${buyerInfo}!`);
-        }
-
-        return res.json({"success":true, "result": reward});
-      });
+    eth.doSend(method, res, 1, 2, async () => {
+      util.log("reward purchased", reward);
+      let vendor = await eth.getAccountFor(reward.vendorId);
+      email.sendRewardPurchasedEmail(req, reward, req.session.account, vendor);
+      email.sendRewardSoldEmail(req, reward, req.session.account, vendor);
+      let vendorSlackUrl = util.getSlackUrlForSameTeam(vendor.urls, req.session.account.urls);
+      if (vendorSlackUrl) {
+        var buyerInfo = util.getEmailFrom(req.session.account.urls);
+        buyerInfo = buyerInfo ? buyerInfo : buyer.urls;
+        slack.openChannelAndPost(vendorSlackUrl, `You just sold the reward ${getRwardInfoFrom(reward)} to ${buyerInfo}!`);
+      }
+      return res.json({"success":true, "result": reward});
     });
   });
 });

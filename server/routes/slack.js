@@ -376,18 +376,6 @@ function sendKarma(res, vals, callback) {
   eth.doSend(method, res, 1, 4, callback);
 }
 
-async function getAccountFor(id) {
-   try {
-      let method = eth.contract.methods.accountForId(id);
-      var result = await method.call();
-      //util.debug('getAccountFor result', result);
-      let account = eth.getAccountFromResult(result);
-      return account;
-   } catch(err) {
-      util.warn('getAccountForUrl error', err);
-   }
-}
-
 async function getAccountForUrl(url) {
    try {
       let method = eth.contract.methods.accountForUrl(url);
@@ -524,7 +512,7 @@ router.post('/event', async function(req, res, next) {
               ];
 
               for (var j=0; j< available.length; j++) {
-                let vendor = await getAccountFor(available[j].vendorId);
+                let vendor = await eth.getAccountFor(available[j].vendorId);
                 var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
                 vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
                 var description = available[j].metadata.description ? `\n ${ available[j].metadata.description}` : '';
@@ -571,25 +559,24 @@ router.post('/event', async function(req, res, next) {
       }
       var purchaseMethod = eth.contract.methods.purchase(sender.id, purchaseId);
       rewards.getRewardFor(purchaseId, (reward) => {
-        eth.doSend(purchaseMethod, res, 1, 2, (error) => {
+        eth.doSend(purchaseMethod, res, 1, 2, async (error) => {
           if (error) {
             postToChannel(teamId, channelId, req.t("Could not complete purchase, sorry!"), bot_token);
             return util.warn("purchase error");
           }
           util.log("purchased", reward);
           // send notifications
-          eth.getAccountFor(reward.vendorId, (vendor) => {
-            email.sendRewardPurchasedEmail(req, reward, sender, vendor);
-            email.sendRewardSoldEmail(req, reward, sender, vendor);
-            var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
-            vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
-            postToChannel(teamId, channelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
-            let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, teamId);
-            if (vendorSlackUrl) {
-              let buyerInfo = `<@${slackUserId}>`;
-              openChannelAndPost(vendorSlackUrl, `You just sold the reward ${util.getRewardInfoFrom(reward)} to ${buyerInfo}!`);
-            }
-          });
+          let vendor = await eth.getAccountFor(reward.vendorId);
+          email.sendRewardPurchasedEmail(req, reward, sender, vendor);
+          email.sendRewardSoldEmail(req, reward, sender, vendor);
+          var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
+          vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
+          postToChannel(teamId, channelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
+          let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, teamId);
+          if (vendorSlackUrl) {
+            let buyerInfo = `<@${slackUserId}>`;
+            openChannelAndPost(vendorSlackUrl, `You just sold the reward ${util.getRewardInfoFrom(reward)} to ${buyerInfo}!`);
+          }
         });
       });
       text = req.t("Attempting purchase…");
