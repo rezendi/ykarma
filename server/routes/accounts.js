@@ -37,7 +37,7 @@ router.get('/setup/:ykid', function(req, res, next) {
 
 /* GET account details */
 router.get('/account/:id', function(req, res, next) {
-  const id = parseInt(req.params.id);
+  let id = parseInt(req.params.id);
   eth.getAccountFor(id, (account) => {
     if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityIds[0]) {
       util.warn('Unauthorized account request', req.session);
@@ -52,69 +52,47 @@ router.get('/account/:id', function(req, res, next) {
 /* GET account details */
 router.get('/me', async function(req, res, next) {
   util.debug("me session", req.session);
-  var id = await eth.getId();
-  if (!id) {
-    return res.status(400).send({
-      message: req.t("web3 not connected")
-    });
-  }
-
-  if (req.session.ykid) {
-    eth.getAccountFor(req.session.ykid, (account) => {
-      getSessionFromAccount(req, account);
-      eth.getCommunityFor(req.session.ykcid, (community) => {
-        account.community = community;
-        hydrateAccount(account, async () => {
-          var method = eth.contract.methods.availableToSpend(account.id, '');
-          try {
-            let spendable = await method.call();
-            account.spendable = parseInt(spendable);
-            // set account as active, and replenish, if not
-            if (!hasNeverLoggedIn(account)) {
-              return res.json(account);
-            }
-            util.warn("Marking account active and replenishing");
-            method = eth.contract.methods.editAccount(
-              account.id,
-              account.userAddress,
-              JSON.stringify(account.metadata),
-              util.BYTES_ZERO
-            );
-            eth.doSend(method, res, 1, 2, () => {
-              redis.del(`account-${account.id}`); // clear our one redis cache
-              method = eth.contract.methods.replenish(account.id);
-              eth.doSend(method, res, 1, 2, () => {
-                res.json(account);
-              });
-            });
-          } catch(error) {
-            util.warn("account config error", error);
-          }
-        });
-      });
-    });
-  } else {
-    var url = req.session.email || req.session.handle;
-    url = getLongUrlFromShort(url);
-    if (url.startsWith('error')) {
-      return res.json({"success":false, "error": url});
+  var account;
+  try {
+    if (req.session.ykid) {
+      account = await eth.getAccountFor(req.session.ykid);
+    } else {
+      var url = req.session.email || req.session.handle;
+      url = getLongUrlFromShort(url);
+      if (url.startsWith('error')) {
+        return res.json({"success":false, "error": url});
+      }
+      account = await eth.getAccountForUrl(url);
     }
-    getAccountForUrl(url, (account) => {
-      getSessionFromAccount(req, account);
-      eth.getCommunityFor(req.session.ykcid, (community) => {
-        account.community = community;
-        hydrateAccount(account, async () => {
-          var method = eth.contract.methods.availableToSpend(account.id, '');
-          try {
-            let mySpendable = await method.call();
-            account.spendable = parseInt(mySpendable);
-          } catch(error) {
-            util.warn("account load error", error);
-          }
+    
+    // we've got the account, now hydrate it and mark as active if not already
+    getSessionFromAccount(req, account);
+    let community = eth.getCommunityFor(req.session.ykcid);
+    account.community = community;
+    hydrateAccount(account, async () => {
+      var method = eth.contract.methods.availableToSpend(account.id, '');
+      try {
+        let mySpendable = await method.call();
+        account.spendable = parseInt(mySpendable);
+      } catch(error) {
+        util.warn("account load error", error);
+      }
+      if (!hasNeverLoggedIn(account)) {
+        return res.json(account);
+      }
+      util.warn("Marking account active and replenishing");
+      method = eth.contract.methods.editAccount(account.id, account.userAddress, JSON.stringify(account.metadata), util.BYTES_ZERO);
+      eth.doSend(method, res, 1, 2, () => {
+        redis.del(`account-${account.id}`); // clear our one redis cache
+        method = eth.contract.methods.replenish(account.id);
+        eth.doSend(method, res, 1, 2, () => {
           res.json(account);
         });
       });
     });
+  } catch(error) {
+    util.warn("account me error", error);
+    res.json({"success":false, "error":error});
   }
 });
 
@@ -140,6 +118,19 @@ router.get('/full', async function(req, res, next) {
   }
 });
 
+/* PUT replenish */
+router.put('/community', async function(req, res, next) {
+  let idx = parseInt(req.body.index || req.session.ykid);
+  if (req.session.account && idx < req.session.account.communityIds.length) {
+    req.session.ykcidx = idx;
+    getSessionFromAccount(req.session.account);
+    let community = await eth.getCommunityFor(req.session.ykcid);
+    account.community = community;
+    res.json(account);
+  }
+  return res.json({"success":false, "error":"No session"});
+});
+
 /* GET account details */
 router.get('/url/:url', function(req, res, next) {
   var url = req.params.url;
@@ -159,7 +150,7 @@ router.get('/url/:url', function(req, res, next) {
 
 /* PUT replenish */
 router.put('/replenish', function(req, res, next) {
-  const id = parseInt(req.body.id || req.session.ykid);
+  let id = parseInt(req.body.id || req.session.ykid);
   if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id) {
     return res.json({"success":false, "error": req.t("Not authorized")});
   }
@@ -193,7 +184,7 @@ router.put('/addUrl', function(req, res, next) {
   }
     
   // Are we not logged in as a YK user but hoping to add this current URL as a YK user?
-  const existing = req.session.handle || req.session.email;
+  let existing = req.session.handle || req.session.email;
   var longExisting = getLongUrlFromShort(existing);
   if (longExisting.startsWith('error')) {
     return res.json({"success":false, "error": req.t("existing") + " " + longExisting});
@@ -316,7 +307,7 @@ router.post('/give', function(req, res, next) {
           let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
           if (sendEmail) {
             util.debug("sending mail to", req.body.recipient);
-            const senderName = req.session.name || req.session.email;
+            let senderName = req.session.name || req.session.email;
             email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
             if (!hasNeverLoggedIn(recipient)) {
               return res.json( { "success":true } );
@@ -355,6 +346,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.email = null;
     req.session.ykid = null;
     req.session.ykcid = null;
+    req.session.ykcidx = null;
     req.session.handle = null;
     req.session.twitter_id = null;
     req.session.slack_id = null;
@@ -367,7 +359,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
     // util.log("decoded", decodedToken);
-    const twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
+    let twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
     if (twitterIdentities && twitterIdentities.length > 0) {
       req.session.twitter_id = twitterIdentities[0];
       req.session.handle = req.session.handle ? req.session.handle : req.body.handle;
@@ -421,9 +413,9 @@ function hydrateAccount(account, done) {
 
 function hydrateTranche(tranche, given, done) {
   // check account cache on redis
-  const id = given ? tranche.receiver : tranche.sender;
+  let id = given ? tranche.receiver : tranche.sender;
   util.log("hydrating tranche for", id);
-  const key = `account-${id}`;
+  let key = `account-${id}`;
   var success = redis.get(key, function (err, val) {
     if (err) {
       util.warn("redis error", err);
@@ -468,8 +460,8 @@ function hydrateTranche(tranche, given, done) {
 // Utility functions
 
 function getSessionFromAccount(req, account) {
-  req.session.ykid = parseInt(account.id);
-  req.session.ykcid = account.communityIds[0];
+  req.session.ykid = account.id;
+  req.session.ykcid = account.communityIds[req.session.ykcidx || 0];
   req.session.name = account.metadata.name;
   req.session.account = account;
   var urls = account.urls.split(util.separator);

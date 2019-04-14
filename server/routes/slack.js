@@ -258,7 +258,7 @@ router.post('/yk', async function(req, res, next) {
     text = brandResponse(text, req.body.command);
     return res.json({
       "response_type" : "ephemeral",
-      "text" : text;
+      "text" : text
     });
   }
     
