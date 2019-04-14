@@ -73,10 +73,10 @@ async function loadV1(communities) {
       if (urls.length===1) {
         urls = account.urls.split(util.oldSeparator);
       }
+      console.log("urls", urls);
       if (urls.length===1 && urls[0]==='') {
         continue;
       }
-      console.log("urls", urls);
       var accountId = await addAccount(account, community.id, urls[0]);
       for (var k = 1; k < urls.length; k++) {
         if(urls[k].length > 0) {
@@ -94,9 +94,13 @@ async function loadV1(communities) {
     // Next, recapitulate all the sends, in order
     tranches = tranches.sort(function(a, b){return a.block - b.block;});
     for (var l=0; l<tranches.length; l++) {
-      await addTranche(tranches[l], community.id);
-      console.log("tranche", tranches[l].block);
-      await sleep(3000);
+      try {
+        await addTranche(tranches[l], community.id);
+        console.log("tranche", tranches[l].block);
+        await sleep(3000);
+      } catch(error) {
+        console.log("tranche error", error);
+      }
     }
     console.log("Tranches added", tranches.length);
 
@@ -184,19 +188,20 @@ async function addTranche(tranche, communityId) {
     return;
   }
   // console.log("tranche", tranche);
-  var balance = balances[tranche.sender] || 0;
+  var newSenderId = ids[tranche.sender];
+  var balance = balances[newSenderId] || 0;
   while (balance < tranche.amount) {
     // console.log("replenishing");
-    let replenish = eth.contract.methods.replenish(tranche.sender);
+    let replenish = eth.contract.methods.replenish(newSenderId);
     await doSend(replenish);
     balance += 100;
   }
   var newReceiverId = ids[tranche.receiver];
   var recipientUrl = await getUrlFor(newReceiverId);
   // console.log("sending to url", recipientUrl);
-  let give = eth.contract.methods.give(tranche.sender, communityId, recipientUrl, tranche.amount, tranche.message);
+  let give = eth.contract.methods.give(newSenderId, communityId, recipientUrl, tranche.amount, tranche.message);
   await doSend(give);
-  balances[tranche.sender] = balance - tranche.amount;
+  balances[newSenderId] = balance - tranche.amount;
 }
 
 // TODO: possibly cache these for performance's sake
