@@ -43,9 +43,9 @@ router.use('*', (req, res, next) => {
               Buffer.from(mySignature, 'utf8'),
               Buffer.from(slackSignature, 'utf8'))
       ) {
-          next();
+         next();
    } else {
-      util.warn("verification failed");
+      util.warn("verification failed", slackSignature);
       next(); // for now
       //return res.status(400).send('Verification failed');
    }
@@ -254,9 +254,11 @@ router.post('/yk', async function(req, res, next) {
   if (text.startsWith(req.t('help'))) {
     let senderUrl = `slack:${req.body.team_id}-${req.body.user_id}`;
     let sender = await getAccountForUrl(senderUrl);
+    text = req.t("ykarma_is") + ` ${sender.givable} ` + req.t("karma to give away to others, and") + ` ${sender.spendable} ` + req.t("to_spend_on");
+    text = brandResponse(text, req.body.command);
     return res.json({
       "response_type" : "ephemeral",
-      "text" : req.t("ykarma_is") + ` ${sender.givable} ` + req.t("karma to give away to others, and") + ` ${sender.spendable} ` + req.t("to_spend_on")
+      "text" : text;
     });
   }
     
@@ -288,10 +290,12 @@ router.post('/yk', async function(req, res, next) {
       });
     });
   }
-  
+
+  var responseText = vals.error ? vals.error : "Sending…";
+  responseText = brandResponse(responseText, req.body.command);
   res.json({
     "response_type" : vals.error ? "ephemeral" : "in_channel",
-    "text" : vals.error ? vals.error : "Sending…"
+    "text" : responseText
   });
 });
 
@@ -400,7 +404,7 @@ async function getAccountForUrl(url) {
    }
 }
 
-// TODO: break this into multiple methods
+// TODO: this is such a mess, break it into multiple methods
 router.post('/event', async function(req, res, next) {
 
   if (req.body.type==="url_verification") {
@@ -432,10 +436,10 @@ router.post('/event', async function(req, res, next) {
     return res.send({success:false, error:"no token found"});
   }
 
-  let slackTeamId = req.body.team_id;
+  let teamId = req.body.team_id;
   let slackUserId = req.body.event.user;
-  let slackChannelId = req.body.event.channel;
-  let senderUrl = `slack:${slackTeamId}-${slackUserId}`;
+  let channelId = req.body.event.channel;
+  let senderUrl = `slack:${teamId}-${slackUserId}`;
   let sender = await getAccountForUrl(senderUrl);
 
   // parse text
@@ -453,22 +457,22 @@ router.post('/event', async function(req, res, next) {
     // Get balance
     case req.t("balance"):
       text = req.t("You currently have") + ` ${sender.givable} ` + req.t("to give away");
-      postToChannel(req.body.event.channel, text, bot_token);
+      postToChannel(teamId, channelId, text, bot_token);
       let availableMethod = eth.contract.methods.availableToSpend(sender.id, '');
       try {
          let available = await availableMethod.call();
          // TODO: flavor breakdown?
-         postToChannel(slackChannelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
+         postToChannel(teamId, channelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
       } catch(error) {
          util.log('getAvailable error', error);
-         postToChannel(slackChannelId, req.t("Error getting available-to-spend amount"), bot_token);
+         postToChannel(teamId, channelId, req.t("Error getting available-to-spend amount"), bot_token);
       }
       return res.json({text:text});
     
     // Send karma
     case req.t("send"):
       text = req.t("Sending…");
-      var vals = await prepareToSendKarma(req, slackTeamId, slackUserId, incoming);
+      var vals = await prepareToSendKarma(req, teamId, slackUserId, incoming);
       if (vals.error) {
         text = vals.error;
         break;
@@ -477,7 +481,7 @@ router.post('/event', async function(req, res, next) {
         if (error) {
           return util.warn("sendKarma error", error);
         }
-        postToChannel(slackChannelId, req.t("Sent!"), bot_token);
+        postToChannel(teamId, channelId, req.t("Sent!"), bot_token);
         var name = sender.id;
         var email = util.getEmailFrom(sender.urls);
         if (sender.metadata && sender.metadata.name) {
@@ -494,7 +498,7 @@ router.post('/event', async function(req, res, next) {
     // View rewards
     case req.t("rewards"):
       text = req.t('Fetching available rewards from the blockchain…');
-      postToChannel(req.body.event.channel, text, bot_token);
+      postToChannel(teamId, channelId, text, bot_token);
       let rewardsMethod = eth.contract.methods.getRewardsCount(0, 0);
       try {
         let result = await rewardsMethod.call();
@@ -502,7 +506,7 @@ router.post('/event', async function(req, res, next) {
         util.log("total rewards", totalRewards);
         if (totalRewards===0) {
           util.log("No rewards available");
-          postToChannel(slackChannelId, req.t("No rewards available"), bot_token);
+          postToChannel(teamId, channelId, req.t("No rewards available"), bot_token);
           return res.json({text:text});
         }
         var available = [];
@@ -525,7 +529,7 @@ router.post('/event', async function(req, res, next) {
 
               for (var j=0; j< available.length; j++) {
                 let vendor = await getAccountFor(available[j].vendorId);
-                var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
+                var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
                 vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
                 var description = available[j].metadata.description ? `\n ${ available[j].metadata.description}` : '';
                 blocks = blocks.concat([{
@@ -545,13 +549,13 @@ router.post('/event', async function(req, res, next) {
                   "text": req.t("To purchase, enter 'purchase' followed by the reward's ID number, e.g. 'purchase 7'")
                }}]
               );
-              postToChannel(slackChannelId, blocks, bot_token, req.t('Available Rewards'));
+              postToChannel(teamId, channelId, blocks, bot_token, req.t('Available Rewards'));
             }
           });
         }
       } catch(error) {
          util.log('getListOfRewards error', error);
-         postToChannel(slackChannelId, req.t("Error getting rewards"), bot_token);
+         postToChannel(teamId, channelId, req.t("Error getting rewards"), bot_token);
       }
       return res.json({text:text});
 
@@ -573,7 +577,7 @@ router.post('/event', async function(req, res, next) {
       rewards.getRewardFor(purchaseId, (reward) => {
         eth.doSend(purchaseMethod, res, 1, 2, (error) => {
           if (error) {
-            postToChannel(slackChannelId, req.t("Could not complete purchase, sorry!"), bot_token);
+            postToChannel(teamId, channelId, req.t("Could not complete purchase, sorry!"), bot_token);
             return util.warn("purchase error");
           }
           util.log("purchased", reward);
@@ -581,10 +585,10 @@ router.post('/event', async function(req, res, next) {
           eth.getAccountFor(reward.vendorId, (vendor) => {
             email.sendRewardPurchasedEmail(req, reward, sender, vendor);
             email.sendRewardSoldEmail(req, reward, sender, vendor);
-            var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, slackTeamId);
+            var vendorInfo = util.getSlackUserIdForTeam(vendor.urls, teamId);
             vendorInfo = vendorInfo ? `<@${vendorInfo}>` : vendor.urls;
-            postToChannel(slackChannelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
-            let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, slackTeamId);
+            postToChannel(teamId, channelId, `You just purchased the reward ${util.getRewardInfoFrom(reward)} from ${vendorInfo}!`, bot_token);
+            let vendorSlackUrl = util.getSlackUrlForTeam(vendor.urls, teamId);
             if (vendorSlackUrl) {
               let buyerInfo = `<@${slackUserId}>`;
               openChannelAndPost(vendorSlackUrl, `You just sold the reward ${util.getRewardInfoFrom(reward)} to ${buyerInfo}!`);
@@ -604,12 +608,12 @@ router.post('/event', async function(req, res, next) {
       }
       communities.getLeaderboard(communityId, (error, leaders) => {
          if (error) {
-            postToChannel(slackChannelId, req.t("Could not get leaderboard, sorry!"), bot_token);
+            postToChannel(teamId, channelId, req.t("Could not get leaderboard, sorry!"), bot_token);
          } else {
             var blocks = [];
             for (var i=0; i<leaders.length; i++) {
                let leader = leaders[i];
-               var leaderInfo = util.getSlackUserIdForTeam(leader.urls, slackTeamId);
+               var leaderInfo = util.getSlackUserIdForTeam(leader.urls, teamId);
                leaderInfo = leaderInfo ? `<@${leaderInfo}>` : leader.urls;
                blocks.push({
                   "type": "section",
@@ -619,7 +623,7 @@ router.post('/event', async function(req, res, next) {
                   }
                });
             }
-            postToChannel(slackChannelId, blocks, bot_token, req.t('Leaderboard'));
+            postToChannel(teamId, channelId, blocks, bot_token, req.t('Leaderboard'));
          }
       });
       text = req.t("Getting leaderboard…");
@@ -635,12 +639,12 @@ router.post('/event', async function(req, res, next) {
       text = req.t("Sorry, I didn't understand you. You can ask for help with 'help'");
   }
 
-  postToChannel(slackChannelId, text, bot_token);
+  postToChannel(teamId, channelId, text, bot_token);
   res.json({text:text});
 });
 
 // this didn't start off this ugly
-function postToChannel(channel, input, bot_token, notificationText='') {
+function postToChannel(team, channel, input, bot_token, notificationText='') {
   var body = {
     text: input,
     channel: channel,
@@ -695,7 +699,7 @@ async function openChannelAndPost(slackUrl, text) {
     return console.log("conversation open error", json);
   }
   
-  postToChannel(json.channel.id, text, bot_token);
+  postToChannel(teamId, json.channel.id, text, bot_token);
 }
 
 async function getFirebaseTeamData(team_id) {
@@ -709,6 +713,15 @@ async function getFirebaseTeamData(team_id) {
     return Promise.resolve({ error:"no team data", vals: null });
   }
   return Promise.resolve({error:null, vals:doc.data()});
+}
+
+function brandResponse(text, indicator) {
+   // indicator can be a slack command or a slack team ID
+   // obviously we'll want to store these values elsewhere not hardcoded if we pursue the white labeling thing
+   if (indicator==="hfc" || indicator==="T02DAHP2X") {
+      return text.replace("YKarma", "HappyFunCoin").replace("karma", "HFC");
+   }
+   return text;
 }
 
 module.exports = {
