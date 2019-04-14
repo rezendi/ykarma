@@ -62,7 +62,9 @@ async function loadV1(communities) {
     var community = communities[i];
     var communityId = await addCommunity(community);
     community.id = communityId;
-    console.log("community added", communityId);
+    console.log("community added", community.id);
+    await sleep(3000);
+
     var tranches = [];
     
     // First, add all the accounts
