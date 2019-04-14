@@ -219,7 +219,7 @@ router.get('/team_auth', function(req, res, next) {
         var slackTeams = community.metadata.slackTeams || [];
         if (slackTeams.includes(teamId)) {
           util.log("Team already added");
-          return res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+          return res.redirect('/admin?slackAddSuccess=true');
         }
         slackTeams.push(teamId);
         community.metadata.slackTeams = slackTeams;
@@ -233,7 +233,7 @@ router.get('/team_auth', function(req, res, next) {
         );
         eth.doSend(method, res, 1, 2, () => {
           // from here the cron job will take care of adding the users' accounts
-          res.redirect('/admin?slackAddSuccess=true'); // TODO: better redirect
+          res.redirect('/admin?slackAddSuccess=true');
         });
       });
     });
@@ -358,11 +358,7 @@ async function prepareToSendKarma(req, team_id, user_id, text) {
     return { error: req.t("Sorry! That YKarma account is not set up for receiving here"), sender:sender,  recipient:recipient, recipientUrl:recipientUrl, amount:amount };
   }
   
-  let communityId = sender.communityIds[0];
-  if (sender.communityIds.length > 0) {
-     // TODO get community ID from slack team
-     console.log("implement this TODO");
-  }
+  let communityId = await getCommunityIdForTeam(sender.communityIds, team_id);
   
   return { sender:sender, communityId: communityId, recipient:recipient, recipientUrl: recipientUrl, amount:amount, message:message, };
 }
@@ -601,11 +597,7 @@ router.post('/event', async function(req, res, next) {
 
     // Leaderboard
     case req.t("leaderboard"):
-      let communityId = sender.communityIds[0];
-      if (sender.communityIds.length > 0) {
-         // TODO get community from Slack team
-         console.log("implement this here TODO");
-      }
+  let communityId = await getCommunityIdForTeam(sender.communityIds, teamId);
       communities.getLeaderboard(communityId, (error, leaders) => {
          if (error) {
             postToChannel(teamId, channelId, req.t("Could not get leaderboard, sorry!"), bot_token);
@@ -715,11 +707,35 @@ async function getFirebaseTeamData(team_id) {
   return Promise.resolve({error:null, vals:doc.data()});
 }
 
+async function getCommunityIdForTeam(communityIds, teamId) {
+   // this probably shouldn't ever happen?
+   if (communityIds.length == 0) {
+      return 0;
+   }
+   if (communityIds.length == 1) {
+      return communityIds[0];
+   }
+   for (var i=0; i<communityIds.length; i++) {
+      try {
+         let community = await eth.getCommunityFor(communityIds[i]);
+         let communityTeams = community.metadata.slackTeams || [];
+         if (communityTeams.includes(teamId)) {
+            return community.id;
+         }
+      } catch(error) {
+         util.warn("error geting community for", communityIds[i]);
+      }
+   }
+   //fallback, pathological
+   util.warn("No community found for team ID", teamId);
+   return communityIds[0];
+}
+
 function brandResponse(text, indicator) {
    // indicator can be a slack command or a slack team ID
    // obviously we'll want to store these values elsewhere not hardcoded if we pursue the white labeling thing
    if (indicator==="hfc" || indicator==="T02DAHP2X") {
-      return text.replace("YKarma", "HappyFunCoin").replace("karma", "HFC");
+      return text.replace("YKarma", "HappyFunCoin").replace("karma", "HFC").replace("/yk", "/hfc");
    }
    return text;
 }

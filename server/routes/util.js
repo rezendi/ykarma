@@ -46,7 +46,7 @@ function debug(a, b) {
 
 function getEmailFrom(urls) {
   if (urls && urls.indexOf("mailto:") >= 0) {
-    const urlArray = urls.split(URL_SEPARATOR);
+    let urlArray = urls.split(URL_SEPARATOR);
     for (var i in urlArray) {
       if (urlArray[i].startsWith("mailto:")) {
         return urlArray[i].replace("mailto:","");
@@ -56,21 +56,28 @@ function getEmailFrom(urls) {
   return '';
 }
 
-// TODO actually implement this
 function getSlackUrlForSameTeam(urls, comparisonUrls) {
-  return getSlackUrlFrom(urls);
+  if (!urls || urls.indexOf("slack:") < 0) {
+    return '';
+  }
+  if (!comparisonUrls || comparisonUrls.indexOf("slack:") < 0) {
+    return getSlackUrlFrom(urls);
+  }
+  let urls1 = urls.split(URL_SEPARATOR);
+  let urls2 = comparisonUrls.split(URL_SEPARATOR);
+  for (var i in urlArray) {
+    if (urls1[i].startsWith("slack:") && urls2.includes(urls1[i])) {
+      return urls1[i];
+    }
+  }
+  return '';
 }
 
-// TODO actually implement this
 function getSlackUrlForTeam(urls, teamId) {
-  return getSlackUrlFrom(urls);
-}
-
-function getSlackUrlFrom(urls) {
   if (urls && urls.indexOf("slack:") >= 0) {
-    const urlArray = urls.split(URL_SEPARATOR);
+    let urlArray = urls.split(URL_SEPARATOR);
     for (var i in urlArray) {
-      if (urlArray[i].startsWith("slack:")) {
+      if (urlArray[i].startsWith(`slack:${teamId}`)) {
         return urlArray[i];
       }
     }
@@ -78,21 +85,16 @@ function getSlackUrlFrom(urls) {
   return '';
 }
 
-// TODO actually implement this
 function getSlackUserIdForTeam(urls, teamId) {
-  return getSlackUserIdFrom(urls);
-}
-
-function getSlackUserIdFrom(urls) {
-  let url = getSlackUrlFrom(urls);
-  if (url && url.indexOf("-") > 0) {
-    return url.substring(url.indexOf("-")+1);
+  let url = getSlackUrlForTeam(urls, teamId);
+  if (!url) {
+    return '';
   }
-  return url;
+  return url.substring(url.indexOf("-")+1);
 }
 
 function getRewardInfoFrom(reward) {
-  const metadata = reward.metadata ? reward.metadata : {'name':'n/a', 'description':'n/a'};
+  let metadata = reward.metadata ? reward.metadata : {'name':'n/a', 'description':'n/a'};
   return `${metadata.name} -- ${metadata.description ? metadata.description : ''} (id: ${reward.id}, cost: ${reward.cost})`;
 }
 
@@ -107,10 +109,8 @@ module.exports = {
   ADDRESS_ZERO: ADDRESS_ZERO,
   BYTES_ZERO: BYTES_ZERO,
   getEmailFrom : getEmailFrom,
-  getSlackUrlFrom : getSlackUrlFrom,
   getSlackUrlForTeam : getSlackUrlForTeam,
   getSlackUrlForSameTeam : getSlackUrlForSameTeam,
-  getSlackUserIdFrom : getSlackUserIdFrom,
   getSlackUserIdForTeam : getSlackUserIdForTeam,
   getRewardInfoFrom: getRewardInfoFrom
 };
