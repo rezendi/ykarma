@@ -20,13 +20,12 @@ eth.getFromAccount().then(address => {
 });
 
 // GET set up
-router.get('/setup/:ykid', function(req, res, next) {
+router.get('/setup/:ykid', async function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.warn("setting up test data", req.params.ykid);
-    req.session.ykid = parseInt(req.params.ykid);
+    let account = await eth.getAccountFor(parseInt(req.params.ykid));
+    getSessionFromAccount(req, account);
     req.session.email = process.env.ADMIN_EMAIL; // so we can look at everything
-    req.session.ykcid = 1;
-    req.session.communityAdminId = 1;
     //util.debug("set up test data", req.session);
     return res.json({"success":true});
   } else {
@@ -122,19 +121,6 @@ router.get('/full', async function(req, res, next) {
   }
 });
 
-/* PUT replenish */
-router.put('/community', async function(req, res, next) {
-  let idx = parseInt(req.body.index || req.session.ykid);
-  if (req.session.account && idx < req.session.account.communityIds.length) {
-    req.session.ykcidx = idx;
-    getSessionFromAccount(req.session.account);
-    let community = await eth.getCommunityFor(req.session.ykcid);
-    account.community = community;
-    res.json(account);
-  }
-  return res.json({"success":false, "error":"No session"});
-});
-
 /* GET account details */
 router.get('/url/:url', async function(req, res, next) {
   var url = req.params.url;
@@ -154,16 +140,23 @@ router.get('/url/:url', async function(req, res, next) {
   }
 });
 
-
 /* PUT replenish */
-router.put('/replenish', function(req, res, next) {
-  let id = parseInt(req.body.id || req.session.ykid);
-  if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id) {
-    return res.json({"success":false, "error": req.t("Not authorized")});
+router.put('/switchCommunity', async function(req, res, next) {
+  let idx = parseInt(req.body.index || 0);
+  console.log("ykcid in", req.session.ykcid);
+  if (req.session.account && idx < req.session.account.communityIds.length) {
+    req.session.ykcidx = idx;
+    getSessionFromAccount(req, req.session.account);
+    console.log("ykcid out", req.session.ykcid);
+    eth.getCommunityFor(req.session.ykcid, (community) => {
+      req.session.account.community = community;
+      res.json(req.session.account);
+    });
+  } else {
+    return res.json({"success":false, "error":"No session"});
   }
-  var method = eth.contract.methods.replenish(id);
-  eth.doSend(method, res);
 });
+
 
 /* PUT add URL */
 // TODO: connect to Twitter to verify the twitter_id and handle match

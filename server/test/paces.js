@@ -36,13 +36,21 @@ describe('Account', function () {
     }
   });
 
-  it('should list accounts for a community', async function () {
+  it('should list accounts for a community, then switch communities', async function () {
     try {
-      var res = await api.get('/api/accounts/setup/2');
+      var res = await api.get('/api/accounts/setup/8');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.get('/api/communities/1/accounts').set('Cookie', TestCookies);
         var accounts = JSON.parse(res.text);
         expect(accounts.length).to.be.above(2);
+      var res = await api.put('/api/accounts/switchCommunity').set('Cookie', TestCookies)
+        .send({"index":"1"});
+      res = await api.get('/api/communities/1/accounts').set('Cookie', TestCookies);
+        var accounts = JSON.parse(res.text);
+        expect(accounts.length).to.equal(0);
+      res = await api.get('/api/communities/2/accounts').set('Cookie', TestCookies);
+        var accounts = JSON.parse(res.text);
+        expect(accounts.length).to.be.above(1);
     } catch(err) {
       return console.log("error", err);
     }

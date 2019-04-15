@@ -10,17 +10,6 @@ eth.getFromAccount().then(address => {
   fromAccount = address;
 });
 
-// GET set up
-router.get('/setup', function(req, res, next) {
-  eth.getCommunityFor(1, (community) => {
-    if (community.id !== 0) {
-      return res.json({"success":true, 'message':'Redundant'});
-    }
-    var method = eth.contract.methods.addEditCommunity(0, util.ADDRESS_ZERO, util.BYTES_ZERO, 'ykarma.com', '{"name":"Alpha Karma"}', 'alpha');
-    eth.doSend(method, res);
-  });
-});
-
 /* GET community list */
 router.get('/', async function(req, res, next) {
   var communities = [];
@@ -133,7 +122,7 @@ router.post('/create', function(req, res, next) {
 router.put('/update', function(req, res, next) {
   var community = req.body.community;
   community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : BYTES_ZERO;
-  if (req.session.email !== process.env.ADMIN_EMAIL && parseInt(req.session.communityAdminId) !== community.id) {
+  if (req.session.email !== process.env.ADMIN_EMAIL) {
       return res.json({"success":false, "error": req.t("Not authorized")});
   }
   util.log("community update", JSON.stringify(community));
