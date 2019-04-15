@@ -32,7 +32,7 @@ contract('Paces', function(accounts) {
     assert.equal(count, 2, "Community created");
     var vals = await ykarma.communityForId(1);
     assert.equal(accounts[1], vals[1]);
-    await ykarma.addNewAccount(1, ADDRESS_ZERO, '{"name":"Jon"}', BYTES_ZERO, 'mailto:jon@rezendi.com', );
+    await ykarma.addNewAccount(1, ADDRESS_ZERO, '{"name":"Jon"}', BYTES_ZERO, 'mailto:jon@rezendi.com');
     vals = await ykarma.accountForId(1);
     assert.equal(vals[4], '{"name":"Jon"}', "Account metadata");
     assert.equal(vals[5], 'mailto:jon@rezendi.com', "Account URLs");
@@ -192,6 +192,15 @@ contract('Paces', function(accounts) {
     await ykarma.deleteAccount(2);
     vals = await ykarma.accountForId(2);
     assert.equal(vals[0], 0, "Account deleted");
+
+    let newAccountId = await ykarma.addNewAccount(2, ADDRESS_ZERO, '{"name":"Jon Two"}', BYTES_ZERO, 'mailto:jon2@rezendi.com');
+    await ykarma.mergeAccounts(3, 1);
+    vals = await ykarma.accountForId(1);
+    let communityIds = JSON.parse(vals[1]);
+    assert.equal(communityIds.length, 2, "Merged community IDs");
+    assert.equal(communityIds[0], 1);
+    assert.equal(communityIds[1], 2);
+    assert.equal(vals[5], 'mailto:jon@rezendi.com mailto:jay@rezendi.com mailto:jon2@rezendi.com', "Remerged Account URLs");
 
     vals = await ykarma.communityForId(2);
     assert.equal(vals[0], 2, "Community not deleted");
