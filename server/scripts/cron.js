@@ -32,9 +32,8 @@ async function doReplenish() {
     let communityCount = parseInt(result);
     console.log('getCommunityCount result', communityCount);
     for (var i = 1; i <= communityCount; i++) {
-      eth.getCommunityFor(i, (community) => {
-        replenishCommunity(community);
-      });
+      let community = await eth.getCommunityFor(i);
+      replenishCommunity(community);
     }
   } catch(error) {
     console.log('getCommunityCount error', error);

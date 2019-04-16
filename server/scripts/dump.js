@@ -25,11 +25,10 @@ async function doDump() {
     let communityCount = parseInt(result);
     console.log('getCommunityCount result', communityCount);
     for (var i = 1; i <= communityCount; i++) {
-      eth.getCommunityFor(i, (community) => {
-        console.log("community", community.metadata ? community.metadata.name : 'n/a');
-        getCommunityData(community, function(hydratedCommunity) {
-          communities.push(hydratedCommunity);
-        });
+      let community = await eth.getCommunityFor(i);
+      console.log("community", community.metadata ? community.metadata.name : 'n/a');
+      getCommunityData(community, function(hydratedCommunity) {
+        communities.push(hydratedCommunity);
       });
     }
     // super clumsy, means it has to be interrupted by hand in case of error, but for testability

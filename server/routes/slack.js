@@ -169,26 +169,26 @@ router.get('/auth', function(req, res, next) {
   
 });
 
-router.get('/team_auth', function(req, res, next) {
+router.get('/team_auth', async function(req, res, next) {
   // check slack state arg
-  if (req.session.slackState != req.query.state) {
-    return res.json({success:false, error: "State mismatch " + req.session.slackState});
-  }
+   if (req.session.slackState != req.query.state) {
+      return res.json({success:false, error: "State mismatch " + req.session.slackState});
+   }
   
    if (req.session.ykcid === 0) {
      return res.json({"success":false, "error": "No community"});
    }
-  eth.getCommunityFor(req.session.ykcid, (community) => {
-    // for now only the admin can add to slack
-    let authorizedEmail = community.metadata.adminEmail;
-    let userAuthorized = req.session.email === process.env.ADMIN_EMAIL || (authorizedEmail && req.session.email===authorizedEmail);
-    if (!userAuthorized) {
+   let community = await eth.getCommunityFor(req.session.ykcid);
+   // for now only the admin can add to slack
+   let authorizedEmail = community.metadata.adminEmail;
+   let userAuthorized = req.session.email === process.env.ADMIN_EMAIL || (authorizedEmail && req.session.email===authorizedEmail);
+   if (!userAuthorized) {
       return res.json({"success":false, "error": req.t("Not authorized")});
-    }
+   }
  
-    const code = req.query.code;
-    const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
-    fetch(url).then(function(response) {
+   const code = req.query.code;
+   const url = `https://slack.com/api/oauth.access?client_id=${process.env.SLACK_CLIENT_ID}&client_secret=${process.env.SLACK_CLIENT_SECRET}&code=${code}&redirect_uri=http%3A%2F%2F${process.env.DOMAIN}%2Fapi%2Fslack%2Fteam_auth`;
+   fetch(url).then(function(response) {
       response.json().then((json) => {
         //console.log("response", json);
         if (!json.ok) {
@@ -236,8 +236,7 @@ router.get('/team_auth', function(req, res, next) {
           res.redirect('/admin?slackAddSuccess=true');
         });
       });
-    });
-  });
+   });
 });
 
 // For now, just send mock Slack response with GIF
@@ -710,7 +709,7 @@ async function getCommunityIdForTeam(communityIds, teamId) {
             return community.id;
          }
       } catch(error) {
-         util.warn("error geting community for", communityIds[i]);
+         util.warn(`error geting community for ${communityIds[i]}`, error);
       }
    }
    //fallback, pathological

@@ -30,13 +30,12 @@ async function populateSlack() {
     let result = await method.call();
     let communityCount = parseInt(result);
     for (var i = 1; i <= communityCount; i++) {
-      eth.getCommunityFor(i, (community) => {
-        let metadata = community.metadata || {};
-        let slackTeams = metadata.slackTeams || [];
-        for (var j=0; j<slackTeams.length; j++) {
-          populateTeam(community.id, slackTeams[j]);
-        }
-      });
+      let community = await eth.getCommunityFor(i);
+      let metadata = community.metadata || {};
+      let slackTeams = metadata.slackTeams || [];
+      for (var j=0; j<slackTeams.length; j++) {
+        populateTeam(community.id, slackTeams[j]);
+      }
     }
   } catch(error) {
     console.log('getCommunityCount error', error);

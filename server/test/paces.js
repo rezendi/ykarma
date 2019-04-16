@@ -61,11 +61,11 @@ describe('Account', function () {
       var res = await api.get('/api/accounts/setup/2');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
       res = await api.put('/api/accounts/update').set('Cookie', TestCookies)
-        .send({"account":{"id":2, "userAddress":"0x123f681646d4a755815f9cb19e1acc8565a0c2ac", "metadata":'{"name":"Updated"}'}});
+        .send({"account":{"id":2, "userAddress":"0x123f681646d4a755815f9cb19e1acc8565a0c2ac", "metadata":{"name":"Updated"}}});
         expect(JSON.parse(res.text).success).to.equal(true);
       res = await api.get('/api/accounts/url/test@example.com').set('Cookie', TestCookies);
         var acct = JSON.parse(res.text);
-        expect(acct.metadata).to.equal('{"name":"Updated"}');
+        expect(acct.metadata.name).to.equal("Updated");
         expect(acct.userAddress).to.equal("0x123F681646d4A755815f9CB19e1aCc8565A0c2AC");
     } catch(err) {
       return console.log("error", err);
@@ -92,6 +92,25 @@ describe('Account', function () {
         expect(acct.flags).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001');
       res = await api.get('/api/accounts/me').set('Cookie', TestCookies);
         expect(JSON.parse(res.text).given.length).to.equal(initialGiven + 1);
+    } catch(err) {
+      return console.log("error", err);
+    }
+  });
+
+  it('should send karma to and from a multi-community account', async function () {
+    var initial, initialGiven;
+    this.timeout(10000);
+    try {
+      var res = await api.get('/api/accounts/setup/2');
+        TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+      res = await api.post('/api/accounts/give').set('Cookie', TestCookies)
+        .send({"amount":1, "recipient":"merged@example.com", "message":"Just a message 2"});
+        expect(JSON.parse(res.text).success).to.equal(true);
+      var res = await api.get('/api/accounts/setup/8');
+      TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');
+      res = await api.post('/api/accounts/give').set('Cookie', TestCookies)
+        .send({"amount":1, "recipient":"admin@test.com", "message":"Just a message 4"});
+        expect(JSON.parse(res.text).success).to.equal(true);
     } catch(err) {
       return console.log("error", err);
     }

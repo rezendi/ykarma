@@ -4,7 +4,6 @@ var should = require('chai').should();
 var expect = require('chai').expect;
 var supertest = require('supertest');
 var api = supertest('http://localhost:3001');
-var slack = require('../routes/slack');
 
 var TestCookies = [];
 
@@ -62,13 +61,19 @@ describe('Slack', async function () {
     }
   });
 
-  it('send karma in a second slack team, and make a purchase', async function() {
-    this.timeout(8000);
+  it('send karma in a second slack team, then across communities, and make a purchase', async function() {
+    this.timeout(10000);
     try {
       // send via command
       res = await api.get('/api/slack/testReset/TEAM2');
       res = await api.post('/api/slack/yk')
         .send({"team_id":"TEAM2", "user_id":"USER3", "text":"send 2 to <@USER4> just testing"});
+      expect(JSON.parse(res.text).text).to.equal("Sending…");
+      res = await api.post('/api/slack/yk')
+        .send({"team_id":"TEAM2", "user_id":"USER5", "text":"send 2 to <@USER4> just testing 2"});
+      expect(JSON.parse(res.text).text).to.equal("Sending…");
+      res = await api.post('/api/slack/yk')
+        .send({"team_id":"TEAM2", "user_id":"USER4", "text":"send 2 to <@USER5> just testing 3"});
       expect(JSON.parse(res.text).text).to.equal("Sending…");
 
       // purchase reward

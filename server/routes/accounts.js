@@ -69,27 +69,26 @@ router.get('/me', async function(req, res, next) {
     
     // we've got the account, now hydrate it and mark as active if not already
     getSessionFromAccount(req, account);
-    eth.getCommunityFor(req.session.ykcid, (community) => {
-      account.community = community;
-      hydrateAccount(account, async () => {
-        var method = eth.contract.methods.availableToSpend(account.id, '');
-        try {
-          let mySpendable = await method.call();
-          account.spendable = parseInt(mySpendable);
-        } catch(error) {
-          util.warn("account load error", error);
-        }
-        if (!hasNeverLoggedIn(account)) {
-          return res.json(account);
-        }
-        util.warn("Marking account active and replenishing");
-        method = eth.contract.methods.editAccount(account.id, account.userAddress, JSON.stringify(account.metadata), util.BYTES_ZERO);
+    let community = await eth.getCommunityFor(req.session.ykcid); 
+    account.community = community;
+    hydrateAccount(account, async () => {
+      var method = eth.contract.methods.availableToSpend(account.id, '');
+      try {
+        let mySpendable = await method.call();
+        account.spendable = parseInt(mySpendable);
+      } catch(error) {
+        util.warn("account load error", error);
+      }
+      if (!hasNeverLoggedIn(account)) {
+        return res.json(account);
+      }
+      util.warn("Marking account active and replenishing");
+      method = eth.contract.methods.editAccount(account.id, account.userAddress, JSON.stringify(account.metadata), util.BYTES_ZERO);
+      eth.doSend(method, res, 1, 2, () => {
+        redis.del(`account-${account.id}`); // clear our one redis cache
+        method = eth.contract.methods.replenish(account.id);
         eth.doSend(method, res, 1, 2, () => {
-          redis.del(`account-${account.id}`); // clear our one redis cache
-          method = eth.contract.methods.replenish(account.id);
-          eth.doSend(method, res, 1, 2, () => {
-            res.json(account);
-          });
+          res.json(account);
         });
       });
     });
@@ -148,10 +147,9 @@ router.put('/switchCommunity', async function(req, res, next) {
     req.session.ykcidx = idx;
     getSessionFromAccount(req, req.session.account);
     console.log("ykcid out", req.session.ykcid);
-    eth.getCommunityFor(req.session.ykcid, (community) => {
-      req.session.account.community = community;
-      res.json(req.session.account);
-    });
+    let community = await eth.getCommunityFor(req.session.ykcid); 
+    req.session.account.community = community;
+    res.json(req.session.account);
   } else {
     return res.json({"success":false, "error":"No session"});
   }
@@ -272,7 +270,7 @@ router.delete('/destroy/:id', function(req, res, next) {
 
 
 /* POST give coins */
-router.post('/give', function(req, res, next) {
+router.post('/give', async function(req, res, next) {
   var recipientUrl = getLongUrlFromShort(req.body.recipient);
   if (recipientUrl.startsWith('error')) {
     return res.json({"success":false, "error": recipientUrl});
@@ -280,63 +278,62 @@ router.post('/give', function(req, res, next) {
   if (parseInt(req.body.amount) === 0) {
     return res.json({"success":false, "error": "recipientUrl"});
   }
-  eth.getCommunityFor(req.session.ykcid, (community) => {
-    if (isStrictCommunity(community)) {
-      if (recipientUrl.startsWith("https://twitter.com/")) {
-        return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
-      }
-      if (recipientUrl.startsWith("mailto:") && recipientUrl.indexOf("@"+community.domain) <= 0) {
-        return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
-      }
+  let community = await eth.getCommunityFor(req.session.ykcid); 
+  if (isStrictCommunity(community)) {
+    if (recipientUrl.startsWith("https://twitter.com/")) {
+      return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
     }
-    var method = eth.contract.methods.give(
-      req.session.ykid,
-      req.session.ykcid,
-      recipientUrl,
-      parseInt(req.body.amount),
-      req.body.message || ''
-    );
-    eth.doSend(method, res, 1, 4, async function() {
-      util.log(`${req.body.amount} karma sent to`, recipientUrl);
-      if (!recipientUrl.startsWith("mailto:")) {
-        // TODO: Twitter notifications
+    if (recipientUrl.startsWith("mailto:") && recipientUrl.indexOf("@"+community.domain) <= 0) {
+      return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
+    }
+  }
+  var method = eth.contract.methods.give(
+    req.session.ykid,
+    req.session.ykcid,
+    recipientUrl,
+    parseInt(req.body.amount),
+    req.body.message || ''
+  );
+  eth.doSend(method, res, 1, 4, async function() {
+    util.log(`${req.body.amount} karma sent to`, recipientUrl);
+    if (!recipientUrl.startsWith("mailto:")) {
+      // TODO: Twitter notifications
+      return res.json( { "success":true } );
+    }
+    var account = req.session.account || {};
+    account.metadata = account.metadata || {};
+    account.metadata.emailPrefs = account.metadata.emailPrefs || {};
+    util.log("emailPrefs", account.metadata.emailPrefs);
+    let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
+    try {
+      let recipient = await getAccountForUrl(recipientUrl);
+      // util.debug("recipient", recipient);
+      // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
+      let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
+      if (!sendEmail) {
+        util.log("not sending email", account.metadata.emailPrefs);
         return res.json( { "success":true } );
       }
-      var account = req.session.account || {};
-      account.metadata = account.metadata || {};
-      account.metadata.emailPrefs = account.metadata.emailPrefs || {};
-      util.log("emailPrefs", account.metadata.emailPrefs);
-      let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
-      try {
-        let recipient = await getAccountForUrl(recipientUrl);
-        // util.debug("recipient", recipient);
-        // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
-        let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
-        if (!sendEmail) {
-          util.log("not sending email", account.metadata.emailPrefs);
-          return res.json( { "success":true } );
-        }
-        util.debug("sending mail to", req.body.recipient);
-        let senderName = req.session.name || req.session.email;
-        email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
-        if (!hasNeverLoggedIn(recipient)) {
-          return res.json( { "success":true } );
-        }
-
-        // make sure we don't send karma-received email more than once unless explicitly desired
-        account.metadata.emailPrefs[req.body.recipient] = 0;
-        util.log("updated metadata", account.metadata);
-        var method2 = eth.contract.methods.editAccount(
-          account.id,
-          account.userAddress,
-          JSON.stringify(account.metadata),
-          account.flags
-        );
-        eth.doSend(method2, res, 1, 4);
-      } catch(error) {
-        return res.json({"success":false, "error": error});
+      util.debug("sending mail to", req.body.recipient);
+      let senderName = req.session.name || req.session.email;
+      email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
+      if (!hasNeverLoggedIn(recipient)) {
+        return res.json( { "success":true } );
       }
-    });
+
+      // make sure we don't send karma-received email more than once unless explicitly desired
+      account.metadata.emailPrefs[req.body.recipient] = 0;
+      util.log("updated metadata", account.metadata);
+      var method2 = eth.contract.methods.editAccount(
+        account.id,
+        account.userAddress,
+        JSON.stringify(account.metadata),
+        account.flags
+      );
+      eth.doSend(method2, res, 1, 4);
+    } catch(error) {
+      return res.json({"success":false, "error": error});
+    }
   });
 });
 
@@ -362,6 +359,7 @@ router.post('/token/set', function(req, res, next) {
     req.session.slack_id = decodedToken.slack_id;
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
+    req.session.ykcidx = null;
     // util.log("decoded", decodedToken);
     let twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
     if (twitterIdentities && twitterIdentities.length > 0) {

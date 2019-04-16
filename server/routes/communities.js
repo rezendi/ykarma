@@ -22,13 +22,12 @@ router.get('/', async function(req, res, next) {
       return res.json([]);
     }
     for (var i = 0; i < communityCount; i++) {
-      eth.getCommunityFor(i+1, (community) => {
-        communities.push(community);
-        //console.log('callback', communities);
-        if (communities.length >= communityCount) {
-          res.json(communities);
-        }
-      });
+      let community = await eth.getCommunityFor(i+1); 
+      communities.push(community);
+      //console.log('callback', communities);
+      if (communities.length >= communityCount) {
+        res.json(communities);
+      }
     }
   } catch(error) {
     console.log('getCommunityCount error', error);
@@ -37,12 +36,11 @@ router.get('/', async function(req, res, next) {
 });
 
 /* GET community details */
-router.get('/:id', function(req, res, next) {
+router.get('/:id', async function(req, res, next) {
   const id = parseInt(req.params.id);
-  eth.getCommunityFor(id, (community) => {
-    util.log('callback', community);
-    res.json(community);
-  });
+  let community = await eth.getCommunityFor(id); 
+  util.log('callback', community);
+  res.json(community);
 });
 
 /* GET account list */

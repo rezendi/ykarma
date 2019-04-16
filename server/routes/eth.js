@@ -10,7 +10,7 @@ var fromAccount;
 
 function delay(t, v) {
    return new Promise(function(resolve) { 
-       setTimeout(resolve.bind(null, v), t)
+       setTimeout(resolve.bind(null, v), t);
    });
 }
 
@@ -31,7 +31,7 @@ const getFromAccount = function() {
 
 const getId = function() {
    return web3.eth.net.getId();
-}
+};
 
 const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
   var notifying = false;
@@ -118,23 +118,26 @@ function getRewardFromResult(result) {
   };
 }
 
-const getCommunityFor = async function (id, callback) {
-  var method = contract.methods.communityForId(id);
-  try {
-    let result = await method.call();
-    var community = {
-      id:           parseInt(result[0], 10),
-      adminAddress: result[1],
-      flags:        result[2],
-      domain:       result[3],
-      metadata:     JSON.parse(result[4] || '{}'),
-      tags:         result[5],
-      accounts:     parseInt(result[6], 10)
-    };
-    callback(community);
-  } catch(error) {
-   util.warn('getCommunityFor error', error);
-  }
+const getCommunityFor = function (id) {
+  return new Promise(async function(resolve, reject) {
+     var method = contract.methods.communityForId(id);
+     try {
+      let result = await method.call();
+      var community = {
+        id:           parseInt(result[0], 10),
+        adminAddress: result[1],
+        flags:        result[2],
+        domain:       result[3],
+        metadata:     JSON.parse(result[4] || '{}'),
+        tags:         result[5],
+        accounts:     parseInt(result[6], 10)
+      };
+      resolve(community);
+    } catch(error) {
+     util.warn('getCommunityFor error', error);
+     reject(error);
+    }
+  });
 };
 
 

@@ -73,18 +73,20 @@ module.exports = (deployer, network, accounts) => {
     await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Test Four"}', BYTES_ZERO, 'slack:TEAM1-USER2');
     await yk.replenish(4);
     await yk.addNewReward(2, 10, 2, "alpha", '{"name":"A Test Reward"}', BYTES_ZERO);
-    await yk.addEditCommunity(1, ADDRESS_ZERO, BYTES_ZERO, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral", "teamIds":["TEAM1"]}', 'alpha,test');
-    await yk.addEditCommunity(0, ADDRESS_ZERO, BYTES_ZERO, 'test.com', '{"name":"One To Many", "description":"Just a test comm"}', 'test');
+    await yk.addEditCommunity(1, ADDRESS_ZERO, BYTES_ZERO, 'ykarma.com', '{"name":"Alpha Karma", "description":"An initial test community, probably ephemeral", "slackTeams":["TEAM1"]}', 'alpha,test');
+    await yk.addEditCommunity(0, ADDRESS_ZERO, BYTES_ZERO, 'test.com', '{"name":"One To Many", "description":"Just a test comm", "slackTeams":["TEAM2"]}', 'test');
     await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Admin User", "teamIds":["TEAM2"]}', BYTES_ZERO, 'mailto:admin@test.com');
     await yk.addUrlToExistingAccount(6, "slack:TEAM2-USER3");
     await yk.replenish(6);
     await yk.addNewReward(6, 2, 10, "test", '{"name":"Another Test Reward"}', BYTES_ZERO);
     await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Test User", "teamIds":["TEAM2"]}', BYTES_ZERO, 'mailto:test@test.com');
     await yk.addUrlToExistingAccount(7, "slack:TEAM2-USER4");
+    await yk.replenish(7);
     await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Merge Test"}', BYTES_ZERO, 'slack:TEAM1-USER3');
     await yk.addUrlToExistingAccount(8, "mailto:merged@example.com");
     await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Merged Test"}', BYTES_ZERO, 'slack:TEAM2-USER5');
     await yk.mergeAccounts(9, 8);
+    await yk.replenish(8);
   });
 };
 
