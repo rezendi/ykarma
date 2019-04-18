@@ -64,7 +64,7 @@ router.get('/testReset/:teamId', function(req, res, next) {
 });
 
 router.post('/testOpenConversation', function(req, res, next) {
-  let teamId = req.body.team_id  || testData.lastTeamId;
+  let teamId = req.body.team_id  || testData.lastTeamId || req.body.channel;
   testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
   util.log(`opening team ${teamId} idx ${testData.teamId.conversations.length} test conversation`, req.body);
   testData.teamId.conversations.push(req.body);
@@ -85,7 +85,8 @@ router.get('/testConversation/:teamId/:index', function(req, res, next) {
 });
 
 router.post('/testPostMessage', function(req, res, next) {
-  let teamId = req.body.team_id || testData.lastTeamId;
+  let teamId = req.body.team_id || testData.lastTeamId || req.body.channel;
+  console.log("body", req.body);
   testData.teamId = testData.teamId ? testData.teamId : {messages:[], conversations: []};
   util.log(`posting team ${teamId} idx ${testData.teamId.messages.length} test message`, req.body);
   testData.teamId.messages.push(req.body);

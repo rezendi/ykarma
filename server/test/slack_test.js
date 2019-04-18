@@ -11,7 +11,7 @@ describe('Slack', async function () {
 
   // assumes a reward added as part of deploy
   var res;
-  it('send karma in-channel and via DM', async function() {
+  it('should send karma in-channel and via DM', async function() {
     this.timeout(10000);
     try {
       // send via command
@@ -61,7 +61,7 @@ describe('Slack', async function () {
     }
   });
 
-  it('send karma in a second slack team, then across communities, and make a purchase', async function() {
+  it('should send karma in a second slack team, then across communities, and make a purchase', async function() {
     this.timeout(10000);
     try {
       // send via command
@@ -91,7 +91,7 @@ describe('Slack', async function () {
       console.log("error", err);
     }
   });
-  
+
 });
 
 async function getApi(path) {
