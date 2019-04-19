@@ -85,7 +85,7 @@ module.exports = (deployer, network, accounts) => {
     await yk.addNewAccount(1, ADDRESS_ZERO, '{"name":"Merge Test"}', BYTES_ZERO, 'slack:TEAM1-USER3');
     await yk.addUrlToExistingAccount(8, "mailto:merged@example.com");
     await yk.addNewAccount(2, ADDRESS_ZERO, '{"name":"Merged Test"}', BYTES_ZERO, 'slack:TEAM2-USER5');
-    await yk.mergeAccounts(9, 8);
+    await yk.mergeAccounts(9, 1);
     await yk.replenish(8);
   });
 };

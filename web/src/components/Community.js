@@ -41,6 +41,11 @@ class Community extends React.Component {
       });
     }
   }
+  
+  switchCommunity = async (idx) => {
+    var refreshedAccount = await Api.switchCommunity(idx);
+    window.location=`/community/${refreshedAccount.community.id}`;
+  }
 
   componentDidMount() {
     const communityId = this.props.match.params.id;
@@ -118,7 +123,9 @@ class Community extends React.Component {
               <Panel.Body>
                 {this.props.communities.map((otherCommunity, idx) =>
                   <Row key={idx}><Col md={12}>
-                    {otherCommunity.metadata.name}
+                  {otherCommunity.id !== this.props.community.id &&
+                     <a href="#" onClick={() => this.switchCommunity(idx)}>{otherCommunity.metadata.name}</a>
+                  }
                   </Col></Row>
                 )}
               </Panel.Body>

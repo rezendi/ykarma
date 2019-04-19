@@ -206,6 +206,24 @@ class Api {
     });
   }
 
+  static switchCommunity(idx) {
+    return fetch('/api/accounts/switchCommunity', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
+      body: JSON.stringify({
+        index: idx,
+      })
+    })
+    .then(response => {
+      return response.json();
+    })
+    .catch(error => {
+      console.log("error", error);
+      return error;
+    });
+  }
+  
   static upsertReward(values) {
     var body = JSON.stringify({
       reward: {

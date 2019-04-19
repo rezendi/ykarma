@@ -359,7 +359,6 @@ router.post('/token/set', function(req, res, next) {
     req.session.slack_id = decodedToken.slack_id;
     req.session.name = req.session.name ? req.session.name : decodedToken.displayName;
     req.session.email = req.session.email ? req.session.email : decodedToken.email;
-    req.session.ykcidx = null;
     // util.log("decoded", decodedToken);
     let twitterIdentities = decodedToken.firebase.identities ? decodedToken.firebase.identities['twitter.com'] : [];
     if (twitterIdentities && twitterIdentities.length > 0) {
