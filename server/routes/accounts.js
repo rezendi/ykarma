@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const eth = require('./eth');
 const util = require('./util');
 const email = require('./emails');
 const firebase = require('./firebase');
+const blockchain = require('./blockchain');
+
 const redisService = require("redis");
 var redis = redisService.createClient({host:"redis", port: 6379});
 redis.on('error', function (err) {
@@ -11,19 +12,13 @@ redis.on('error', function (err) {
     console.log('Something went wrong with Redis', err);
   }
 });
-
 var accountCache = {};
 
-var fromAccount = null;
-eth.getFromAccount().then(address => {
-  fromAccount = address;
-});
-
-// GET set up
+// GET set up 
 router.get('/setup/:ykid', async function(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     util.warn("setting up test data", req.params.ykid);
-    let account = await eth.getAccountFor(parseInt(req.params.ykid));
+    let account = await blockchain.getAccountFor(req.params.ykid);
     getSessionFromAccount(req, account);
     req.session.email = process.env.ADMIN_EMAIL; // so we can look at everything
     //util.debug("set up test data", req.session);
@@ -37,8 +32,7 @@ router.get('/setup/:ykid', async function(req, res, next) {
 /* GET account details */
 router.get('/account/:id', async function(req, res, next) {
   try {
-    let id = parseInt(req.params.id);
-    let account = await eth.getAccountFor(id);
+    let account = await blockchain.getAccountFor(req.params.id);
     if (req.session.email !== process.env.ADMIN_EMAIL && req.session.ykid !== id && req.session.ykcid != account.communityIds[0]) {
       util.warn('Unauthorized account request', req.session);
       return res.json({"success":false, "error": req.t("Not authorized")});
@@ -57,19 +51,19 @@ router.get('/me', async function(req, res, next) {
   var account;
   try {
     if (req.session.ykid) {
-      account = await eth.getAccountFor(req.session.ykid);
+      account = await blockchain.getAccountFor(req.session.ykid);
     } else {
       var url = req.session.email || req.session.handle;
       url = getLongUrlFromShort(url);
       if (url.startsWith('error')) {
         return res.json({"success":false, "error": url});
       }
-      account = await getAccountForUrl(url);
+      account = await blockchain.getAccountForUrl(url);
     }
     
     // we've got the account, now hydrate it and mark as active if not already
     getSessionFromAccount(req, account);
-    let community = await eth.getCommunityFor(req.session.ykcid); 
+    let community = await blockchain.getCommunityFor(req.session.ykcid); 
     account.community = community;
     hydrateAccount(account, async () => {
       var method = eth.contract.methods.availableToSpend(account.id, '');
@@ -132,7 +126,7 @@ router.get('/url/:url', async function(req, res, next) {
     return res.json({"success":false, "error": url});
   }
   try {
-    let account = await getAccountForUrl(url);
+    let account = await blockchain.getAccountForUrl(url);
     res.json(account);
   } catch(error) {
     return res.json({"success":false, "error": error});
@@ -147,7 +141,7 @@ router.put('/switchCommunity', async function(req, res, next) {
     req.session.ykcidx = idx;
     getSessionFromAccount(req, req.session.account);
     console.log("ykcid out", req.session.ykcid);
-    let community = await eth.getCommunityFor(req.session.ykcid); 
+    let community = await blockchain.getCommunityFor(req.session.ykcid); 
     req.session.account.community = community;
     res.json(req.session.account);
   } else {
@@ -188,7 +182,7 @@ router.put('/addUrl', async function(req, res, next) {
     return res.json({"success":false, "error": req.t("existing") + " " + longExisting});
   }
   try {
-    let account = await getAccountForUrl(url);
+    let account = await blockchain.getAccountForUrl(url);
     getSessionFromAccount(req, account);
     var method2 = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
     eth.doSend(method2, res, 1, 2, () => {
@@ -278,7 +272,7 @@ router.post('/give', async function(req, res, next) {
   if (parseInt(req.body.amount) === 0) {
     return res.json({"success":false, "error": "recipientUrl"});
   }
-  let community = await eth.getCommunityFor(req.session.ykcid); 
+  let community = await blockchain.getCommunityFor(req.session.ykcid); 
   if (isStrictCommunity(community)) {
     if (recipientUrl.startsWith("https://twitter.com/")) {
       return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
@@ -306,7 +300,7 @@ router.post('/give', async function(req, res, next) {
     util.log("emailPrefs", account.metadata.emailPrefs);
     let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
     try {
-      let recipient = await getAccountForUrl(recipientUrl);
+      let recipient = await blockchain.getAccountForUrl(recipientUrl);
       // util.debug("recipient", recipient);
       // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
       let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
@@ -373,20 +367,6 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-async function getAccountForUrl(url) {
-  return new Promise(async function(resolve, reject) {
-    var method = eth.contract.methods.accountForUrl(url);
-    try {
-      let result = await method.call();
-      var account = eth.getAccountFromResult(result);
-      resolve(account);
-    } catch(error) {
-      util.debug('getAccountForUrl error', error);
-      reject(error);
-    }
-  });
-}
-
 function hydrateAccount(account, done) {
   var hydrated = 0;
   if (account.given.length===0 && account.received.length===0) {
@@ -432,7 +412,7 @@ async function hydrateTranche(tranche, given, done) {
       done();
       return;
     }
-    let account = await eth.getAccountFor(id);
+    let account = await blockchain.getAccountFor(id);
     tranche.details = {
       name:         account.metadata.name,
       urls:         account.urls,
@@ -449,7 +429,7 @@ async function hydrateTranche(tranche, given, done) {
       done();
       return;
     }
-    let account = await eth.getAccountFor(id);
+    let account = await blockchain.getAccountFor(id);
     tranche.details = {
       name:         account.metadata.name,
       urls:         account.urls,
