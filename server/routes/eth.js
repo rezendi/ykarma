@@ -33,28 +33,28 @@ const getId = function() {
    return web3.eth.net.getId();
 };
 
-const doSend = function(method, res, minConfirmations = 1, gasMultiplier = 2, callback = null) {
+const doSend = function(method, minConfirmations = 1, gasMultiplier = 2,) {
   var notifying = false;
-  method.estimateGas({gas: GAS}, function(estError, gasAmount) {
-    if (estError) {
-      util.warn('error running', method);
-      util.debug('est error', estError);
-      if (callback) { return callback(estError); }
-      return res.json({'success':false, 'error':estError});
-    }
-    method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier}).on('error', (error) => {
-      util.warn('error running', method);
-      util.debug('send error', error);
-      if (callback) { return callback(error); }
-      return res.json({'success':false, 'error':error});
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= minConfirmations && !notifying) {
-        notifying = true;
-        //console.log('result', receipt);
-        if (callback) { return callback(); }
-        return res.json({"success":true, "result": receipt});
+  return new Promise(function(resolve, reject) {
+    method.estimateGas({gas: GAS}, function(estError, gasAmount) {
+      if (estError) {
+        util.warn('error running', method);
+        util.debug('est error', estError);
+        reject(estError);
       }
+      method.send({from:getFromAccount(), gas: gasAmount * gasMultiplier})
+      .on('error', (error) => {
+        util.warn('error running', method);
+        util.debug('send error', error);
+        reject(error);
+      })
+      .on('confirmation', (number, receipt) => {
+        if (number >= minConfirmations && !notifying) {
+          notifying = true;
+          //console.log('result', receipt);
+          resolve(receipt);
+        }
+      });
     });
   });
 };

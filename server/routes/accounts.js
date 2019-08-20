@@ -65,27 +65,16 @@ router.get('/me', async function(req, res, next) {
     getSessionFromAccount(req, account);
     let community = await blockchain.getCommunityFor(req.session.ykcid); 
     account.community = community;
-    hydrateAccount(account, async () => {
-      var method = eth.contract.methods.availableToSpend(account.id, '');
-      try {
-        let mySpendable = await method.call();
-        account.spendable = parseInt(mySpendable);
-      } catch(error) {
-        util.warn("account load error", error);
-      }
-      if (!hasNeverLoggedIn(account)) {
-        return res.json(account);
-      }
-      util.warn("Marking account active and replenishing");
-      method = eth.contract.methods.editAccount(account.id, account.userAddress, JSON.stringify(account.metadata), util.BYTES_ZERO);
-      eth.doSend(method, res, 1, 2, () => {
-        redis.del(`account-${account.id}`); // clear our one redis cache
-        method = eth.contract.methods.replenish(account.id);
-        eth.doSend(method, res, 1, 2, () => {
-          res.json(account);
-        });
-      });
-    });
+    await hydrateAccount(account);
+    account.spendable = await blockchain.availableToSpend(account.id, '');
+    if (!hasNeverLoggedIn(account)) {
+      return res.json(account);
+    }
+    util.warn("Marking account active and replenishing");
+    await blockchain.markAccountActive(account);
+    redis.del(`account-${account.id}`); // clear our one redis cache
+    await blockchain.replenishAccount(account.id);
+    res.json(account);
   } catch(error) {
     util.warn("account me error", error);
     res.json({"success":false, "error":error});
@@ -93,21 +82,17 @@ router.get('/me', async function(req, res, next) {
 });
 
 router.get('/full', async function(req, res, next) {
-  var method = eth.contract.methods.trancheTotalsForId(req.session.ykid);
   try {
-    let totals = await method.call();
-    method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[0], true);
+    let totals = await blockchain.trancheTotalsForId(req.session.ykid);
     // possibly eventually page these
-    let given = await method.call();
-    method = eth.contract.methods.tranchesForId(req.session.ykid, 1, totals[1], false);
-    let received = await method.call();
+    let given = await blockchain.tranchesGivenForId(req.session.ykid, totals[0]);
+    let received = await blockchain.tranchesReceivedForId(req.session.ykid, totals[1]);
     var account = req.session.account;
     account.given = JSON.parse(given);
     account.received = JSON.parse(received);
-    hydrateAccount(account, () => {
-      console.log("hydrated", account);
-      res.json(account);
-    });
+    await hydrateAccount(account);
+    console.log("hydrated", account);
+    res.json(account);
   } catch(error) {
     util.warn("error getting full profile", error);
     res.json(req.session.account);
@@ -163,48 +148,40 @@ router.put('/addUrl', async function(req, res, next) {
 
   if (req.session.ykid) {
     util.debug("adding url to existing account");
-    var method = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
-    eth.doSend(method, res, 1, 2, () => {
-      if (req.body.url.indexOf("@") > 0) {
-        req.session.email = req.body.url;
-      } else {
-        req.session.handle = req.body.url;
-      }
-      res.json({"success":req.body.url});
-    });
-    return;
+    await blockchain.addUrlToExistingAccount(req.session.ykid, url);
+  } else {
+    // Are we not logged in as a YK user but hoping to add this current URL as a YK user?
+    let existing = req.session.handle || req.session.email;
+    var longExisting = getLongUrlFromShort(existing);
+    if (longExisting.startsWith('error')) {
+      return res.json({"success":false, "error": req.t("existing") + " " + longExisting});
+    }
+    try {
+      let account = await blockchain.getAccountForUrl(url);
+      getSessionFromAccount(req, account);
+      await blockchain.addUrlToExistingAccount(account.id, url);
+    } catch(error) {
+      return res.json({"success":false, "error": error});
+    }
   }
-    
-  // Are we not logged in as a YK user but hoping to add this current URL as a YK user?
-  let existing = req.session.handle || req.session.email;
-  var longExisting = getLongUrlFromShort(existing);
-  if (longExisting.startsWith('error')) {
-    return res.json({"success":false, "error": req.t("existing") + " " + longExisting});
+
+  if (req.body.url.indexOf("@") > 0) {
+    req.session.email = req.body.url;
+  } else {
+    req.session.handle = req.body.url;
   }
-  try {
-    let account = await blockchain.getAccountForUrl(url);
-    getSessionFromAccount(req, account);
-    var method2 = eth.contract.methods.addUrlToExistingAccount(req.session.ykid, url);
-    eth.doSend(method2, res, 1, 2, () => {
-      if (req.body.url.indexOf("@") > 0) {
-        req.session.email = req.body.url;
-      } else {
-        req.session.handle = req.body.url;
-      }
-      res.json({"success":req.body.url});
-    });
-  } catch(error) {
-      res.json({"success":false, "error": error});
-  }
+  res.json({"success":req.body.url});
+
 });
 
 /* PUT remove URL */
-router.put('/removeUrl', function(req, res, next) {
+router.put('/removeUrl', async function(req, res, next) {
   var type = req.body.type;
   var url = req.body.url || "error";
   if (!type) {
     type = url.indexOf("@") > 0 ? "email" : "twitter";
   }
+
   util.log("removing url type", type);
   if (type === "email") {
     url = getLongUrlFromShort(req.session.email || url);
@@ -215,21 +192,20 @@ router.put('/removeUrl', function(req, res, next) {
   if (url.startsWith("error")) {
     return res.json({"success":false, "error": req.t("Invalid URL")});
   }
-  var method = eth.contract.methods.removeUrlFromExistingAccount(req.session.ykid, url);
-  eth.doSend(method, res, 1, 3, () => {
-    if (type === "email") {
-      req.session.email = null;
-    } else {
-      req.session.handle = null;
-      req.session.twitter_id = null;
-    }
-    res.json({"success":true});
-  });
+
+  await blockchain.removeUrlFromExistingAccount(req.session.ykid, url);
+  if (type === "email") {
+    req.session.email = null;
+  } else {
+    req.session.handle = null;
+    req.session.twitter_id = null;
+  }
+  res.json({"success":true});
 });
 
 
 /* PUT edit account */
-router.put('/update', function(req, res, next) {
+router.put('/update', async function(req, res, next) {
   var account = req.body.account;
   util.log("updating account", account);
   if (account.id === 0) {
@@ -239,13 +215,12 @@ router.put('/update', function(req, res, next) {
     return res.json({"success":false, "error": req.t("Not authorized")});
   }
   //console.log("About to edit", account);
-  var method = eth.contract.methods.editAccount(
+  await blockchain.editAccount(
     account.id,
     account.userAddress,
     JSON.stringify(account.metadata),
     account.flags || util.BYTES_ZERO
   );
-  eth.doSend(method, res);
   redis.del(`account-${account.id}`); // clear our one cache
 });
 
@@ -258,38 +233,39 @@ router.delete('/destroy/:id', function(req, res, next) {
   if (req.params.id === 0) {
     return res.json({"success":false, "error": 'Account not saved'});
   }
-  var method = eth.contract.methods.deleteAccount(req.params.id);
-  eth.doSend(method, res);
+  await blockchain.deleteAccount(req.params.id);
 });
 
 
 /* POST give coins */
 router.post('/give', async function(req, res, next) {
   var recipientUrl = getLongUrlFromShort(req.body.recipient);
+  
+  //check values
   if (recipientUrl.startsWith('error')) {
     return res.json({"success":false, "error": recipientUrl});
   }
   if (parseInt(req.body.amount) === 0) {
     return res.json({"success":false, "error": "recipientUrl"});
   }
-  let community = await blockchain.getCommunityFor(req.session.ykcid); 
-  if (isStrictCommunity(community)) {
-    if (recipientUrl.startsWith("https://twitter.com/")) {
-      return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
+  
+  try {
+    //check community values
+    let community = await blockchain.getCommunityFor(req.session.ykcid); 
+    if (isStrictCommunity(community)) {
+      if (recipientUrl.startsWith("https://twitter.com/")) {
+        return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
+      }
+      if (recipientUrl.startsWith("mailto:") && recipientUrl.indexOf("@"+community.domain) <= 0) {
+        return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
+      }
     }
-    if (recipientUrl.startsWith("mailto:") && recipientUrl.indexOf("@"+community.domain) <= 0) {
-      return res.json({"success":false, "error": req.t('Closed community, can only give to') +` @${community.domain} ` + req.t("emails and/or via Slack")});
-    }
-  }
-  var method = eth.contract.methods.give(
-    req.session.ykid,
-    req.session.ykcid,
-    recipientUrl,
-    parseInt(req.body.amount),
-    req.body.message || ''
-  );
-  eth.doSend(method, res, 1, 4, async function() {
+    
+    // perform the txn
+    await blockchain.give(req.session.ykid, req.session.ykcid, recipientUrl, req.body.amount, req.body.message);
     util.log(`${req.body.amount} karma sent to`, recipientUrl);
+  
+    // send notifications as appropriate
     if (!recipientUrl.startsWith("mailto:")) {
       // TODO: Twitter notifications
       return res.json( { "success":true } );
@@ -299,36 +275,33 @@ router.post('/give', async function(req, res, next) {
     account.metadata.emailPrefs = account.metadata.emailPrefs || {};
     util.log("emailPrefs", account.metadata.emailPrefs);
     let sendNonMemberEmail = account.metadata.emailPrefs[req.body.recipient] !== 0;
-    try {
-      let recipient = await blockchain.getAccountForUrl(recipientUrl);
-      // util.debug("recipient", recipient);
-      // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
-      let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
-      if (!sendEmail) {
-        util.log("not sending email", account.metadata.emailPrefs);
-        return res.json( { "success":true } );
-      }
-      util.debug("sending mail to", req.body.recipient);
-      let senderName = req.session.name || req.session.email;
-      email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
-      if (!hasNeverLoggedIn(recipient)) {
-        return res.json( { "success":true } );
-      }
-
-      // make sure we don't send karma-received email more than once unless explicitly desired
-      account.metadata.emailPrefs[req.body.recipient] = 0;
-      util.log("updated metadata", account.metadata);
-      var method2 = eth.contract.methods.editAccount(
-        account.id,
-        account.userAddress,
-        JSON.stringify(account.metadata),
-        account.flags
-      );
-      eth.doSend(method2, res, 1, 4);
-    } catch(error) {
-      return res.json({"success":false, "error": error});
+    let recipient = await blockchain.getAccountForUrl(recipientUrl);
+    // util.debug("recipient", recipient);
+    // util.debug("hasNeverLoggedIn", ""+hasNeverLoggedIn(recipient));
+    let sendEmail = hasNeverLoggedIn(recipient) ? sendNonMemberEmail : !recipient.metadata.emailPrefs || recipient.metadata.emailPrefs.kr !== 0;
+    if (!sendEmail) {
+      util.log("not sending email", account.metadata.emailPrefs);
+      return res.json( { "success":true } );
     }
-  });
+    util.debug("sending mail to", req.body.recipient);
+    let senderName = req.session.name || req.session.email;
+    email.sendKarmaSentEmail(req, senderName, recipientUrl, req.body.amount, req.body.message, hasNeverLoggedIn(recipient));
+    if (!hasNeverLoggedIn(recipient)) {
+      return res.json( { "success":true } );
+    }
+
+    // make sure we don't send karma-received email more than once unless explicitly desired
+    account.metadata.emailPrefs[req.body.recipient] = 0;
+    util.log("updated metadata", account.metadata);
+    await blockchain.editAccount(
+      account.id,
+      account.userAddress,
+      JSON.stringify(account.metadata),
+      account.flags
+    );
+  } catch(error) {
+    return res.json({"success":false, "error": error});
+  }
 });
 
 
@@ -367,76 +340,71 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-function hydrateAccount(account, done) {
+async function hydrateAccount(account) {
   var hydrated = 0;
-  if (account.given.length===0 && account.received.length===0) {
-    done();
-  }
-  for (var i = 0; i < account.given.length; i++) {
-    var given = account.given[i];
-    hydrateTranche(given, true, () => {
+  return new Promise(async function(resolve, reject) {
+    if (account.given.length===0 && account.received.length===0) {
+      resolve();
+    }
+    for (var i = 0; i < account.given.length; i++) {
+      var given = account.given[i];
+      await hydrateTranche(given, true);
       hydrated += 1;
       if (hydrated == account.given.length + account.received.length) {
-        done();
+        resolve();
       }
-    });
-  }
-  account.spendable = 0;
-  for (var j = 0; j < account.received.length; j++) {
-    var received = account.received[j];
-    account.spendable += received.available;
-    hydrateTranche(received, false, () => {
-      hydrated += 1;
-      if (hydrated == account.given.length + account.received.length) {
-        done();
-      }
-    });
-  }
+    }
+    account.spendable = 0;
+    for (var j = 0; j < account.received.length; j++) {
+      var received = account.received[j];
+      account.spendable += received.available;
+      hydrateTranche(received, false, () => {
+        hydrated += 1;
+        if (hydrated == account.given.length + account.received.length) {
+          resolve();
+        }
+      });
+    }
+  });
 }
 
-async function hydrateTranche(tranche, given, done) {
+async function hydrateTranche(tranche, given) {
   // check account cache on redis
-  if (process.env.NODE_ENV==="test") {
-    done();
-  }
-  let id = given ? tranche.receiver : tranche.sender;
-  util.log("hydrating tranche for", id);
-  let key = `account-${id}`;
-  var success = redis.get(key, async function (err, val) {
-    if (err) {
-      util.warn("redis error", err);
+  return new Promise(async function(resolve, reject) {
+    if (process.env.NODE_ENV==="test") {
+      resolve();
     }
-    if (val && val !== '') {
-      util.debug("redis cache hit");
-      tranche.details = JSON.parse(val);
-      done();
-      return;
+    let id = given ? tranche.receiver : tranche.sender;
+    util.log("hydrating tranche for", id);
+    let key = `account-${id}`;
+    var success = redis.get(key, async function (err, val) {
+      if (err) {
+        util.warn("redis error", err);
+      }
+      if (val && val !== '') {
+        util.debug("redis cache hit");
+        tranche.details = JSON.parse(val);
+        resolve();
+      }
+      let account = await blockchain.getAccountFor(id);
+      tranche.details = { name: account.metadata.name, urls: account.urls };
+      redis.set(key, JSON.stringify(tranche.details));
+      resolve();
+    });
+  
+    // if redis not working
+    if (!success) {
+      val = accountCache[key];
+      if (val) {
+        tranche.details = JSON.parse(val);
+        resolve();
+      }
+      let account = await blockchain.getAccountFor(id);
+      tranche.details = { name: account.metadata.name, urls: account.urls };
+      accountCache[key] = JSON.stringify(tranche.details);
+      resolve();
     }
-    let account = await blockchain.getAccountFor(id);
-    tranche.details = {
-      name:         account.metadata.name,
-      urls:         account.urls,
-    };
-    redis.set(key, JSON.stringify(tranche.details));
-    done();
   });
-
-  // if redis not working
-  if (!success) {
-    val = accountCache[key];
-    if (val) {
-      tranche.details = JSON.parse(val);
-      done();
-      return;
-    }
-    let account = await blockchain.getAccountFor(id);
-    tranche.details = {
-      name:         account.metadata.name,
-      urls:         account.urls,
-    };
-    accountCache[key] = JSON.stringify(tranche.details);
-    done();
-  }
 }
 
 // Utility functions
