@@ -13,26 +13,26 @@
     "util": "node ./scripts/util.js"
   },
   "dependencies": {
-    "@sendgrid/mail": "^6.3.1",
+    "@sendgrid/mail": "^6.4.0",
     "chai": "^4.2.0",
-    "connect-redis": "^3.4.1",
+    "connect-redis": "^3.4.2",
     "cookie-parser": "^1.4.4",
     "debug": "~2.6.9",
     "dot-env": "0.0.1",
     "dotenv": "^6.2.0",
-    "express": "^4.16.4",
-    "express-session": "^1.15.6",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
     "firebase-admin": "^5.13.1",
     "http-errors": "~1.6.2",
-    "i18next": "^15.0.9",
-    "i18next-express-middleware": "^1.7.3",
+    "i18next": "^15.1.3",
+    "i18next-express-middleware": "^1.8.0",
     "jade": "~1.11.0",
     "mocha": "^5.2.0",
     "morgan": "^1.9.1",
-    "node-fetch": "^2.3.0",
+    "node-fetch": "^2.6.0",
     "supertest": "^3.4.2",
     "supertest-session": "^3.3.0",
-    "web3": "^1.0.0-beta.52",
-    "websocket": "^1.0.28"
+    "web3": "^1.2.1",
+    "websocket": "^1.0.29"
   }
 }
