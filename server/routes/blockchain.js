@@ -7,7 +7,7 @@ eth.getFromAccount().then(address => {
 });
 
 function getAccountFor(id) {
-  return eth.getAccountFor(parseInt(id)); 
+  return eth.getAccountFor(parseInt(id));
 }
 
 function getCommunityFor(id) {
@@ -75,7 +75,7 @@ function addUrlToExistingAccount(id, url) {
 }
 
 function removeUrlFromExistingAccount(id, url) {
-  var method = eth.contract.methods.removeUrlFromExistingAccount(kid, url);
+  var method = eth.contract.methods.removeUrlFromExistingAccount(id, url);
   return eth.doSend(method, 1, 3);
 }
 
@@ -91,7 +91,7 @@ function deleteAccount(id) {
 
 function give(id, cid, url, amount, message) {
   var method = eth.contract.methods.give(id, cid, url, amount, message);
-  return eth.doSend(method, res, 1, 4);
+  return eth.doSend(method, 1, 2);
 }
 
 function getAccountFromResult(result) {

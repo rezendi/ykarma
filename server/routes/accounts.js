@@ -122,11 +122,12 @@ router.get('/url/:url', async function(req, res, next) {
 router.put('/switchCommunity', async function(req, res, next) {
   let idx = parseInt(req.body.index || 0);
   console.log("ykcid in", req.session.ykcid);
+  //console.log("account", req.session.account);
   if (req.session.account && idx < req.session.account.communityIds.length) {
     req.session.ykcidx = idx;
     getSessionFromAccount(req, req.session.account);
-    console.log("ykcid out", req.session.ykcid);
     let community = await blockchain.getCommunityFor(req.session.ykcid); 
+    console.log("ykcid out", community.id);
     req.session.account.community = community;
     res.json(req.session.account);
   } else {
@@ -215,18 +216,19 @@ router.put('/update', async function(req, res, next) {
     return res.json({"success":false, "error": req.t("Not authorized")});
   }
   //console.log("About to edit", account);
-  await blockchain.editAccount(
+  let response = await blockchain.editAccount(
     account.id,
     account.userAddress,
     JSON.stringify(account.metadata),
     account.flags || util.BYTES_ZERO
   );
   redis.del(`account-${account.id}`); // clear our one cache
+  return res.json({"success":true});
 });
 
 
 /* DELETE remove account. */
-router.delete('/destroy/:id', function(req, res, next) {
+router.delete('/destroy/:id', async function(req, res, next) {
   if (req.session.email !== process.env.ADMIN_EMAIL) {
     return res.json({"success":false, "error": "Admin only"});
   }
@@ -290,17 +292,19 @@ router.post('/give', async function(req, res, next) {
       return res.json( { "success":true } );
     }
 
+    util.log("updating metadata", account.metadata);
     // make sure we don't send karma-received email more than once unless explicitly desired
     account.metadata.emailPrefs[req.body.recipient] = 0;
-    util.log("updated metadata", account.metadata);
     await blockchain.editAccount(
       account.id,
       account.userAddress,
       JSON.stringify(account.metadata),
       account.flags
     );
+    util.log("updated metadata", account.metadata);
+    res.json( { "success":true } );
   } catch(error) {
-    return res.json({"success":false, "error": error});
+    res.json({"success":false, "error": error});
   }
 });
 
@@ -340,35 +344,25 @@ router.post('/token/set', function(req, res, next) {
 });
 
 
-async function hydrateAccount(account) {
-  var hydrated = 0;
-  return new Promise(async function(resolve, reject) {
-    if (account.given.length===0 && account.received.length===0) {
-      resolve();
-    }
-    for (var i = 0; i < account.given.length; i++) {
-      var given = account.given[i];
-      await hydrateTranche(given, true);
-      hydrated += 1;
-      if (hydrated == account.given.length + account.received.length) {
-        resolve();
-      }
-    }
-    account.spendable = 0;
-    for (var j = 0; j < account.received.length; j++) {
-      var received = account.received[j];
-      account.spendable += received.available;
-      hydrateTranche(received, false, () => {
-        hydrated += 1;
-        if (hydrated == account.given.length + account.received.length) {
-          resolve();
-        }
-      });
-    }
-  });
+function hydrateAccount(account) {
+  if (account.given.length===0 && account.received.length===0) {
+    return new Promise(async function(resolve, reject) { resolve(); });
+  }
+  var promises = [];
+  for (var i = 0; i < account.given.length; i++) {
+    var given = account.given[i];
+    promises.push(hydrateTranche(given, true));
+  }
+  account.spendable = 0;
+  for (var j = 0; j < account.received.length; j++) {
+    var received = account.received[j];
+    account.spendable += received.available;
+    promises.push(hydrateTranche(received, false));
+  }
+  return Promise.all(promises);
 }
 
-async function hydrateTranche(tranche, given) {
+function hydrateTranche(tranche, given) {
   // check account cache on redis
   return new Promise(async function(resolve, reject) {
     if (process.env.NODE_ENV==="test") {
@@ -387,6 +381,7 @@ async function hydrateTranche(tranche, given) {
         resolve();
       }
       let account = await blockchain.getAccountFor(id);
+      console.log("account", account);
       tranche.details = { name: account.metadata.name, urls: account.urls };
       redis.set(key, JSON.stringify(tranche.details));
       resolve();

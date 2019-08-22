@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var util = require('./util');
+const blockchain = require('./blockchain');
 
 const RESERVED_TAGS = "ykarma, test, alpha, beta, gamma, delta, epsilon, omega";
 
@@ -159,7 +160,7 @@ router.delete('/:id', async function(req, res, next) {
 
 async function getAccountWithinCommunity(communityId, idx, callback) {
   try {
-    let account = await blockchain.accountWithinCommunity();
+    let account = await blockchain.accountWithinCommunity(communityId, idx);
     // console.log('accountWithinCommunity result', result);
     callback(account);
   } catch(error) {
