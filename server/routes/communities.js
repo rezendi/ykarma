@@ -1,28 +1,21 @@
 var express = require('express');
 var router = express.Router();
-var eth = require('./eth');
 var util = require('./util');
 
 const RESERVED_TAGS = "ykarma, test, alpha, beta, gamma, delta, epsilon, omega";
 
-var fromAccount = null;
-eth.getFromAccount().then(address => {
-  fromAccount = address;
-});
-
 /* GET community list */
 router.get('/', async function(req, res, next) {
   var communities = [];
-  var method = eth.contract.methods.getCommunityCount();
   try {
-    let result = await method.call();
+    let result = await blockchain.getCommunityCount();
     let communityCount = parseInt(result);
     util.log('getCommunityCount result', communityCount);
     if (communityCount===0) {
       return res.json([]);
     }
     for (var i = 0; i < communityCount; i++) {
-      let community = await eth.getCommunityFor(i+1); 
+      let community = await blockchain.getCommunityFor(i+1); 
       communities.push(community);
       //console.log('callback', communities);
       if (communities.length >= communityCount) {
@@ -38,7 +31,7 @@ router.get('/', async function(req, res, next) {
 /* GET community details */
 router.get('/:id', async function(req, res, next) {
   const id = parseInt(req.params.id);
-  let community = await eth.getCommunityFor(id); 
+  let community = await blockchain.getCommunityFor(id); 
   util.log('callback', community);
   res.json(community);
 });
@@ -52,9 +45,8 @@ router.get('/:communityId/accounts', async function(req, res, next) {
   }
   util.log("getting accounts for",communityId);
   var accounts = [];
-  var method = eth.contract.methods.getAccountCount(communityId);
   try {
-    let result = await method.call();
+    let result = await blockchain.getAccountCount(communityId);
     let accountCount = parseInt(result);
     util.log('getAccountCount result', accountCount);
     if (accountCount===0) {
@@ -89,7 +81,7 @@ router.get('/:id/leaderboard', function(req, res, next) {
 });
 
 /* POST new community. */
-router.post('/create', function(req, res, next) {
+router.post('/create', async function(req, res, next) {
   console.log("session", req.session);
   if (req.session.email !== process.env.ADMIN_EMAIL) {
       return res.json({"success":false, "error": req.t("Not authorized")});
@@ -105,19 +97,24 @@ router.post('/create', function(req, res, next) {
     tags = tags.replace(RESERVED_TAGS[i],"");
     tags = tags.replace(",,",",");
   }
-  var method = eth.contract.methods.addEditCommunity(
-    0,
-    community.addressAdmin || util.ADDRESS_ZERO,
-    community.flags || util.BYTES_ZERO,
-    community.domain || '',
-    JSON.stringify(community.metadata),
-    tags,
-  );
-  eth.doSend(method, res);
+  try {
+    let result = await blockchain.addEditCommunity(
+      0,
+      community.addressAdmin || util.ADDRESS_ZERO,
+      community.flags || util.BYTES_ZERO,
+      community.domain || '',
+      JSON.stringify(community.metadata),
+      tags,
+    );
+    res.json({'success':true, 'result':result});
+  }
+  catch(error) {
+    res.json({"success":false, "error": error});
+  }
 });
 
 /* PUT edit community */
-router.put('/update', function(req, res, next) {
+router.put('/update', async function(req, res, next) {
   var community = req.body.community;
   community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : BYTES_ZERO;
   if (req.session.email !== process.env.ADMIN_EMAIL) {
@@ -127,35 +124,43 @@ router.put('/update', function(req, res, next) {
   if (community.id === 0) {
     res.json({'success':false, 'error':'community not saved'});
   }
-  var method = eth.contract.methods.addEditCommunity(
+  try {
+    let result = await blockchain.addEditCommunity(
     parseInt(community.id),
-    community.addressAdmin || util.ADDRESS_ZERO,
-    community.flags || util.BYTES_ZERO,
-    community.domain || '',
-    JSON.stringify(community.metadata),
-    community.tags || '',
-  );
-  eth.doSend(method, res);
+      community.addressAdmin || util.ADDRESS_ZERO,
+      community.flags || util.BYTES_ZERO,
+      community.domain || '',
+      JSON.stringify(community.metadata),
+      community.tags || '',
+    );
+    res.json({'success':true, 'result':result});
+  }
+  catch(error) {
+    res.json({"success":false, "error": error});
+  }
 });
 
 /* DELETE remove community. */
-router.delete('/:id', function(req, res, next) {
+router.delete('/:id', async function(req, res, next) {
   if (req.session.email !== process.env.ADMIN_EMAIL) {
       return res.json({"success":false, "error": req.t("Not authorized")});
   }
   if (req.params.id === 0) {
     return res.json({"success":false, "error": 'Community not saved'});
   }
-  var method = eth.contract.methods.deleteCommunity(req.params.id);
-  eth.doSend(method,res);
+  try {
+    let result = await blockchain.deleteCommunity(req.params.id);
+    res.json({'success':true, 'result':result});
+  }
+  catch(error) {
+    res.json({"success":false, "error": error});
+  }
 });
 
 async function getAccountWithinCommunity(communityId, idx, callback) {
-  var method = eth.contract.methods.accountWithinCommunity(communityId, idx);
   try {
-    let result = await method.call();
+    let account = await blockchain.accountWithinCommunity();
     // console.log('accountWithinCommunity result', result);
-    var account = eth.getAccountFromResult(result);
     callback(account);
   } catch(error) {
     util.warn('accountWithinCommunity error', error);
@@ -170,16 +175,14 @@ function hasNeverLoggedIn(account) {
 
 async function getLeaderboard(communityId, callback) {
   var leaders = [];
-  var method = eth.contract.methods.getAccountCount(communityId);
   try {
-    let result = await method.call();
+    let result = await blockchain.getAccountCount();
     let accountCount = parseInt(result);
     util.log('getAccountCount result', accountCount);
     for (var i = 0; i < accountCount; i++) {
       getAccountWithinCommunity(communityId, i, async (account) => {
-        method = eth.contract.methods.availableToSpend(account.id, '');
         try {
-          let spendable = await method.call();
+          let spendable = await blockchain.availableToSpend(account.id, '');
           leaders.push({
             id: account.id,
             metadata: account.metadata || {},
