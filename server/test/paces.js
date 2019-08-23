@@ -119,7 +119,7 @@ describe('Account', function () {
 
   it('should send karma to another community', async function () {
     var initialSpendable, initialGiven, initialReceived, initialGivable, acct, res;
-    this.timeout(6000);
+    this.timeout(8000);
     try {
       res = await api.get('/api/accounts/setup/6');
         TestCookies = (res.headers['set-cookie'] || ['']).pop().split(';');

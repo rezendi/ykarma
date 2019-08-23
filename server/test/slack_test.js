@@ -62,7 +62,7 @@ describe('Slack', async function () {
   });
 
   it('should send karma in a second slack team, then across communities, and make a purchase', async function() {
-    this.timeout(10000);
+    this.timeout(12000);
     try {
       // send via command
       res = await api.get('/api/slack/testReset/TEAM2');

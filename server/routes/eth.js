@@ -33,7 +33,7 @@ const getId = function() {
    return web3.eth.net.getId();
 };
 
-const doSend = function(method, minConfirmations = 1, gasMultiplier = 2,) {
+const doSend = function(method, minConfirmations = 1, gasMultiplier = 2) {
   var notifying = false;
   return new Promise(function(resolve, reject) {
     method.estimateGas({gas: GAS}, function(estError, gasAmount) {

@@ -18,7 +18,7 @@ eth.web3.eth.getAccounts().then((ethAccounts) => {
     blockNumber = bn;
     populateSlack();
   });
-})
+});
 
 
 // for each community:
@@ -103,7 +103,7 @@ async function addUserIfAppropriate(communityId, teamId, userId, userEmail, user
     if (accountId > 0) {
       console.log("adding slack URL to existing email URL", userEmail);
       var method3 = eth.contract.methods.addUrlToExistingAccount(accountId, slackUrl);
-      doSend(method3);
+      await eth.doSend(method3);
     } else {
       addNewUser(communityId, teamId, userId, userEmail, userName);
     }
@@ -122,47 +122,21 @@ async function addNewUser(communityId, teamId, userId, userEmail, userName) {
     '0x00',
     slackUrl
   );
-  doSend(method,1, 2, () => {
-    let method2 = eth.contract.methods.accountForUrl(slackUrl);
-    try {
-      let result = await method2.call();
-      let accountId = parseInt(result[0], 10);
-      console.log("newly generated account id", accountId);
-      if (userEmail && userEmail.length === 0 || userEmail.indexOf('@') > 0) {
-        console.log("adding email to newly generated account", userEmail);
-        let emailUrl = `mailto:${userEmail}`;
-        let method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
-        doSend(method3);
-      }
-      let replenish = eth.contract.methods.replenish(accountId);
-      doSend(replenish);
-    } catch(error)
-      console.log('getAccountForUrl error from '+slackUrl, error);
+  await eth.doSend(method);
+  let method2 = eth.contract.methods.accountForUrl(slackUrl);
+  try {
+    let result = await method2.call();
+    let accountId = parseInt(result[0], 10);
+    console.log("newly generated account id", accountId);
+    if (userEmail && userEmail.length === 0 || userEmail.indexOf('@') > 0) {
+      console.log("adding email to newly generated account", userEmail);
+      let emailUrl = `mailto:${userEmail}`;
+      let method3 = eth.contract.methods.addUrlToExistingAccount(accountId, emailUrl);
+      eth.doSend(method3);
     }
-}
-
-function doSend(method, minConfirmations = 1, gasMultiplier = 2, callback = null) {
-  var notifying = false;
-  method.estimateGas({gas: eth.GAS}, function(estError, gasAmount) {
-    if (estError) {
-      console.log('est error', estError);
-    }
-    method.send({from:fromAccount, gas: gasAmount * gasMultiplier}).on('error', (error) => {
-      console.log('send error', error);
-    })
-    .on('confirmation', (number, receipt) => {
-      if (number >= minConfirmations && !notifying) {
-        notifying = true;
-        if (callback) {
-          return callback();
-        }
-      }
-    })
-    .catch(function(error) {
-      console.log('send call error ' + error);
-    });
-  })
-  .catch(function(error) {
-    console.log('gas estimation call error', error);
-  });
+    let replenish = eth.contract.methods.replenish(accountId);
+    eth.doSend(replenish);
+  } catch(error) {
+    console.log('getAccountForUrl error from '+slackUrl, error);
+  }
 }

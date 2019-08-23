@@ -542,7 +542,7 @@ router.post('/event', async function(req, res, next) {
       postToChannel(teamId, channelId, text, bot_token);
       res.json({text:text});
       try {
-        let reward = await blockchain.getRewardFor(purchaseId);
+        let reward = await blockchain.rewardForId(purchaseId);
         await blockchain.purchase(sender.id, purchaseId);
         // send notifications
         let vendor = await blockchain.getAccountFor(reward.vendorId);
@@ -558,7 +558,7 @@ router.post('/event', async function(req, res, next) {
         }
       } catch(error) {
         postToChannel(teamId, channelId, req.t("Could not complete purchase, sorry!"), bot_token);
-        util.warn("purchase error");
+        util.warn("purchase error", error);
       }
       return;
 
