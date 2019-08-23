@@ -164,8 +164,8 @@ describe('Reward', function () {
       res = await api.get('/api/rewards/vendedBy/2').set('Cookie', TestCookies).expect(200);
         initialRewards = JSON.parse(res.text).rewards.length;
       res = await api.post('/api/rewards/create').set('Cookie', TestCookies)
-        .send({"reward":{"cost":10, "quantity": 1, "tag": "test", "metadata":'{"name":"Test Reward One"}', "flags": '0x0000000000000000000000000000000000000000000000000000000000000000'}});
-        expect(JSON.parse(res.text).success).to.equal(true);
+        .send({"reward":{"cost":10, "quantity": 1, "tag": "test", "metadata":"{\"name\":\"Test Reward One\"}", "flags": "0x0000000000000000000000000000000000000000000000000000000000000000"}});
+        expect(JSON.parse(res.text).success).to.equal(true); 
       res = await api.get('/api/rewards/vendedBy/2').set('Cookie', TestCookies).expect(200);
         var rwds = JSON.parse(res.text).rewards;
         expect(rwds.length).to.equal(initialRewards + 1);

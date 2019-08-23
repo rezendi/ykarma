@@ -86,12 +86,12 @@ function editAccount(id, userAddress, metadata, flags) {
 
 function deleteAccount(id) {
   var method = eth.contract.methods.deleteAccount(id);
-  eth.doSend(method);
+  return eth.doSend(method);
 }
 
 function give(id, cid, url, amount, message) {
   var method = eth.contract.methods.give(id, cid, url, amount, message);
-  return eth.doSend(method, 1, 2);
+  return eth.doSend(method, 1, 3);
 }
 
 function getAccountFromResult(result) {
@@ -110,18 +110,55 @@ function getAccountCount(communityId) {
 
 function addEditCommunity(id, addressAdmin, flags, domain, metadata, tags) {
   var method = eth.contract.methods.addEditCommunity(id, addressAdmin, flags, domain, metadata, tags);
-  eth.doSend(method);
+  return eth.doSend(method);
 }
 
 function deleteCommunity(id) {
   var method = eth.contract.methods.deleteCommunity(id);
-  eth.doSend(method,res); 
+  return eth.doSend(method); 
 }
 
 async function accountWithinCommunity(communityId, accountId) {
   var method = eth.contract.methods.accountWithinCommunity(communityId, accountId);
   let result = await method.call();
   return eth.getAccountFromResult(result);
+}
+
+function getRewardsCount(id, idType) {
+  let method = eth.contract.methods.getRewardsCount(id, idType);
+  return method.call(); 
+}
+
+function addNewReward(id, cost, quantity, tag, metadata, flags) {
+  let method = eth.contract.methods.addNewReward(id, cost, quantity, tag || '', metadata, flags || util.BYTES_ZERO);
+  return eth.doSend(method);
+}
+
+function editExistingReward(id, cost, quantity, tag, metadata, flags) {
+  let method = eth.contract.methods.editExistingReward(id, cost, quantity, tag, metadata, flags);
+  return eth.doSend(method);
+}
+
+function deleteReward(id) {
+  let method = eth.contract.methods.deleteReward(id);
+  return eth.doSend(method, 1, 3); 
+}
+
+async function rewardForId(id) {
+  var method = eth.contract.methods.rewardForId(id);
+  let result = await method.call();
+  return eth.getRewardFromResult(result);
+}
+
+async function rewardByIdx(id, idx, idType) {
+  var method = eth.contract.methods.rewardByIdx(id, idx, idType);
+  let result = await method.call();
+  return eth.getRewardFromResult(result);
+}
+
+function purchase(userId, rewardId) {
+  var method = eth.contract.methods.purchase(userId, rewardId);
+  return eth.doSend(method);
 }
 
 module.exports = {
@@ -145,4 +182,11 @@ module.exports = {
     addEditCommunity,
     deleteCommunity,
     accountWithinCommunity,
+    getRewardsCount,
+    addNewReward,
+    editExistingReward,
+    deleteReward,
+    rewardForId,
+    rewardByIdx,
+    purchase
 };

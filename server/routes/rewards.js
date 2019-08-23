@@ -1,23 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const eth = require('./eth');
+const blockchain = require('./blockchain');
 const util = require('./util');
 const email = require('./emails');
-
-var fromAccount = null;
-eth.getFromAccount().then(address => {
-  fromAccount = address;
-});
 
 const ADMIN_ID = 1;
 
 /* GET individual reward */
-router.get('/reward/:id', function(req, res, next) {
+router.get('/reward/:id', async function(req, res, next) {
   const id = parseInt(req.params.id);
-  getRewardFor(id, (reward) => {
-    //console.log('callback', reward);
-    res.json({"success":true, "reward":reward});
-  });
+  let reward = await blockchain.rewardForId(id);
+  res.json({"success":true, "reward":reward});
 });
 
 /* GET rewards available to the current user */
@@ -67,23 +60,19 @@ router.get('/vendedBy/:accountId', function(req, res, next) {
 });
 
 async function getListOfRewards(idType, id, res) {
-  var rewards = [];
-  const method = eth.contract.methods.getRewardsCount(id, idType);
   try {
-    let totalRewards = await method.call();
+    let totalRewards = await blockchain.getRewardsCount(id, idType);
     if (parseInt(totalRewards)===0) {
       return res.json({"success":true, "rewards":[]});
     }
+    var promises = [];
     for (var i = 0; i < parseInt(totalRewards); i++) {
-      getRewardByIndex(id, i, idType, (reward) => {
-        rewards.push(reward);
-        if (rewards.length >= parseInt(totalRewards)) {
-          // console.log('rewards', rewards);
-          rewards = rewards.filter(a => a.id > 0);
-          return res.json({"success":true, "rewards":rewards});
-        }
-      });
+      promises.push(blockchain.rewardByIdx(id, i, idType));
     }
+    Promise.all(promises).then(function(values) {
+      let rewards = values.filter(a => a.id > 0);
+      return res.json({"success":true, "rewards":rewards});
+    });
   } catch(error) {
     util.log('getListOfRewards error', error);
     return res.json({"success":false, "error": error});
@@ -91,102 +80,67 @@ async function getListOfRewards(idType, id, res) {
 }
 
 /* POST create a reward */
-router.post('/create', function(req, res, next) {
+router.post('/create', async function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": req.t("Not logged in")});
   }
   var reward = req.body.reward;
-  var method = eth.contract.methods.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag || '', JSON.stringify(reward.metadata), reward.flags || util.BYTES_ZERO);
-  eth.doSend(method, res, 1, 2, () => {
-    email.sendRewardCreatedEmail(req, reward, req.session.account);
-    util.log("reward created", reward);
-    return res.json({"success":true, "result": reward});
-  });
+  await blockchain.addNewReward(req.session.ykid, reward.cost, reward.quantity, reward.tag, JSON.stringify(reward.metadata), reward.flags);
+  email.sendRewardCreatedEmail(req, reward, req.session.account);
+  util.log("reward created", reward);
+  return res.json({"success":true, "result": reward});
 });
 
 /* PUT update a reward */
-router.put('/update', function(req, res, next) {
+router.put('/update', async function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": req.t("Not logged in")});
   }
   var reward = req.body.reward;
-  getRewardFor(reward.id, (existing) => {
-    if (req.session.ykid !== parseInt(existing.vendorId) && req.session.ykid !== ADMIN_ID) {
-      return res.json({"success":false, "error": req.t("Not authorized")});
-    }
-    //util.log("existing", existing);
-    var method = eth.contract.methods.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, JSON.stringify(reward.metadata || existing.metadata), reward.flags || existing.flags);
-    eth.doSend(method, res);
-  })
+  let existing = await blockchain.rewardForId(reward.id);
+  if (req.session.ykid !== parseInt(existing.vendorId) && req.session.ykid !== ADMIN_ID) {
+    return res.json({"success":false, "error": req.t("Not authorized")});
+  }
+  //util.log("existing", existing);
+  await blockchain.editExistingReward(reward.id, reward.cost || existing.cost, reward.quantity || existing.quantity, reward.tag || existing.tag, JSON.stringify(reward.metadata || existing.metadata), reward.flags || existing.flags);
+  return res.json({"success":true, "result": reward});
 });
 
 /* DELETE delete a reward */
-router.delete('/:id', function(req, res, next) {
+router.delete('/:id', async function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": req.t("Not logged in")});
   }
-  getRewardFor(req.params.id, (existing) => {
-    if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
-      return res.json({"success":false, "error": req.t("Not authorized")});
-    }
-    var method = eth.contract.methods.deleteReward(existing.id);
-    eth.doSend(method, res, 1, 3);
-  });
+  let existing = await blockchain.rewardForId(req.params.id);
+  if (req.session.ykid != existing.vendorId && req.session.ykid != ADMIN_ID) {
+    return res.json({"success":false, "error": req.t("Not authorized")});
+  }
+  await blockchain.deleteReward(existing.id);
+  return res.json({"success":true});
 });
 
 /* POST purchase a reward */
-router.post('/purchase', function(req, res, next) {
+router.post('/purchase', async function(req, res, next) {
   if (!req.session.ykid) {
     return res.json({"success":false, "error": req.t("Not logged in")});
   }
-  var method = eth.contract.methods.purchase(req.session.ykid, req.body.rewardId);
-  getRewardFor(req.body.rewardId, (reward) => {
-    eth.doSend(method, res, 1, 2, async () => {
-      util.log("reward purchased", reward);
-      let vendor = await eth.getAccountFor(reward.vendorId);
-      email.sendRewardPurchasedEmail(req, reward, req.session.account, vendor);
-      email.sendRewardSoldEmail(req, reward, req.session.account, vendor);
-      let vendorSlackUrl = util.getSlackUrlForSameTeam(vendor.urls, req.session.account.urls);
-      if (vendorSlackUrl) {
-        var buyerInfo = util.getEmailFrom(req.session.account.urls);
-        buyerInfo = buyerInfo ? buyerInfo : buyer.urls;
-        slack.openChannelAndPost(vendorSlackUrl, `You just sold the reward ${getRwardInfoFrom(reward)} to ${buyerInfo}!`);
-      }
-      return res.json({"success":true, "result": reward});
-    });
-  });
+  let reward = await blockchain.rewardForId(req.body.rewardId);
+  await blockchain.purchase(req.session.ykid, req.body.rewardId);
+  util.log("reward purchased", reward);
+  let vendor = await blockchain.getAccountFor(reward.vendorId);
+  email.sendRewardPurchasedEmail(req, reward, req.session.account, vendor);
+  email.sendRewardSoldEmail(req, reward, req.session.account, vendor);
+  let vendorSlackUrl = util.getSlackUrlForSameTeam(vendor.urls, req.session.account.urls);
+  if (vendorSlackUrl) {
+    var buyerInfo = util.getEmailFrom(req.session.account.urls);
+    buyerInfo = buyerInfo ? buyerInfo : buyer.urls;
+    slack.openChannelAndPost(vendorSlackUrl, `You just sold the reward ${getRwardInfoFrom(reward)} to ${buyerInfo}!`);
+  }
+  return res.json({"success":true, "result": reward});
 });
-
-
-/**
- * Ethereum methods
- */
-async function getRewardFor(id, callback) {
-  var method = eth.contract.methods.rewardForId(id);
-  try {
-    let result = await method.call();
-    var reward = eth.getRewardFromResult(result);
-    callback(reward);
-  } catch(erro) {
-    util.warn('getRewardFor error', error);
-  }
-}
-
-async function getRewardByIndex(id, idx, idType, callback) {
-  const method = eth.contract.methods.rewardByIdx(id, idx, idType);
-  try {
-    let result = await method.call();
-    var reward = eth.getRewardFromResult(result);
-    callback(reward);
-  } catch(erro) {
-    util.warn('getRewardByIndex error', error);
-  }
-}
 
 
 
 module.exports = {
   router: router,
-  getRewardByIndex: getRewardByIndex,
-  getRewardFor: getRewardFor
 };
