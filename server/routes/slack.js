@@ -403,6 +403,7 @@ router.post('/event', async function(req, res, next) {
   let sender = await blockchain.getAccountForUrl(senderUrl);
 
   // parse text
+  var i, j, k;
   var text;
   var incoming = req.body.event.text || '';
   var words = incoming.split(' ');
@@ -479,7 +480,7 @@ router.post('/event', async function(req, res, next) {
           return res.json({text:text});
         }
         var promises = [];
-        for (var i = 0; i < totalRewards; i++) {
+        for (i = 0; i < totalRewards; i++) {
           promises.push(blockchain.rewardByIdx(0, i, 0));
         }
         Promise.all(promises).then(async function(values) {
@@ -528,8 +529,8 @@ router.post('/event', async function(req, res, next) {
     // Make a purchase
     case req.t("purchase"):
       var purchaseId = 0;
-      for (var j=1; j < words.length; j++) {
-        var wordNum = parseInt(words[j], 10);
+      for (i=1; i < words.length; i++) {
+        var wordNum = parseInt(words[i], 10);
         if (wordNum > 0) {
           purchaseId = wordNum;
           break;
@@ -570,7 +571,7 @@ router.post('/event', async function(req, res, next) {
             postToChannel(teamId, channelId, req.t("Could not get leaderboard, sorry!"), bot_token);
          } else {
             var blocks = [];
-            for (var i=0; i<leaders.length; i++) {
+            for (i=0; i<leaders.length; i++) {
                let leader = leaders[i];
                var leaderInfo = util.getSlackUserIdForTeam(leader.urls, teamId);
                leaderInfo = leaderInfo ? `<@${leaderInfo}>` : leader.urls;
@@ -590,8 +591,42 @@ router.post('/event', async function(req, res, next) {
       
     // Flavors
     case req.t("flavors"):
-      text = "flavor handling goes here";
-      break;
+      text = sender.spendable === 0 ? req.t("No karma") : req.t("Itemizing your karma…");
+      postToChannel(teamId, channelId, text, bot_token);
+      res.json({text:text});
+      if (sender.spendable === 0) {
+        return;
+      }
+      // possibly eventually page these
+      let totals = await blockchain.trancheTotalsForId(req.session.ykid);
+      let received = await blockchain.tranchesReceivedForId(req.session.ykid, totals[1]);
+      var myTags = {};
+      for (i in received) {
+        const tags = received[i].tags.split(",");
+        for (j in tags) {
+          var tag = tags[j];
+          myTags[tag] = myTags[tag] ? myTags[tag] + received[i].available : received[i].available;
+        }
+      }
+
+      var sortedTags = [];
+      for (var key in myTags) {
+        sortedTags.push({tag: key, avail: myTags[key]});
+      }
+      sortedTags = sortedTags.sort(function(a,b) {return (a.avail > b.avail) ? -1 : ((b.avail > a.avail) ? 1 : 0);} );
+
+      var blocks = [];
+      for (k in sortedTags) {
+        blocks.push({
+           "type": "section",
+           "text": {
+              "type": "mrkdwn",
+              "text": `*${sortedTags[k].tag}* | ${sortedTags[k].avail}`
+           }
+        });
+      }
+      postToChannel(teamId, channelId, blocks, bot_token, req.t('Karma by Flavor'));
+      return;
     
     // Unknown command
     default:
