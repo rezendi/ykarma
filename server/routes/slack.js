@@ -421,7 +421,6 @@ router.post('/event', async function(req, res, next) {
       postToChannel(teamId, channelId, text, bot_token);
       try {
          let available = await blockchain.availableToSpend(sender.id, '');
-         // TODO: flavor breakdown?
          postToChannel(teamId, channelId, req.t("You currently have a total of") + ` ${available} ` + req.t("to spend… You can get an itemization by flavor with the 'flavors' command"), bot_token);
       } catch(error) {
          util.log('getAvailable error', error);
@@ -632,7 +631,6 @@ router.post('/event', async function(req, res, next) {
     default:
       text = req.t("Sorry, I didn't understand you. You can ask for help with 'help'");
   }
-
 });
 
 // this didn't start off this ugly
