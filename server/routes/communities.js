@@ -91,7 +91,7 @@ router.post('/create', async function(req, res, next) {
   community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : util.BYTES_ZERO;
   util.log("community", JSON.stringify(community));
   if (community.id !== 0) {
-    res.json({'success':false, 'error':'Community already exists'});
+    return res.json({'success':false, 'error':'Community already exists'});
   }
   var tags = community.tags || '';
   for (var i = 0; i < RESERVED_TAGS.length; i++) {
