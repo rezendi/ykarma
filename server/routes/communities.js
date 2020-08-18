@@ -88,7 +88,7 @@ router.post('/create', async function(req, res, next) {
       return res.json({"success":false, "error": req.t("Not authorized")});
   }
   var community = req.body.community;
-  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : BYTES_ZERO;
+  community.flags = community.strict ? '0x0000000000000000000000000000000000000000000000000000000000000001' : util.BYTES_ZERO;
   util.log("community", JSON.stringify(community));
   if (community.id !== 0) {
     res.json({'success':false, 'error':'Community already exists'});
