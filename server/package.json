@@ -29,7 +29,7 @@
     "mocha": "^5.2.0",
     "morgan": "^1.9.1",
     "node-fetch": "^2.6.0",
-    "pug": "~2.0.4",
+    "pug": "~3.0.1",
     "supertest": "^3.4.2",
     "supertest-session": "^3.3.0",
     "web3": "^1.2.1",
